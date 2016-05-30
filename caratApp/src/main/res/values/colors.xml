@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="red">#F33535</color>
+    <color name="white">#ffffff</color>
+    <color name="blue">#122134</color>
+    <color name="lightblue">#86CBE1</color>    
+    <color name="darkblue">#122134</color>
+    <color name="cyan">#0099CC</color>
+    <color name="darkcyan">#33B5E5</color>
+    <color name="transparent_blue">#800000FF</color>
+	<color name="orange">#F7A71B</color>
+    <color name="lightorange">#FEE5B1</color>
+	<color name="green">#00D978</color>
+	<color name="darkgreen">#127112</color>
+    <color name="green_light">#FF99CC00</color>
+    <color name="greencarat">#669900</color>
+    <color name="transparent_orange">#80FFBB33</color>
+    <color name="purple">#FFAA66CC</color>    
+    <color name="lightsilver">#E3E3E3</color>
+    <color name="silver">#DDDDDD</color>
+    <color name="gray">#B4B4B4</color>
+    <color name="darkgray">#454545</color>
+    <color name="darkgray2">#808080</color>
+    <color name="hogsOrange">#F0471F</color>
+    <color name="bugsYellow">#FA9626</color>
+    <color name="lightgray">#F5F5F5</color>
+    <color name="actionbar_color">#F8B03A</color>
+    <color name="statusbar_color">#F7A71B</color>
+    <color name="yellow">#FFC600</color>
+    <color name="percentage_bar_inactive">#b4b4b4</color>
+    <color name="activity_indicator_background_transparent">#bf000000</color>
+</resources>
+
+<!-- 	<color name="green">#FF00FF00</color> -->

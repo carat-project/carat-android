@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:clickable="true"
+    tools:context="edu.berkeley.cs.amplab.carat.android.fragments.DeviceFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="100">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="30"
+            android:background="@drawable/chart_background"
+            android:orientation="horizontal">
+
+                <edu.berkeley.cs.amplab.carat.android.views.CircleDisplay
+                    android:id="@+id/jscore_progress_circle"
+                    android:layout_width="120dp"
+                    android:layout_centerInParent="true"
+                    android:layout_height="120dp" />
+            <!--<TextView
+                style="@style/LargeBoldBlackText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="@string/your_jscore_title" />-->
+
+        </RelativeLayout>
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="70">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:weightSum="70">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="35"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="15dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:weightSum="19">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="5"
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/LargeBlackText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:paddingTop="4dp"
+                                android:text="@string/carat_id_title" />
+
+                            <TextView
+                                android:id="@+id/carat_id_value"
+                                style="@style/SmallGrayText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Unknown" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="5"
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/LargeBlackText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:paddingTop="4dp"
+                                android:text="@string/os_version_title" />
+
+                            <TextView
+                                android:id="@+id/os_version_value"
+                                style="@style/SmallGrayText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="5.0.1" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="5"
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/LargeBlackText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:paddingTop="4dp"
+                                android:text="@string/device_model_title" />
+
+                            <TextView
+                                android:id="@+id/device_model_value"
+                                style="@style/SmallGrayText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Nexus 5" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="5"
+                            android:gravity="bottom"
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/LargeBoldBlackText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="5dp"
+                                android:paddingBottom="10dp"
+                                android:text="@string/device_usage_title" />
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginRight="15dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/what_are_jscore_numbers"
+                            style="@style/MediumOrangeText"
+                            android:layout_marginRight="10dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="7dp"
+                            android:text="@string/what_are_jscore_numbers"
+                            android:gravity="center_vertical|center_horizontal">
+
+                        </TextView>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="4dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/LargeBlackText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:paddingBottom="4dp"
+                                android:paddingTop="4dp"
+                                android:text="@string/active_battery_life"
+                                android:gravity="center_horizontal" />
+
+                            <TextView
+                                android:id="@+id/battery_value"
+                                style="@style/LargeBoldBlackText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/battery_life_value"
+                                android:gravity="center_horizontal" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="bottom|center"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginRight="10dp"
+                            android:orientation="vertical">
+
+                            <Button
+                                android:maxWidth="5dp"
+                                android:id="@+id/process_list_button"
+                                style="@style/ProcessListButtonStyle"
+                                android:layout_width="200dp"
+                                android:layout_height="wrap_content"
+                                android:text="@string/process_list_title"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="35"
+                    android:orientation="vertical"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:weightSum="3">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/view"
+                            android:layout_width="fill_parent"
+                            android:layout_height="1dp"
+                            android:layout_alignParentTop="true"
+                            android:background="@color/lightgray" />
+
+                        <ImageView
+                            android:id="@+id/memory_used_bar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_below="@+id/memory_used_title"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginRight="30dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_toLeftOf="@+id/memory_used_info_button" />
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_below="@+id/memory_used_title"
+                            android:layout_toLeftOf="@+id/memory_used_info_button"
+                            android:paddingRight="25dp"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/progress_bar" />
+
+                        <TextView
+                            android:id="@+id/memory_used_title"
+                            style="@style/LargeBlackText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:text="@string/memory_used_title" />
+
+                        <Button
+                            android:id="@+id/memory_used_info_button"
+                            style="@style/InfoButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentRight="true"
+                            android:text="i" />
+
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:id="@+id/memory_active_bar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_below="@+id/memory_active_title"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginRight="30dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_toLeftOf="@+id/memory_active_button" />
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_below="@+id/memory_active_title"
+                            android:layout_toLeftOf="@+id/memory_active_button"
+                            android:paddingRight="25dp"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/progress_bar" />
+
+                        <TextView
+                            android:id="@+id/memory_active_title"
+                            style="@style/LargeBlackText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:text="@string/memory_active_title" />
+
+                        <Button
+                            android:id="@+id/memory_active_button"
+                            style="@style/InfoButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentRight="true"
+                            android:text="i" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:id="@+id/cpu_usage_bar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_below="@+id/cpu_usage_title"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginRight="30dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_toLeftOf="@+id/cpu_usage_button" />
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_below="@+id/cpu_usage_title"
+                            android:layout_toLeftOf="@+id/cpu_usage_button"
+                            android:paddingRight="25dp"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/progress_bar" />
+
+                        <TextView
+                            android:id="@+id/cpu_usage_title"
+                            style="@style/LargeBlackText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentTop="true"
+                            android:text="@string/cpu_usage_title" />
+
+                        <Button
+                            android:id="@+id/cpu_usage_button"
+                            style="@style/InfoButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentRight="true"
+                            android:text="i" />
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</RelativeLayout>

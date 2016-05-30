@@ -1,11 +1,11 @@
 namespace java edu.berkeley.cs.amplab.carat.thrift
 
-// 
+//
 // The registration message.
 //
 struct Registration {
 	1: required string uuId;		// The UUID generated using CFUUIDCreate(). on Android, ANDROID_ID.
-	// ANDROID_ID may change if device is factory reset or a different mod is installed. 
+	// ANDROID_ID may change if device is factory reset or a different mod is installed.
 	// On phones, the IMEI could be used, but that is sensitive information.
 	// Build.Serial could be used, but that is not available before Android 2.3 on phones.
 	// For tablets, Build.Serial should always be available.
@@ -37,6 +37,13 @@ struct ProcessInfo {
 //
 typedef list<ProcessInfo> ProcessInfoList
 
+struct NetworkStatistics {
+	1: optional double wifiReceived;
+	2: optional double wifiSent;
+	3: optional double mobileReceived;
+	4: optional double mobileSent;
+}
+
 //
 // Network details on Android.
 //
@@ -44,16 +51,22 @@ struct NetworkDetails {
 	// Android-only: network settings
 	1: optional string networkType;	// Currently wifi,mobile,wimax,or unknown
 	2: optional string mobileNetworkType; // GPRS, EDGE, UMTS, ...
-	
+
 	// Android-only: Mobile data settings
 	3: optional string mobileDataStatus; // connecting, connected, disconnected, suspended
 	4: optional string mobileDataActivity; // none,in,out,inout,dormant
 	5: optional bool roamingEnabled; // true if currently roaming in a foreign mobile network.
-	
+
 	// Android-only: Wifi settings
 	6: optional string wifiStatus;	 // disabled, disabling, enabled, enabling, unknown
 	7: optional i32 wifiSignalStrength;	// as given by getRssi() on Android
 	8: optional i32 wifiLinkSpeed;	    // link speed in Mbps
+
+	// Sent and received data
+	9: optional NetworkStatistics networkStatistics;
+
+	// Android-only: Wifi access point status
+	10: optional string wifiApStatus; 	// disabled, disabling, enabled, enabling, unknown
 }
 
 //
@@ -76,6 +89,7 @@ struct CpuStatus {
 	// Android-only: CPU
     1: optional double cpuUsage; // cpu usage fraction (0-1)
 	2: optional double uptime; // uptime in seconds
+	3: optional double sleeptime; // experimental sleep time
     // These may change
 //	3: optional double cpuTime; // CPU usage in seconds since reboot
 //	4: optional double idleTime; // idle time in seconds since reboot
@@ -98,6 +112,30 @@ struct CallInfo {
 struct Feature {
 	1: optional string key;
 	2: optional string value;
+}
+
+//
+// System settings
+//
+struct Settings {
+	// Enabled, disabled, enabling, disabling, unknown
+	1: optional bool bluetoothEnabled;
+	2: optional bool locationEnabled;
+	3: optional bool powersaverEnabled;
+}
+
+//
+// Free and total storage space in megabytes
+//
+struct StorageDetails {
+	1: optional i32 free; 			// Free internal storagfe
+	2: optional i32 total; 			// Total internal storage
+	3: optional i32 freeExternal; 	// Free external storage
+	4: optional i32 totalExternal;	// Total external storage
+	5: optional i32 freeSystem; 	// Free system storage
+	6: optional i32 totalSystem;	// Total system storage
+	7: optional i32 freeSecondary;	// Free secondary storage
+	8: optional i32 totalSecondary; // Total secondary storage
 }
 
 //
@@ -131,10 +169,13 @@ struct Sample {
 	22: optional i32 unknownSources; // Android Only: Unknown source app installation on == 1, off == 0
 	23: optional i32 developerMode; // Android Only: Developer mode on == 1, off == 0
 	24: optional list<Feature> extra; // Extra features for extensibility.
+	25: optional Settings settings;
+	26: optional StorageDetails storageDetails;
+	27: optional string countryCode; // Two-letter country code from network or SIM
 }
 
 //
-// Fields for the detailed screen report. 
+// Fields for the detailed screen report.
 //
 struct DetailScreenReport {
 	1: optional double score;
@@ -167,17 +208,17 @@ struct Reports {
 }
 
 //
-// Struct with info on hog or bug with percentages 
+// Struct with info on hog or bug with percentages
 //
 struct HogsBugs {
 	1: optional string appName;		// Application name.
 	2: optional double wDistance;		// Wasserstein distance.
 	3: optional list<double> xVals;		// This is the x-axis values for PDF in the detailed view for this app.
 	4: optional list<double> yVals;		// This is the y-axis values for PDF in the detailed view for this app.
-	5: optional list<double> xValsWithout;	
+	5: optional list<double> xValsWithout;
 	6: optional list<double> yValsWithout;
 	7: optional double expectedValue;
-	8: optional double expectedValueWithout; 
+	8: optional double expectedValueWithout;
 	9: optional double error;
 	10: optional double errorWithout;
 	// Number of samples used for expectedValue and error
@@ -202,7 +243,7 @@ struct HogBugReport {
 typedef list<Feature> FeatureList
 
 //
-// The CARAT service. 
+// The CARAT service.
 //
 service CaratService {
 	oneway void registerMe(1:Registration registration);
@@ -211,4 +252,3 @@ service CaratService {
 	HogBugReport getHogOrBugReport(1: string uuId, 2: FeatureList features)
 	HogBugReport getQuickHogsAndMaybeRegister(1:Registration registration, 2:list<string> processList)
 }
-

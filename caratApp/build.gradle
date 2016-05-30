@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    defaultConfig {
+        versionCode 103
+        versionName "2.13"
+        applicationId "edu.berkeley.cs.amplab.carat.android"
+        minSdkVersion 10
+        targetSdkVersion 21
+    }
+
+    // Create gradle.properties file to caratApp folder and define KEYSTORE_PASSWORD=xxx and
+    // KEY_PASSWORD=xxx there in order to generate signed APK for release.
+    // NEVER save gradle.properties to GIT or anywhere else, keep it local!
+    // Also create/move carat-release-key.keystore file to caratApp folder.
+    // Lastly uncomment everything below.
+
+    /*signingConfigs {
+        release {
+            try {
+                storeFile file("carat-release-key.keystore")
+                storePassword KEYSTORE_PASSWORD
+                keyAlias "carat"
+                keyPassword KEY_PASSWORD
+            }
+            catch (ex) {
+                throw new InvalidUserDataException("You should define KEYSTORE_PASSWORD and KEY_PASSWORD in gradle.properties")
+            }
+        }
+    } */
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+        release {
+            //signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+        exclude 'META-INF/ASL2.0'
+    }
+
+}
+
+dependencies {
+    compile project(':androidswitchbackport')
+    compile project(':androidsupportv4preferencefragment')
+    compile project(':mPChartLib')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:support-v4:23.1.0'
+    compile files('libs/universal-image-loader-1.9.5.jar')
+    compile 'com.android.support:appcompat-v7:23.1.0'
+}

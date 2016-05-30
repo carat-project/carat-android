@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="edu.berkeley.cs.amplab.carat.android.fragments.tutorial.EulaTutorialFragment">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:scaleType="centerCrop"
+        android:src="@drawable/tutorial_eula_bg" />
+
+    <TextView
+        style="@style/MediumBoldWhiteText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/eula_scroll"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:text="@string/tutorial_fragment_eula_title" />
+
+    <ScrollView
+        android:id="@+id/eula_scroll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_marginTop="-10dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/eula_message"
+                    style="@style/SmallWhiteText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginRight="25dp"
+                    android:gravity="center"
+                    android:text="@string/tutorial_fragment_eula_message" />
+
+                <TextView
+                    android:id="@+id/eula_message_link"
+                    style="@style/SmallWhiteText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:text="@string/tutorial_fragment_eula_link"
+                    android:layout_below="@+id/eula_message"
+                    android:layout_marginTop="30dp"
+                    android:layout_centerHorizontal="true" />
+            </RelativeLayout>
+    </ScrollView>
+
+</RelativeLayout>
