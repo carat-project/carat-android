@@ -1,8 +1,8 @@
-# Carat Project: Android and iOS Applications
+# Carat Project: Android application
 
 For details, visit http://carat.cs.helsinki.fi
 
-## Build instructions for Android
+## Build instructions
 
 1. Download Eclipse: http://www.eclipse.org/downloads/
 2. Install Google's ADT: http://developer.android.com/sdk/installing/installing-adt.html
@@ -35,14 +35,3 @@ If you use Eclipse, follow these stpes to import a library project:
 3. Select the library project's directory, click OK, and then click finish to complete the import process. Now you should see the imported library project in your project navigatation pane, in the left side.
 
 Eclipse may complain about not being able to find the dependecies for Carat project, this is a bug in Eclipse (not fixed even in Eclipse Mars). The solution is to go to the project properties dialog of Carat project, go to the *Android* section, remove all of the library project dependencies, and re-add them.
-
-
-## Build instructions for iOS
-
-1. Install ruby gems: https://rubygems.org/pages/download
-2. Install CocoaPods 0.33.1: http://rubygems.org/gems/cocoapods/versions/0.33.1
-3. Make sure you have the latest Xcode.
-4. Go to the app/ios folder in a terminal and run `pod install`.
-5. Make sure the `SZIdentifierUtils.m ` and `.h` files still have `#define SHOULD_USE_IDFA 0`
-6. Open the resulting Carat.xcodeworkspace in Xcode.
-7. Build and run on an emulator or your device.
