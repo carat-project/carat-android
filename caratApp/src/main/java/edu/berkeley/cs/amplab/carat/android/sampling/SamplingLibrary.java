@@ -70,6 +70,8 @@ import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
 import android.telephony.CellLocation;
+import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
@@ -2184,6 +2186,10 @@ public final class SamplingLibrary {
 		nd.setMobileDataStatus(dataState);
 		String dataActivity = SamplingLibrary.getDataActivity(context);
 		nd.setMobileDataActivity(dataActivity);
+		String simOperator = SamplingLibrary.getSIMOperator(context);
+		nd.setSimOperator(simOperator);
+		String networkOperator = SamplingLibrary.getNetworkOperator(context);
+		nd.setNetworkOperator(networkOperator);
 
 		// Wifi stuff
 		String wifiState = SamplingLibrary.getWifiState(context);
@@ -2425,6 +2431,105 @@ public final class SamplingLibrary {
 	}
 
 	/**
+	 * SIM Operator is responsible for the product that is subscription.
+	 * It is directly associated with the SIM card and remains the same
+	 * even when changing between physical networks.
+	 *
+	 * SIM Operator might or might not own the infrastructure in use.
+	 * NOTE: Getting multiple operators is highly experimental.
+	 *
+	 * @param context Application context
+	 * @return SIM Operator name
+     */
+	public static String getSIMOperator(Context context){
+		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+		String operator;
+
+		operator = getSIMOperators(context); // Supports multiple sim cards
+		if(operator != null && operator.length() > 0) return operator;
+		operator = telephonyManager.getSimOperatorName();
+		if(operator != null && operator.length() > 0) return operator;
+
+		return "unknown";
+	}
+
+	/**
+	 * Network operator is responsible for the network infrastructure which
+	 * might be used by many virtual network operators. Network operator
+	 * is not necessarily bound to the device and might change at any time.
+	 *
+	 * @param context Application context
+	 * @return Network operator name, aka. carrier
+	 */
+	public static String getNetworkOperator(Context context){
+		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+		String operator;
+
+		operator = getNetworkOperators(context);
+		if(operator != null && operator.length() != 0) return operator;
+		operator = telephonyManager.getNetworkOperatorName();
+		if(operator != null && operator.length() != 0) return operator;
+		operator = getServiceProviderFromProperty(context, "ro.cdma.home.operator.alpha"); // CDMA support
+		if(operator != null && operator.length() != 0) return operator;
+
+		return "unknown";
+	}
+
+
+	/**
+	 * Experimental call to retrieve sim operator names by subscription ids.
+	 * @param context Application context
+	 * @return SIM operator name/names with ";" as a delimiter for many.
+     */
+	private static String getSIMOperators(Context context){
+		String operators = "";
+		if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1){
+			List<SubscriptionInfo> subscriptions = SubscriptionManager.from(context).getActiveSubscriptionInfoList();
+			if(subscriptions != null && subscriptions.size() > 0){
+				for(SubscriptionInfo info : subscriptions){
+					int subId = info.getSubscriptionId();
+					String operator = getSimOperatorNameForSubscription(context, subId);
+					if(operator != null && operator.length() > 0){
+						operators += operator + ";";
+					}
+				}
+				// Remove last delimiter
+				if(operators.length() > 1){
+					operators = operators.substring(0, operators.length()-1);
+				}
+			}
+		}
+		return operators;
+	}
+
+	/**
+	 * Retrieves network operator names from subscription manager.
+	 * NOTE: Requires SDK level 22 or above
+	 * @param context
+	 * @return
+     */
+	private static String getNetworkOperators(Context context){
+		String operator = "";
+		if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1){
+			SubscriptionManager subscriptionManager = SubscriptionManager.from(context);
+			if(subscriptionManager != null){
+				List<SubscriptionInfo> subscriptions = subscriptionManager.getActiveSubscriptionInfoList();
+				for(SubscriptionInfo info : subscriptions){
+					CharSequence carrierName = info.getCarrierName();
+					if(carrierName != null && carrierName.length() > 0){
+						operator += carrierName + ";";
+					}
+				}
+				// Remove last delimiter
+				if(operator.length() >= 1){
+					operator = operator.substring(0, operator.length()-1);
+				}
+			}
+		}
+		return operator;
+	}
+
+	/**
 	 * Storage details for internal, external, secondary and system partitions.
 	 * External and secondary storage details are not exactly reliable.
 	 * @return Thrift-compatible StorageDetails object
@@ -2571,9 +2676,31 @@ public final class SamplingLibrary {
 		}
 	}
 
+	/**
+	 * Retrieves sim operator name using an undocumented telephony manager call.
+	 * WARNING: Uses reflection, data might not always be available.
+	 * @param context
+	 * @param subId
+     * @return
+     */
+	private static String getSimOperatorNameForSubscription(Context context, int subId){
+		TelephonyManager stub = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+		try {
+			Class<?> telephonyManager = Class.forName(stub.getClass().getName());
+			Method getName = telephonyManager.getMethod("getSimOperatorNameForSubscription", int.class);
+			getName.setAccessible(true);
+			return ((String) getName.invoke(context, subId));
+		} catch (Exception e) {
+			if(Constants.DEBUG && e != null && e.getLocalizedMessage() != null){
+				Log.d(STAG, "Failed getting sim operator with subid: " + e.getLocalizedMessage());
+			}
+		}
+		return null;
+	}
+
     /**
-     * Retrieves a two-letter country code from system properties.
-     * Uses undocumented calls to private APIs.
+     * Retrieves a two-letter country code using an undocumented system properties call.
+     * WARNING: Uses reflection, data might not always be available.
      * @param context Application context
      * @param property Property name
      * @return Two-letter country code
@@ -2593,9 +2720,30 @@ public final class SamplingLibrary {
         return null;
     }
 
+	/**
+	 * Retrieves service provider using an undocumented system properties call.
+	 * WARNING: Uses reflection, data might not always be available.
+	 * @param context
+	 * @param property
+     * @return
+     */
+	private static String getServiceProviderFromProperty(Context context, String property){
+		try {
+			String operator = getSystemProperty(context, property);
+			if(operator != null && operator.length() > 0){
+				return operator;
+			}
+		} catch (Exception e){
+			if(Constants.DEBUG && e != null && e.getLocalizedMessage() != null){
+				Log.d(STAG, "Failed getting service provider: " + e.getLocalizedMessage());
+			}
+		}
+		return null;
+	}
+
     /**
-     * Private call to read a string value from system properties.
-     * Uses reflection.
+     * Undocumented call to read a string value from system properties.
+     * WARNING: Uses reflection, data might not always be available.
      * @param context Application context
      * @param property Property name
      * @return Property value
@@ -2609,8 +2757,8 @@ public final class SamplingLibrary {
 	}
 
     /**
-     * Private call to look up a two-letter country code with an mcc.
-     * Uses reflection.
+     * Undocumented call to look up a two-letter country code with an mcc.
+     * WARNING: Uses reflection, data might not always be available.
      * @param context Application context
      * @param mcc Numeric country code
      * @return Country code
@@ -2624,7 +2772,8 @@ public final class SamplingLibrary {
 	}
 
 	/**
-	 * Private call to check if wifi access point is enabled.
+	 * Undocumented call to check if wifi access point is enabled.
+	 * WARNING: Uses reflection, data might not always be available.
 	 * @param context Application context
 	 * @return State integer, see WIFI_AP statics
 	 * @throws Exception

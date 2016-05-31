@@ -365,6 +365,8 @@ public class CaratSampleDB {
                 		+ ", wifiLinkSpeed=" + s.getNetworkDetails().wifiLinkSpeed
                 		+ ", wifiSignalStrength=" + s.getNetworkDetails().wifiSignalStrength
                 		+ ", wifiStatus=" + s.getNetworkDetails().wifiStatus
+                        + ", simOperator=" + s.getNetworkDetails().simOperator
+                        + ", networkOperator=" + s.getNetworkDetails().networkOperator
                 		+ ", PiListSize=" + s.getPiListSize()
                 		);
                 
