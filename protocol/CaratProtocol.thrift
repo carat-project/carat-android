@@ -70,6 +70,8 @@ struct NetworkDetails {
 
 	11: optional string networkOperator; // network infrastructure provider, unbound
 	12: optional string simOperator; 	 // service provider, bound to sim
+	13: optional string mcc; 			 // numeric country code
+	14: optional string mnc;			 // numeric network code
 }
 
 //

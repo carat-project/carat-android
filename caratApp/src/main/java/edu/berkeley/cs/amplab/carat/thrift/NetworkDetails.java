@@ -50,6 +50,8 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
   private static final org.apache.thrift.protocol.TField WIFI_AP_STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("wifiApStatus", org.apache.thrift.protocol.TType.STRING, (short)10);
   private static final org.apache.thrift.protocol.TField NETWORK_OPERATOR_FIELD_DESC = new org.apache.thrift.protocol.TField("networkOperator", org.apache.thrift.protocol.TType.STRING, (short)11);
   private static final org.apache.thrift.protocol.TField SIM_OPERATOR_FIELD_DESC = new org.apache.thrift.protocol.TField("simOperator", org.apache.thrift.protocol.TType.STRING, (short)12);
+  private static final org.apache.thrift.protocol.TField MCC_FIELD_DESC = new org.apache.thrift.protocol.TField("mcc", org.apache.thrift.protocol.TType.STRING, (short)13);
+  private static final org.apache.thrift.protocol.TField MNC_FIELD_DESC = new org.apache.thrift.protocol.TField("mnc", org.apache.thrift.protocol.TType.STRING, (short)14);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -69,6 +71,8 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
   public String wifiApStatus; // optional
   public String networkOperator; // optional
   public String simOperator; // optional
+  public String mcc; // optional
+  public String mnc; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -83,7 +87,9 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
     NETWORK_STATISTICS((short)9, "networkStatistics"),
     WIFI_AP_STATUS((short)10, "wifiApStatus"),
     NETWORK_OPERATOR((short)11, "networkOperator"),
-    SIM_OPERATOR((short)12, "simOperator");
+    SIM_OPERATOR((short)12, "simOperator"),
+    MCC((short)13, "mcc"),
+    MNC((short)14, "mnc");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -122,6 +128,10 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
           return NETWORK_OPERATOR;
         case 12: // SIM_OPERATOR
           return SIM_OPERATOR;
+        case 13: // MCC
+          return MCC;
+        case 14: // MNC
+          return MNC;
         default:
           return null;
       }
@@ -166,7 +176,7 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
   private static final int __WIFISIGNALSTRENGTH_ISSET_ID = 1;
   private static final int __WIFILINKSPEED_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.NETWORK_TYPE,_Fields.MOBILE_NETWORK_TYPE,_Fields.MOBILE_DATA_STATUS,_Fields.MOBILE_DATA_ACTIVITY,_Fields.ROAMING_ENABLED,_Fields.WIFI_STATUS,_Fields.WIFI_SIGNAL_STRENGTH,_Fields.WIFI_LINK_SPEED,_Fields.NETWORK_STATISTICS,_Fields.WIFI_AP_STATUS,_Fields.NETWORK_OPERATOR,_Fields.SIM_OPERATOR};
+  private static final _Fields optionals[] = {_Fields.NETWORK_TYPE,_Fields.MOBILE_NETWORK_TYPE,_Fields.MOBILE_DATA_STATUS,_Fields.MOBILE_DATA_ACTIVITY,_Fields.ROAMING_ENABLED,_Fields.WIFI_STATUS,_Fields.WIFI_SIGNAL_STRENGTH,_Fields.WIFI_LINK_SPEED,_Fields.NETWORK_STATISTICS,_Fields.WIFI_AP_STATUS,_Fields.NETWORK_OPERATOR,_Fields.SIM_OPERATOR,_Fields.MCC,_Fields.MNC};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -193,6 +203,10 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
     tmpMap.put(_Fields.NETWORK_OPERATOR, new org.apache.thrift.meta_data.FieldMetaData("networkOperator", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SIM_OPERATOR, new org.apache.thrift.meta_data.FieldMetaData("simOperator", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.MCC, new org.apache.thrift.meta_data.FieldMetaData("mcc", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.MNC, new org.apache.thrift.meta_data.FieldMetaData("mnc", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(NetworkDetails.class, metaDataMap);
@@ -236,6 +250,12 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
     if (other.isSetSimOperator()) {
       this.simOperator = other.simOperator;
     }
+    if (other.isSetMcc()) {
+      this.mcc = other.mcc;
+    }
+    if (other.isSetMnc()) {
+      this.mnc = other.mnc;
+    }
   }
 
   public NetworkDetails deepCopy() {
@@ -259,6 +279,8 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
     this.wifiApStatus = null;
     this.networkOperator = null;
     this.simOperator = null;
+    this.mcc = null;
+    this.mnc = null;
   }
 
   public String getNetworkType() {
@@ -546,6 +568,54 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
     }
   }
 
+  public String getMcc() {
+    return this.mcc;
+  }
+
+  public NetworkDetails setMcc(String mcc) {
+    this.mcc = mcc;
+    return this;
+  }
+
+  public void unsetMcc() {
+    this.mcc = null;
+  }
+
+  /** Returns true if field mcc is set (has been assigned a value) and false otherwise */
+  public boolean isSetMcc() {
+    return this.mcc != null;
+  }
+
+  public void setMccIsSet(boolean value) {
+    if (!value) {
+      this.mcc = null;
+    }
+  }
+
+  public String getMnc() {
+    return this.mnc;
+  }
+
+  public NetworkDetails setMnc(String mnc) {
+    this.mnc = mnc;
+    return this;
+  }
+
+  public void unsetMnc() {
+    this.mnc = null;
+  }
+
+  /** Returns true if field mnc is set (has been assigned a value) and false otherwise */
+  public boolean isSetMnc() {
+    return this.mnc != null;
+  }
+
+  public void setMncIsSet(boolean value) {
+    if (!value) {
+      this.mnc = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NETWORK_TYPE:
@@ -644,6 +714,22 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
       }
       break;
 
+    case MCC:
+      if (value == null) {
+        unsetMcc();
+      } else {
+        setMcc((String)value);
+      }
+      break;
+
+    case MNC:
+      if (value == null) {
+        unsetMnc();
+      } else {
+        setMnc((String)value);
+      }
+      break;
+
     }
   }
 
@@ -685,6 +771,12 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
     case SIM_OPERATOR:
       return getSimOperator();
 
+    case MCC:
+      return getMcc();
+
+    case MNC:
+      return getMnc();
+
     }
     throw new IllegalStateException();
   }
@@ -720,6 +812,10 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
       return isSetNetworkOperator();
     case SIM_OPERATOR:
       return isSetSimOperator();
+    case MCC:
+      return isSetMcc();
+    case MNC:
+      return isSetMnc();
     }
     throw new IllegalStateException();
   }
@@ -845,6 +941,24 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
         return false;
     }
 
+    boolean this_present_mcc = true && this.isSetMcc();
+    boolean that_present_mcc = true && that.isSetMcc();
+    if (this_present_mcc || that_present_mcc) {
+      if (!(this_present_mcc && that_present_mcc))
+        return false;
+      if (!this.mcc.equals(that.mcc))
+        return false;
+    }
+
+    boolean this_present_mnc = true && this.isSetMnc();
+    boolean that_present_mnc = true && that.isSetMnc();
+    if (this_present_mnc || that_present_mnc) {
+      if (!(this_present_mnc && that_present_mnc))
+        return false;
+      if (!this.mnc.equals(that.mnc))
+        return false;
+    }
+
     return true;
   }
 
@@ -911,6 +1025,16 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
     list.add(present_simOperator);
     if (present_simOperator)
       list.add(simOperator);
+
+    boolean present_mcc = true && (isSetMcc());
+    list.add(present_mcc);
+    if (present_mcc)
+      list.add(mcc);
+
+    boolean present_mnc = true && (isSetMnc());
+    list.add(present_mnc);
+    if (present_mnc)
+      list.add(mnc);
 
     return list.hashCode();
   }
@@ -1043,6 +1167,26 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetMcc()).compareTo(other.isSetMcc());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMcc()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.mcc, other.mcc);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetMnc()).compareTo(other.isSetMnc());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMnc()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.mnc, other.mnc);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1167,6 +1311,26 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
         sb.append("null");
       } else {
         sb.append(this.simOperator);
+      }
+      first = false;
+    }
+    if (isSetMcc()) {
+      if (!first) sb.append(", ");
+      sb.append("mcc:");
+      if (this.mcc == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mcc);
+      }
+      first = false;
+    }
+    if (isSetMnc()) {
+      if (!first) sb.append(", ");
+      sb.append("mnc:");
+      if (this.mnc == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mnc);
       }
       first = false;
     }
@@ -1315,6 +1479,22 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 13: // MCC
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.mcc = iprot.readString();
+              struct.setMccIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 14: // MNC
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.mnc = iprot.readString();
+              struct.setMncIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1408,6 +1588,20 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
           oprot.writeFieldEnd();
         }
       }
+      if (struct.mcc != null) {
+        if (struct.isSetMcc()) {
+          oprot.writeFieldBegin(MCC_FIELD_DESC);
+          oprot.writeString(struct.mcc);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.mnc != null) {
+        if (struct.isSetMnc()) {
+          oprot.writeFieldBegin(MNC_FIELD_DESC);
+          oprot.writeString(struct.mnc);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1462,7 +1656,13 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
       if (struct.isSetSimOperator()) {
         optionals.set(11);
       }
-      oprot.writeBitSet(optionals, 12);
+      if (struct.isSetMcc()) {
+        optionals.set(12);
+      }
+      if (struct.isSetMnc()) {
+        optionals.set(13);
+      }
+      oprot.writeBitSet(optionals, 14);
       if (struct.isSetNetworkType()) {
         oprot.writeString(struct.networkType);
       }
@@ -1499,12 +1699,18 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
       if (struct.isSetSimOperator()) {
         oprot.writeString(struct.simOperator);
       }
+      if (struct.isSetMcc()) {
+        oprot.writeString(struct.mcc);
+      }
+      if (struct.isSetMnc()) {
+        oprot.writeString(struct.mnc);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, NetworkDetails struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(12);
+      BitSet incoming = iprot.readBitSet(14);
       if (incoming.get(0)) {
         struct.networkType = iprot.readString();
         struct.setNetworkTypeIsSet(true);
@@ -1553,6 +1759,14 @@ public class NetworkDetails implements org.apache.thrift.TBase<NetworkDetails, N
       if (incoming.get(11)) {
         struct.simOperator = iprot.readString();
         struct.setSimOperatorIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.mcc = iprot.readString();
+        struct.setMccIsSet(true);
+      }
+      if (incoming.get(13)) {
+        struct.mnc = iprot.readString();
+        struct.setMncIsSet(true);
       }
     }
   }

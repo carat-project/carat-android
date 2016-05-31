@@ -2190,6 +2190,10 @@ public final class SamplingLibrary {
 		nd.setSimOperator(simOperator);
 		String networkOperator = SamplingLibrary.getNetworkOperator(context);
 		nd.setNetworkOperator(networkOperator);
+		String mcc = SamplingLibrary.getMcc(context);
+		nd.setMcc(mcc);
+		String mnc = SamplingLibrary.getMnc(context);
+		nd.setMnc(mnc);
 
 		// Wifi stuff
 		String wifiState = SamplingLibrary.getWifiState(context);
@@ -2385,6 +2389,50 @@ public final class SamplingLibrary {
 	}
 
 	/**
+	 * Returns numeric mobile country code.
+	 * @param context Application context
+	 * @return 3-digit country code
+     */
+	public static String getMcc(Context context){
+		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+		String networkOperator = telephonyManager.getNetworkOperator();
+		if(networkOperator != null && networkOperator.length() >= 5) {
+			return networkOperator.substring(0, 3);
+		}
+		String operatorProperty = "gsm.operator.numeric";
+		if(telephonyManager.getPhoneType() != TelephonyManager.PHONE_TYPE_CDMA) {
+			operatorProperty = "ro.cdma.home.operator.numeric"; // CDMA
+		}
+		networkOperator = getStringFromSystemProperty(context, operatorProperty);
+		if(networkOperator != null && networkOperator.length() >= 5){
+			return networkOperator.substring(0, 3);
+		}
+		return "Unknown";
+	}
+
+	/**
+	 * Returns numeric mobile network code.
+	 * @param context Application context
+	 * @return 2-3 digit network code
+     */
+	public static String getMnc(Context context){
+		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+		String networkOperator = telephonyManager.getNetworkOperator();
+		if(networkOperator != null && networkOperator.length() >= 5) {
+			return networkOperator.substring(3);
+		}
+		String operatorProperty = "gsm.operator.numeric";
+		if(telephonyManager.getPhoneType() != TelephonyManager.PHONE_TYPE_CDMA) {
+			operatorProperty = "ro.cdma.home.operator.numeric"; // CDMA
+		}
+		networkOperator = getStringFromSystemProperty(context, operatorProperty);
+		if(networkOperator != null && networkOperator.length() >= 5){
+			return networkOperator.substring(3);
+		}
+		return "Unknown";
+	}
+
+	/**
 	 * Returns a two letter ISO3166-1 alpha-2 standard country code
 	 * https://en.wikipedia.org/wiki/ISO_3166-1
      * GetCellLocation returns longitude and latitude
@@ -2469,7 +2517,7 @@ public final class SamplingLibrary {
 		if(operator != null && operator.length() != 0) return operator;
 		operator = telephonyManager.getNetworkOperatorName();
 		if(operator != null && operator.length() != 0) return operator;
-		operator = getServiceProviderFromProperty(context, "ro.cdma.home.operator.alpha"); // CDMA support
+		operator = getStringFromSystemProperty(context, "ro.cdma.home.operator.alpha"); // CDMA support
 		if(operator != null && operator.length() != 0) return operator;
 
 		return "unknown";
@@ -2727,7 +2775,7 @@ public final class SamplingLibrary {
 	 * @param property
      * @return
      */
-	private static String getServiceProviderFromProperty(Context context, String property){
+	private static String getStringFromSystemProperty(Context context, String property){
 		try {
 			String operator = getSystemProperty(context, property);
 			if(operator != null && operator.length() > 0){
