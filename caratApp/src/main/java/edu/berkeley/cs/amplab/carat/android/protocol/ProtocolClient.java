@@ -23,8 +23,12 @@ import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 public class ProtocolClient {
     public static final String TAG = "ProtocolClient";
     public static final String SERVER_PROPERTIES = "caratserver.properties";
-    public static int SERVER_PORT = 0;
-    public static String SERVER_ADDRESS = null;
+    public static int SERVER_PORT_GLOBAL = 0;
+    public static String SERVER_ADDRESS_GLOBAL = null;
+    public static int SERVER_PORT_EU = 0;
+    public static String SERVER_ADDRESS_EU = null;
+
+    public enum ServerLocation {GLOBAL, EU, USA}
 
     /**
      * FIXME: this needs to come from a factory, so that connections are not
@@ -36,46 +40,62 @@ public class ProtocolClient {
      * @throws NumberFormatException 
      * @throws TTransportException 
      */
-    public static CaratService.Client getInstance(Context c) throws NumberFormatException, TTransportException {
-        if (SERVER_ADDRESS == null) {
-            Properties properties = new Properties();
-            try {
-                InputStream raw = c.getAssets().open(SERVER_PROPERTIES);
-                if (raw != null) {
-                    properties.load(raw);
-                    if (properties.containsKey("PORT"))
-                        SERVER_PORT = Integer.parseInt(properties.getProperty(
-                                "PORT", "8080"));
-                    if (properties.containsKey("ADDRESS"))
-                        SERVER_ADDRESS = properties.getProperty("ADDRESS",
-                                "server.caratproject.com");
-                    if (Constants.DEBUG)
-                        Log.d(TAG, "Set address=" + SERVER_ADDRESS + " port="
-                            + SERVER_PORT);
-                } else
-                    Log.e(TAG, "Could not open server property file!");
-            } catch (IOException e) {
-                Log.e(TAG,
-                        "Could not open server property file: " + e.toString());
+    public static CaratService.Client getInstance(Context c, ServerLocation location) throws NumberFormatException, TTransportException {
+        if(SERVER_ADDRESS_GLOBAL == null || SERVER_ADDRESS_EU == null){
+            if(!loadProperties(c)){
+                return null; // Failed to load properties
             }
         }
-        if (SERVER_ADDRESS == null || SERVER_PORT == 0)
-            return null;
 
-        TSocket soc = new TSocket(SERVER_ADDRESS, SERVER_PORT, Constants.THRIFT_CONNECTION_TIMEOUT);
+        TSocket soc = null;
+        if(location == ServerLocation.GLOBAL){
+            if(SERVER_ADDRESS_GLOBAL == null || SERVER_PORT_GLOBAL == 0) return null;
+            soc = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
+        }
+        else if(location == ServerLocation.EU){
+            if(SERVER_ADDRESS_EU == null || SERVER_PORT_EU == 0) return null;
+            soc = new TSocket(SERVER_ADDRESS_EU, SERVER_PORT_EU, Constants.THRIFT_CONNECTION_TIMEOUT);
+        }
+
         TProtocol p = new TBinaryProtocol(soc, true, true);
         CaratService.Client instance = new CaratService.Client(p);
-
-        if (soc != null && !soc.isOpen())
+        if (soc != null && !soc.isOpen()){
             soc.open();
+        }
 
         return instance;
     }
+
+    private static boolean loadProperties(Context c){
+        Properties properties = new Properties();
+        try {
+            InputStream raw = c.getAssets().open(SERVER_PROPERTIES);
+            if(raw != null){
+                properties.load(raw);
+
+                SERVER_PORT_GLOBAL = Integer.parseInt(properties.getProperty("PORT_GLOBAL", "8080"));
+                SERVER_ADDRESS_GLOBAL = properties.getProperty("ADDRESS_GLOBAL", "server.caratproject.com");
+                SERVER_PORT_EU = Integer.parseInt(properties.getProperty("PORT_EU", "8080"));
+                SERVER_ADDRESS_EU = properties.getProperty("ADDRESS_EU", "caratserver-eu.cs.helsinki.fi");
+
+                if(Constants.DEBUG){
+                    Log.d(TAG, "Set global address=" + SERVER_ADDRESS_GLOBAL + " port=" + SERVER_PORT_GLOBAL);
+                    Log.d(TAG, "Set eu address=" + SERVER_ADDRESS_EU + " port=" + SERVER_PORT_EU);
+                }
+                return true;
+            } else {
+                Log.e(TAG, "Could not open server property file!");
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Could not open server property file: " + e.toString());
+        }
+        return false;
+    }
     
-    public static CaratService.Client open(Context c) throws NumberFormatException, TTransportException {
+    public static CaratService.Client open(Context c, ServerLocation location) throws NumberFormatException, TTransportException {
         if (Constants.DEBUG)
             Log.d("ProtocolClient", "trying to get an instance of CaratProtocol.");
-        return getInstance(c);
+        return getInstance(c, location);
     }
     
 }

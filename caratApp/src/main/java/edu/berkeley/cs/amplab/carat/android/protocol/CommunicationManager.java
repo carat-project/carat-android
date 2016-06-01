@@ -31,6 +31,8 @@ import edu.berkeley.cs.amplab.carat.thrift.Registration;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
+import edu.berkeley.cs.amplab.carat.android.protocol.ProtocolClient.ServerLocation;
+
 public class CommunicationManager {
 
 	private static final String TAG = "CommsManager";
@@ -105,7 +107,7 @@ public class CommunicationManager {
 		ArrayList<Sample> samplesLeft = new ArrayList<Sample>();
 		registerLocal();
 		try {
-			instance = ProtocolClient.open(a.getApplicationContext());
+			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
 			registerOnFirstRun(instance);
 
 			for (Sample s : samples) {
@@ -223,7 +225,7 @@ public class CommunicationManager {
 		if (register) {
 			CaratService.Client instance = null;
 			try {
-				instance = ProtocolClient.open(a.getApplicationContext());
+				instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
 				registerOnFirstRun(instance);
 				safeClose(instance);
 			} catch (Throwable th) {
@@ -350,7 +352,7 @@ public class CommunicationManager {
 			return false;
 		CaratService.Client instance = null;
 		try {
-			instance = ProtocolClient.open(a.getApplicationContext());
+			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
 			Reports r = instance.getReports(uuid, getFeatures("Model", model, "OS", os));
 			// Assume multiple invocations, do not close
 			// ProtocolClient.close();
@@ -380,7 +382,7 @@ public class CommunicationManager {
 			return false;
 		CaratService.Client instance = null;
 		try {
-			instance = ProtocolClient.open(a.getApplicationContext());
+			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
 			HogBugReport r = instance.getHogOrBugReport(uuid, getFeatures("ReportType", "Bug", "Model", model));
 			// Assume multiple invocations, do not close
 			// ProtocolClient.close();
@@ -410,7 +412,7 @@ public class CommunicationManager {
 			return false;
 		CaratService.Client instance = null;
 		try {
-			instance = ProtocolClient.open(a.getApplicationContext());
+			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
 			HogBugReport r = instance.getHogOrBugReport(uuid, getFeatures("ReportType", "Hog", "Model", model));
 
 			// Assume multiple invocations, do not close
@@ -536,7 +538,7 @@ public class CommunicationManager {
 			return false;
 		CaratService.Client instance = null;
 		try {
-			instance = ProtocolClient.open(a.getApplicationContext());
+			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
 			Registration registration = new Registration(uuid);
 			registration.setPlatformId(model);
 			registration.setSystemVersion(os);
