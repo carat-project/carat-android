@@ -244,6 +244,17 @@ struct HogBugReport {
 	2: optional HogsBugsList hbList;	// List of hogs or bugs.
 }
 
+//
+// Fields for questionnaire questions
+//
+struct QuestionItem {
+	1: required string type;
+	2: optional string title;
+	3: optional string question;
+	4: optional list<string> choices;
+}
+
+typedef list<QuestionItem> Questionnaire;
 
 typedef list<Feature> FeatureList
 
@@ -256,4 +267,5 @@ service CaratService {
 	Reports getReports(1: string uuId, 2: FeatureList features);
 	HogBugReport getHogOrBugReport(1: string uuId, 2: FeatureList features)
 	HogBugReport getQuickHogsAndMaybeRegister(1:Registration registration, 2:list<string> processList)
+	Questionnaire getQuestionnaire(1: string uuId)
 }
