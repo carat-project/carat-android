@@ -1,0 +1,43 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InformationFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:orientation="vertical"
+        android:weightSum="2"
+        tools:ignore="UselessParent">
+        <WebView
+            android:id="@+id/webView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fadeScrollbars="false"
+            android:layout_weight="1"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_weight="1"
+            android:background="@color/white">
+            <Button
+                android:enabled="true"
+                android:id="@+id/proceed_button"
+                android:layout_centerHorizontal="true"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_below="@id/specify_other"
+                android:layout_marginTop="4dp"
+                android:minWidth="100dp"
+                android:textSize="14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                tools:text="Next question"/>
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>
+
+
