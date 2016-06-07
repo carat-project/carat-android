@@ -12,7 +12,7 @@ import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
 public enum ItemType implements org.apache.thrift.TEnum {
-  CONSENT(0),
+  INFORMATION(0),
   CHOICE(1),
   MULTICHOICE(2),
   INPUT(3);
@@ -37,7 +37,7 @@ public enum ItemType implements org.apache.thrift.TEnum {
   public static ItemType findByValue(int value) { 
     switch (value) {
       case 0:
-        return CONSENT;
+        return INFORMATION;
       case 1:
         return CHOICE;
       case 2:

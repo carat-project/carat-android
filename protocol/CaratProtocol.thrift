@@ -249,7 +249,7 @@ struct HogBugReport {
 //
 
 enum ItemType {
-	CONSENT,		// Information about the questionnaire
+	INFORMATION,	// Information about the questionnaire
 	CHOICE,			// Single choice allowed
 	MULTICHOICE,	// Multiple choices allowed
 	INPUT			// Input field
@@ -274,9 +274,13 @@ struct QuestionnaireAnswer {
 	3: optional string input;
 }
 
+struct Answers {
+	1: required string uuId;
+	2: optional double timestamp;
+	3: required list<QuestionnaireAnswer> answers;
+}
 
 typedef list<QuestionnaireItem> Questionnaire;
-typedef list<QuestionnaireAnswer> Answers;
 
 typedef list<Feature> FeatureList
 
