@@ -1,0 +1,134 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.MultichoiceFragment">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        tools:ignore="UselessParent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_centerHorizontal="true"
+                android:id="@+id/text_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="4dp">
+                <TextView
+                    android:id="@+id/content_text"
+                    style="@style/MediumBoldBlackText"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent orci nisi, eleifend sit amet condimentum vel, ultrices sit amet magna?"/>
+
+                <TextView
+                    android:id="@+id/content_subtext"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    tools:text="Lorem ipsum dolor sit amet."/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/button_container"
+                android:orientation="vertical"
+                android:layout_below="@+id/text_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp">
+                <!-- Start placeholder buttons -->
+                <CheckBox
+                    android:layout_marginTop="4dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
+                    tools:text="Example choice 1"
+                    tools:visibility="visible"/>
+                <CheckBox
+                    android:layout_marginTop="4dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
+                    tools:text="Example choice 2"
+                    tools:visibility="visible"/>
+                <CheckBox
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
+                    tools:checked="true"
+                    tools:text="Example choice 3"
+                    tools:visibility="visible"/>
+                <CheckBox
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
+                    tools:text="Other, please specify:"
+                    tools:visibility="visible"/>
+                <!-- End placeholder buttons -->
+            </LinearLayout>
+
+            <EditText
+                android:singleLine="true"
+                android:maxLength="255"
+                android:id="@+id/specify_other"
+                android:hint="@string/other"
+                android:layout_below="@id/button_container"
+                android:background="@drawable/input_background"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="48dp"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:clickable="true"
+                tools:visibility="visible"/>
+
+            <Button
+                android:enabled="false"
+                android:id="@+id/proceed_button"
+                android:layout_centerHorizontal="true"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_below="@id/specify_other"
+                android:layout_marginTop="4dp"
+                android:minWidth="100dp"
+                android:textSize="14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                tools:enabled="true"
+                tools:text="Next question"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_alignParentBottom="true"
+                android:layout_below="@id/proceed_button">
+                <TextView
+                    android:id="@+id/exit_button"
+                    android:textSize="12sp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_width="match_parent"
+                    android:gravity="bottom|center"
+                    android:layout_height="wrap_content"
+                    tools:text="≪ RETURN TO APPLICATION"/>
+            </RelativeLayout>
+
+        </RelativeLayout>
+    </ScrollView>
+</RelativeLayout>
+
+
