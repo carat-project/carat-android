@@ -247,14 +247,36 @@ struct HogBugReport {
 //
 // Fields for questionnaire questions
 //
-struct QuestionItem {
-	1: required string type;
-	2: optional string title;
-	3: optional string question;
-	4: optional list<string> choices;
+
+enum ItemType {
+	CONSENT,		// Information about the questionnaire
+	CHOICE,			// Single choice allowed
+	MULTICHOICE,	// Multiple choices allowed
+	INPUT			// Input field
 }
 
-typedef list<QuestionItem> Questionnaire;
+struct QuestionnaireItem {
+	1: required ItemType type;			// Item type, see enum
+	2: optional i32 questionId;			// Used to identify answers
+	3: optional string title;			// Item title
+	4: optional string content;			// Item content
+	5: optional list<string> choices;	// List of choices
+	6: optional bool other; 			// Show input box for the last choice
+	7: optional bool numeric;			// Limit input to numbers? Default: false
+}
+
+//
+// Fields for questionnaire answers
+//
+struct QuestionnaireAnswer {
+	1: required i32 questionId;
+	2: optional list<i32> answers;
+	3: optional string input;
+}
+
+
+typedef list<QuestionnaireItem> Questionnaire;
+typedef list<QuestionnaireAnswer> Answers;
 
 typedef list<Feature> FeatureList
 
@@ -268,4 +290,5 @@ service CaratService {
 	HogBugReport getHogOrBugReport(1: string uuId, 2: FeatureList features)
 	HogBugReport getQuickHogsAndMaybeRegister(1:Registration registration, 2:list<string> processList)
 	Questionnaire getQuestionnaire(1: string uuId)
+	bool uploadAnswers(1: Answers answers)
 }
