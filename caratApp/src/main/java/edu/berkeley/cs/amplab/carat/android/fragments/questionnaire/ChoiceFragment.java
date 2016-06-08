@@ -3,13 +3,16 @@ package edu.berkeley.cs.amplab.carat.android.fragments.questionnaire;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -29,19 +32,20 @@ import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 
 /**
- * Single choice fragment logic for questionnaire.
+ * Questionnaire fragment with radio buttons
  */
 public class ChoiceFragment extends Fragment {
     private MainActivity mainActivity;
     private QuestionnaireItemAdapter adapter;
+    private QuestionnaireAnswer saved;
 
-    private int index, id;
+    private int index, id, lastIndex;
     private String text, subtext;
     private List<String> choices;
-    private boolean other, numeric;
+    private boolean other, numeric, last;
 
     private RelativeLayout mainFrame;
-    private TextView footerView;
+    private TextView textView, subtextView, footerView;
     private RadioGroup buttonGroup;
     private EditText otherInput;
     private Button proceedButton;
@@ -50,34 +54,41 @@ public class ChoiceFragment extends Fragment {
         adapter = QuestionnaireItemAdapter.getInstance();
     }
 
-    public static ChoiceFragment from(QuestionnaireItem item, int index){
+    public static ChoiceFragment from(QuestionnaireItem item, int index, boolean last){
         ChoiceFragment fragment = new ChoiceFragment();
         fragment.index = index;
+        fragment.last = last;
         fragment.id = item.getQuestionId();
         fragment.text = item.getTitle();
         fragment.subtext = item.getContent();
         fragment.choices = item.getChoices();
         fragment.other = item.other;
         fragment.numeric = item.numeric;
+        fragment.lastIndex = fragment.choices.size()-1;
         return fragment;
-
-    }
-
-    @Override
-    public void onResume(){
-        super.onResume();
-        preselectRadioButton();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mainFrame = (RelativeLayout) inflater.inflate(R.layout.questionnaire_choice, container, false);
+        saved = adapter.getAnswer(id);
         setActionbarTitle();
         setupViewReferences();
+        setupViewValues();
         populateRadioGroup();
         setupListeners();
+        // loadSavedValues()
         return mainFrame;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        // This needs to happen on resume so saved values are
+        // properly set when the view is popped from backstack.
+        loadSavedValues();
+        mainActivity.hideKeyboard(otherInput);
     }
 
     @Override
@@ -99,16 +110,19 @@ public class ChoiceFragment extends Fragment {
     }
 
     public void setupViewReferences(){
-        TextView textView = (TextView) mainFrame.findViewById(R.id.content_text);
-        TextView subtextView = (TextView) mainFrame.findViewById(R.id.content_subtext);
+        textView = (TextView) mainFrame.findViewById(R.id.content_text);
+        subtextView = (TextView) mainFrame.findViewById(R.id.content_subtext);
         otherInput = (EditText) mainFrame.findViewById(R.id.specify_other);
         proceedButton = (Button) mainFrame.findViewById(R.id.proceed_button);
         footerView = (TextView) mainFrame.findViewById(R.id.exit_button);
         buttonGroup = (RadioGroup) mainFrame.findViewById(R.id.button_container);
+        buttonGroup.removeAllViews(); // Remove placeholders
+    }
 
+    public void setupViewValues(){
         textView.setText(text);
         subtextView.setText(subtext);
-        proceedButton.setText(R.string.nextQuestion);
+        proceedButton.setText(last ? R.string.submit : R.string.nextQuestion);
         footerView.setText(R.string.backToApp);
         if(other) otherInput.setVisibility(View.VISIBLE);
         if(numeric) otherInput.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -124,19 +138,28 @@ public class ChoiceFragment extends Fragment {
         }
     }
 
-    public void preselectRadioButton(){
-        Integer selection = getPreselectedChoice();
-        if(selection == null) return;
+    public void loadSavedValues(){
+        saved = adapter.getAnswer(id);
+        if(saved == null
+                || saved.getAnswers() == null
+                || saved.getAnswers().size() <= 0){
+            return;
+        }
+
+        int savedSelection = saved.getAnswers().get(0);
+        String input = saved.getInput();
+        selectRadioButton(savedSelection);
+        if(other) otherInput.setText(input);
+    }
+
+    public void selectRadioButton(int selection){
         int childCount = buttonGroup.getChildCount();
         for(int i=0; i < childCount; i++){
             RadioButton button = (RadioButton) buttonGroup.getChildAt(i);
             if(button.getTag() != null && button.getTag().equals(selection)){
+                // This will indirectly call the listener and check
+                // if proceed button should be enabled
                 buttonGroup.check(button.getId());
-                if(other && i == childCount -1){
-                    checkInput(otherInput.toString());
-                } else {
-                    proceedButton.setEnabled(true);
-                }
             }
         }
     }
@@ -154,13 +177,22 @@ public class ChoiceFragment extends Fragment {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 RadioButton button = (RadioButton) buttonGroup.findViewById(checkedId);
 
+                // Cache the answer here in case the user navigates to the previous view
+                // and wants to continue where they left off when coming back here.
+                // This should not cause problems with empty inputs since the user will
+                // be unable to continue/submit as long as the field is empty.
+                if(button.isChecked()){
+                    adapter.cacheInMemory(getAnswer());
+                }
+
                 // Focus input and show keyboard when 'other' is selected
                 // otherwise hide the keyboard and clear focus.
-                int lastChoice = choices.size()-1;
-                if(other && button.getTag().equals(lastChoice)){
+                if(other && button.getTag().equals(lastIndex)){
                     otherInput.requestFocus();
                     mainActivity.showKeyboard(otherInput);
-                    checkInput(otherInput.getText().toString());
+                    String input = otherInput.getText().toString();
+                    boolean valid = validateInput(input);
+                    proceedButton.setEnabled(valid);
                 } else {
                     otherInput.clearFocus();
                     mainActivity.hideKeyboard(otherInput);
@@ -177,6 +209,7 @@ public class ChoiceFragment extends Fragment {
                 QuestionnaireAnswer answer = getAnswer();
                 adapter.saveAnswer(answer);
                 adapter.loadItem(mainActivity, index + 1);
+                saved = answer; // In case of recycling
             }
         });
     }
@@ -190,8 +223,7 @@ public class ChoiceFragment extends Fragment {
                 // otherwise select the radio button for 'other'
                 if(!hasFocus) mainActivity.hideKeyboard(mainFrame);
                 else {
-                    int count = buttonGroup.getChildCount();
-                    RadioButton other = (RadioButton) buttonGroup.getChildAt(count-1);
+                    RadioButton other = (RadioButton) buttonGroup.getChildAt(lastIndex);
                     buttonGroup.check(other.getId());
                 }
             }
@@ -199,7 +231,15 @@ public class ChoiceFragment extends Fragment {
         otherInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                checkInput(s.toString());
+                // Need to make sure the button is checked since this method
+                // gets called when a fragment is popped from the backstack
+                RadioButton button = (RadioButton) buttonGroup.getChildAt(lastIndex);
+                if(button.isChecked()){
+                    String text = s.toString();
+                    boolean valid = validateInput(text);
+                    proceedButton.setEnabled(valid);
+                    adapter.cacheInMemory(getAnswer());
+                }
             }
 
             @Override
@@ -214,18 +254,11 @@ public class ChoiceFragment extends Fragment {
         footerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Exit questionnaire and return to actions view
                 ActionsFragment fragment = new ActionsFragment();
                 mainActivity.replaceFragment(fragment, Constants.FRAGMENT_ACTIONS_TAG);
             }
         });
-    }
-
-    public Integer getPreselectedChoice(){
-        QuestionnaireAnswer answer = adapter.getAnswer(id);
-        if(answer == null) return null;
-        List<Integer> answers = answer.getAnswers();
-        if(answers == null || answers.size() <= 0) return null;
-        return answers.get(0);
     }
 
     public QuestionnaireAnswer getAnswer(){
@@ -238,22 +271,19 @@ public class ChoiceFragment extends Fragment {
                 .setQuestionId(id)
                 .setAnswers(answerList);
 
-        // Other answer
-        if(button.getTag().equals(buttonGroup.getChildCount()-1)){
-            answer.setInput(otherInput.toString());
+        // Only save the input if other option has been selected
+        if(other && button.getTag().equals(lastIndex)){
+            answer.setInput(otherInput.getText().toString());
         }
         return answer;
     }
 
     /**
-     * Check for empty input or whitespaces
-     * @param text input
+     * Validate input text by checking for null or empty strings.
+     * @param text Text input
+     * @return True when validation is successful
      */
-    public void checkInput(String text){
-        if(text == null || text.isEmpty() || text.trim().isEmpty()){
-            proceedButton.setEnabled(false);
-        } else {
-            proceedButton.setEnabled(true);
-        }
+    private boolean validateInput(String text){
+        return !(text == null || text.isEmpty() || text.trim().isEmpty());
     }
 }
