@@ -445,7 +445,7 @@ public class CaratDataStorage {
         } else {
             questionnaires.get().put(questionnaire.getId(), questionnaire);
         }
-        writeObject(questionnaire, QUESTIONNAIRE_FILE + "-" + id);
+        writeObject(questionnaire, QUESTIONNAIRE_FILE + "-" + id +".dat");
     }
 
     /**
@@ -487,6 +487,7 @@ public class CaratDataStorage {
      */
     public void writeAnswers(Answers answers){
         if(answers == null) return;
+        int id = answers.getId();
         if(this.answers == null || this.answers.get() == null){
             HashMap<Integer, Answers> map = new HashMap<>();
             map.put(answers.getId(), answers);
@@ -494,7 +495,7 @@ public class CaratDataStorage {
         } else {
             this.answers.get().put(answers.getId(), answers);
         }
-        writeObject(answers, QUESTIONNAIRE_ANSWERS_FILE);
+        writeObject(answers, QUESTIONNAIRE_ANSWERS_FILE+ "-" + id + ".dat");
     }
 
     /**
