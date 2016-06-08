@@ -268,7 +268,7 @@ struct QuestionnaireItem {
 struct Questionnaire {
 	1: required i32 id;							// Questionnaire id
 	2: required list<QuestionnaireItem> items;	// List of items
-	3: required double expiration;				// Expiration date timestamp
+	3: optional double expiration;				// Expiration date timestamp
 }
 
 //

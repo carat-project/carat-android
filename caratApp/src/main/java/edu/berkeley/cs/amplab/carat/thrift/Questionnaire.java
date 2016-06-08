@@ -50,7 +50,7 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
 
   public int id; // required
   public List<QuestionnaireItem> items; // required
-  public double expiration; // required
+  public double expiration; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -120,6 +120,7 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
   private static final int __ID_ISSET_ID = 0;
   private static final int __EXPIRATION_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.EXPIRATION};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -128,7 +129,7 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
     tmpMap.put(_Fields.ITEMS, new org.apache.thrift.meta_data.FieldMetaData("items", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, QuestionnaireItem.class))));
-    tmpMap.put(_Fields.EXPIRATION, new org.apache.thrift.meta_data.FieldMetaData("expiration", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.EXPIRATION, new org.apache.thrift.meta_data.FieldMetaData("expiration", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Questionnaire.class, metaDataMap);
@@ -139,15 +140,12 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
 
   public Questionnaire(
     int id,
-    List<QuestionnaireItem> items,
-    double expiration)
+    List<QuestionnaireItem> items)
   {
     this();
     this.id = id;
     setIdIsSet(true);
     this.items = items;
-    this.expiration = expiration;
-    setExpirationIsSet(true);
   }
 
   /**
@@ -356,8 +354,8 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
         return false;
     }
 
-    boolean this_present_expiration = true;
-    boolean that_present_expiration = true;
+    boolean this_present_expiration = true && this.isSetExpiration();
+    boolean that_present_expiration = true && that.isSetExpiration();
     if (this_present_expiration || that_present_expiration) {
       if (!(this_present_expiration && that_present_expiration))
         return false;
@@ -382,7 +380,7 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
     if (present_items)
       list.add(items);
 
-    boolean present_expiration = true;
+    boolean present_expiration = true && (isSetExpiration());
     list.add(present_expiration);
     if (present_expiration)
       list.add(expiration);
@@ -459,10 +457,12 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       sb.append(this.items);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("expiration:");
-    sb.append(this.expiration);
-    first = false;
+    if (isSetExpiration()) {
+      if (!first) sb.append(", ");
+      sb.append("expiration:");
+      sb.append(this.expiration);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -473,7 +473,6 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
     if (items == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'items' was not present! Struct: " + toString());
     }
-    // alas, we cannot check 'expiration' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
   }
 
@@ -559,9 +558,6 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       if (!struct.isSetId()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'id' was not found in serialized data! Struct: " + toString());
       }
-      if (!struct.isSetExpiration()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'expiration' was not found in serialized data! Struct: " + toString());
-      }
       struct.validate();
     }
 
@@ -584,9 +580,11 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
         }
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(EXPIRATION_FIELD_DESC);
-      oprot.writeDouble(struct.expiration);
-      oprot.writeFieldEnd();
+      if (struct.isSetExpiration()) {
+        oprot.writeFieldBegin(EXPIRATION_FIELD_DESC);
+        oprot.writeDouble(struct.expiration);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -612,7 +610,14 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
           _iter100.write(oprot);
         }
       }
-      oprot.writeDouble(struct.expiration);
+      BitSet optionals = new BitSet();
+      if (struct.isSetExpiration()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetExpiration()) {
+        oprot.writeDouble(struct.expiration);
+      }
     }
 
     @Override
@@ -632,8 +637,11 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
         }
       }
       struct.setItemsIsSet(true);
-      struct.expiration = iprot.readDouble();
-      struct.setExpirationIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.expiration = iprot.readDouble();
+        struct.setExpirationIsSet(true);
+      }
     }
   }
 
