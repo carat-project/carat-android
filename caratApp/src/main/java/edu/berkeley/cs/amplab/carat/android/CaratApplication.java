@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
@@ -27,12 +28,15 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import edu.berkeley.cs.amplab.carat.android.model_classes.MyDeviceData;
 import edu.berkeley.cs.amplab.carat.android.model_classes.StaticAction;
+import edu.berkeley.cs.amplab.carat.android.protocol.Action;
 import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.android.protocol.SampleSender;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
+import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
 import static edu.berkeley.cs.amplab.carat.android.model_classes.StaticAction.ActionType;
@@ -223,12 +227,20 @@ public class CaratApplication extends Application {
     public static ArrayList<StaticAction> getStaticActions(){
             ArrayList<StaticAction> actions = new ArrayList<>();
 
-            // Participate in Carat survey
+            // Google forms survey
             String surveyUrl = CaratApplication.getStorage().getQuestionnaireUrl();
             if(surveyUrl != null && surveyUrl.contains("http")){
-                actions.add(new StaticAction(ActionType.SURVEY,
+                actions.add(new StaticAction(ActionType.GOOGLE_SURVEY,
                         R.string.survey_action_title,
                         R.string.survey_action_subtitle));
+            }
+
+            // Local survey
+            Questionnaire questionnaire = CaratApplication.getStorage().getQuestionnaire(0);
+            if(questionnaire != null && !questionnaire.getItems().isEmpty()){
+                actions.add(new StaticAction(ActionType.QUESTIONNAIRE,
+                        R.string.action_questionnaire,
+                        R.string.action_questionnaire_subtitle));
             }
 
             // Help Carat collect data
@@ -241,7 +253,7 @@ public class CaratApplication extends Application {
             return actions;
     }
 
-    public static void refreshStaticActionCount(){
+    public static void refreshStaticActionCount() {
         main.setStaticActionsAmount(getStaticActions().size());
     }
 
