@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -140,7 +141,7 @@ public class ChoiceFragment extends Fragment {
     public void preselectRadioButton(){
         int savedSelection = -1;
         if(saved != null && saved.getAnswers() != null
-                && saved.getAnswers().size() >0){
+                && saved.getAnswers().size() > 0){
             savedSelection = saved.getAnswers().get(0);
         }
         selectRadioButton(savedSelection);
@@ -236,7 +237,7 @@ public class ChoiceFragment extends Fragment {
                 // Need to make sure the button is checked since this method
                 // gets called when a fragment is popped from the backstack
                 RadioButton button = (RadioButton) buttonGroup.getChildAt(lastIndex);
-                if(button.isChecked()){
+                if(other && button.isChecked()){
                     String text = s.toString();
                     boolean valid = validateInput(text);
                     proceedButton.setEnabled(valid);
