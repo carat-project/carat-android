@@ -53,6 +53,7 @@ public class QuestionnaireItemAdapter {
     public void storeAnswers(){
         if(this.answers == null) return;
         Answers answers = new Answers();
+        answers.setId(0);
         answers.setUuId(CaratApplication.myDeviceData.getCaratId());
         answers.setTimestamp(System.currentTimeMillis() / 1000);
         answers.setAnswers(new ArrayList<>(this.answers.values()));
@@ -97,22 +98,26 @@ public class QuestionnaireItemAdapter {
         boolean last = index == itemCount-1;
         Fragment next;
         String tag;
+
+        // Tags need to be appended with an identifier so fragment manager
+        // doesn't accidentally use the backstack for replacing the current
+        // fragment.
         switch(item.type){
             case INFORMATION:
                 next = InformationFragment.from(item, index, last);
-                tag = Constants.FRAGMENT_QUESTIONNAIRE_INFORMATION;
+                tag = Constants.FRAGMENT_QUESTIONNAIRE_INFORMATION + index;
                 break;
             case CHOICE:
                 next = ChoiceFragment.from(item, index, last);
-                tag = Constants.FRAGMENT_QUESTIONNAIRE_CHOICE;
+                tag = Constants.FRAGMENT_QUESTIONNAIRE_CHOICE + index;
                 break;
             case MULTICHOICE:
                 next = MultichoiceFragment.from(item, index, last);
-                tag = Constants.FRAGMENT_QUESTIONNAIRE_MULTICHOICE;
+                tag = Constants.FRAGMENT_QUESTIONNAIRE_MULTICHOICE + index;
                 break;
             case INPUT:
                 next = InputFragment.from(item, index, last);
-                tag = Constants.FRAGMENT_QUESTIONNAIRE_INPUT;
+                tag = Constants.FRAGMENT_QUESTIONNAIRE_INPUT + index;
                 break;
             default:
                 return;
