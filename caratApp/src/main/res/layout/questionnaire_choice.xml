@@ -82,7 +82,7 @@
                 android:singleLine="true"
                 android:maxLength="255"
                 android:id="@+id/specify_other"
-                android:hint="Other"
+                android:hint="@string/other"
                 android:layout_below="@id/button_container"
                 android:background="@drawable/input_background"
                 android:layout_marginBottom="4dp"

@@ -8,7 +8,9 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
@@ -18,15 +20,20 @@ import com.flurry.android.FlurryAgent;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.Item;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
 import edu.berkeley.cs.amplab.carat.thrift.HogBugReport;
+import edu.berkeley.cs.amplab.carat.thrift.ItemType;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
+import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
+import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 import edu.berkeley.cs.amplab.carat.thrift.Registration;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
@@ -329,6 +336,9 @@ public class CommunicationManager {
             }
 		}
 
+		// Download questionnaire
+		getQuestionnaire(uuId);
+
 		if (blacklistShouldBeRefreshed) {
 			refreshBlacklist();
 			refreshQuestionnaireLink();
@@ -531,6 +541,29 @@ public class CommunicationManager {
 				}
 			}
 		}.start();
+	}
+
+	// TODO: Remake into getQuestionnaires which fetches a list of questionnaires
+	private boolean getQuestionnaire(String uuid){
+		double freshness = CaratApplication.getStorage().getQuestionnaireFreshness(0);
+		if(System.currentTimeMillis() - freshness < Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE) {
+			// Not enough time passed since last check
+			return false;
+		}
+
+		CaratService.Client instance = null;
+		try {
+			// This needs to be EU, other servers will not provide meaningful data
+			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.EU);
+			Questionnaire questionnaire = instance.getQuestionnaire(uuid);
+			CaratApplication.getStorage().writeQuestionnaire(questionnaire);
+			safeClose(instance);
+			return true;
+		} catch (Throwable th){
+			Log.e(TAG, "Could not retrieve questionnaire!", th);
+			safeClose(instance);
+		}
+		return false;
 	}
 
 	private boolean getQuickHogsAndMaybeRegister(String uuid, String os, String model, String countryCode) {

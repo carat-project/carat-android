@@ -11,7 +11,7 @@ public class Constants {
 
     // Report Freshness timeout. Default: 15 minutes
     // public static final long FRESHNESS_TIMEOUT = 30 * 1000;
-    public static final long FRESHNESS_TIMEOUT = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+    public static final long FRESHNESS_TIMEOUT = TimeUnit.SECONDS.toMillis(30); //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
     // Blacklist freshness timeout. Default 24h.
     // public static final long FRESHNESS_TIMEOUT_BLACKLIST = 30 * 1000;
     public static final long FRESHNESS_TIMEOUT_BLACKLIST = 24 * 3600 * 1000;
@@ -20,6 +20,8 @@ public class Constants {
     public static final long FRESHNESS_TIMEOUT_QUICKHOGS = 2 * 24 * 3600 * 1000;
     // Hog statistics freshness timeout. Default 1 day.
     public static final long FRESHNESS_TIMEOUT_HOGSTATS = TimeUnit.DAYS.toMillis(1);
+    // Questionnaire freshness timeout. Default 1 day.
+    public static final long FRESHNESS_TIMEOUT_QUESTIONNAIRE = TimeUnit.DAYS.toMillis(1);
 
     // Dashboard refresh interval
     public static final long DASHBOARD_REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1);

@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,11 +27,12 @@ import org.apache.thrift.transport.TFileTransport;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InformationFragment;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.HogBugReport;
 import edu.berkeley.cs.amplab.carat.thrift.HogsBugs;
-import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
+import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
 public class CaratDataStorage {
@@ -38,8 +40,9 @@ public class CaratDataStorage {
     public static final String FILENAME = "carat-reports.dat";
     public static final String BLACKLIST_FILE = "carat-blacklist.dat";
     public static final String QUESTIONNAIRE_URL_FILE = "questionnaire-url.txt";
-    public static final String QUESTIONNAIRE_FILE = "carat-questionnaire.dat";
-    public static final String QUESTIONNAIRE_ANSWERS_FILE = "carat-questionnaire-answers.dat";
+    public static final String QUESTIONNAIRE_FILE = "carat-questionnaire";
+    public static final String QUESTIONNAIRE_ANSWERS_FILE = "carat-questionnaire-answers";
+    public static final String QUESTIONNAIRE_FRESHNESS = "carat-questionnaire-freshness";
     public static final String BLACKLIST_FRESHNESS = "carat-blacklist-freshness.dat";
     public static final String QUICKHOGS_FRESHNESS = "carat-quickhogs-freshness.dat";
     public static final String GLOBLIST_FILE = "carat-globlist.dat";
@@ -60,6 +63,7 @@ public class CaratDataStorage {
     private long quickHogsFreshness = 0;
     private long samples_reported = 0;
     private long hogStatsFreshness = 0;
+    private HashMap<Integer, Long> questionnaireFreshness;
     private String hogStatsDate = null;
     private String questionnaireUrl = null;
     private WeakReference<Reports> caratData = null;
@@ -69,14 +73,15 @@ public class CaratDataStorage {
     private WeakReference<List<HogStats>> hogStatsData = null;
     private WeakReference<List<String>> blacklistedApps = null;
     private WeakReference<List<String>> blacklistedGlobs = null;
-    private WeakReference<List<QuestionnaireItem>> questionnaire = null;
-    private WeakReference<Answers> answers = null;
+    private WeakReference<HashMap<Integer, Questionnaire>> questionnaires = null;
+    private WeakReference<HashMap<Integer, Answers>> answers = null;
 
     public CaratDataStorage(Context a) {
         this.a = a;
         freshness = readFreshness();
         blacklistFreshness = readBlacklistFreshness();
         quickHogsFreshness = readQuickHogsFreshness();
+        questionnaireFreshness = new HashMap<>();
         caratData = new WeakReference<Reports>(readReports());
         readBugReport();
         readHogReport();
@@ -115,6 +120,12 @@ public class CaratDataStorage {
     public void writeHogStatsFreshness(){
         hogStatsFreshness = System.currentTimeMillis();
         writeText(hogStatsFreshness + "", HOGSTATS_FRESHNESS);
+    }
+
+    public void writeQuestionnaireFreshness(int id){
+        long freshness = System.currentTimeMillis();
+        questionnaireFreshness.put(id, freshness);
+        writeText(freshness + "", QUESTIONNAIRE_FRESHNESS + "-" +id + ".dat");
     }
 
     public void writeHogStatsDate(String date){
@@ -332,20 +343,24 @@ public class CaratDataStorage {
             return readGloblist();
     }
 
-    public List<QuestionnaireItem> getQuestionnaire(){
-        if(questionnaire != null && questionnaire.get() != null){
-            return questionnaire.get();
-        } else {
-            return readQuestionnaire();
+    public Questionnaire getQuestionnaire(int id){
+        if(questionnaires != null && questionnaires.get() != null){
+            Questionnaire questionnaire = questionnaires.get().get(id);
+            if(questionnaire != null){
+                return questionnaire;
+            }
         }
+        return readQuestionnaire(id);
     }
 
-    public Answers getAnswers(){
+    public Answers getAnswers(int id){
         if(answers != null && answers.get() != null){
-            return answers.get();
-        } else{
-            return readAnswers();
+            Answers result = answers.get().get(id);
+            if(result != null){
+                return result;
+            }
         }
+        return readAnswers(id);
     }
 
     /**
@@ -400,32 +415,67 @@ public class CaratDataStorage {
      * @return list of stored questionnaire items
      */
     @SuppressWarnings("unchecked")
-    public List<QuestionnaireItem> readQuestionnaire(){
-        Object o = readObject(QUESTIONNAIRE_FILE);
+    public Questionnaire readQuestionnaire(int id){
+        Object o = readObject(QUESTIONNAIRE_FILE + "-" + id + ".dat");
         if(o != null){
-            questionnaire = new WeakReference<>((List<QuestionnaireItem>) o);
-            return (List<QuestionnaireItem>) o;
+            Questionnaire questionnaire = (Questionnaire) o;
+            if(questionnaires == null || questionnaires.get() == null){
+                HashMap<Integer, Questionnaire> map = new HashMap<>();
+                map.put(questionnaire.getId(), questionnaire);
+                questionnaires = new WeakReference<>(map);
+            } else {
+                questionnaires.get().put(questionnaire.getId(), questionnaire);
+            }
+            return questionnaire;
         } else {
             return null;
         }
     }
 
     /**
-     * @param questionList list of questionnaire items
+     * @param questionnaire list of questionnaire items
      */
-    public void writeQuestionnaire(List<QuestionnaireItem> questionList){
-        if(questionList == null) return;
-        questionnaire = new WeakReference<>(questionList);
-        writeObject(questionList, QUESTIONNAIRE_FILE);
+    public void writeQuestionnaire(Questionnaire questionnaire){
+        if(questionnaire== null) return;
+        int id = questionnaire.getId();
+        if(questionnaires == null || questionnaires.get() == null){
+            HashMap<Integer, Questionnaire> map = new HashMap<>();
+            map.put(questionnaire.getId(), questionnaire);
+            questionnaires = new WeakReference<>(map);
+        } else {
+            questionnaires.get().put(questionnaire.getId(), questionnaire);
+        }
+        writeObject(questionnaire, QUESTIONNAIRE_FILE + "-" + id);
+    }
+
+    /**
+     * @param id questionnaire id
+     * @return questionnaire freshness
+     */
+    public long readQuestionnaireFreshness(int id){
+        String freshness = readText(QUESTIONNAIRE_FRESHNESS + "-" + id + ".dat");
+        if (Constants.DEBUG)
+            Log.d("CaratDataStorage", "Read questionnaire freshness: " + freshness);
+        if (freshness != null)
+            return Long.parseLong(freshness);
+        else
+            return -1;
     }
 
     /**
      * @return stored questionnaire answers
      */
-    public Answers readAnswers(){
-        Object o = readObject(QUESTIONNAIRE_ANSWERS_FILE);
+    public Answers readAnswers(int id){
+        Object o = readObject(QUESTIONNAIRE_ANSWERS_FILE + "-" + id + ".dat");
         if(o != null){
-            answers = new WeakReference<>((Answers) o);
+            Answers result = (Answers) o;
+            if(answers == null || answers.get() == null){
+                HashMap<Integer, Answers> map = new HashMap<>();
+                map.put(result.getId(), result);
+                answers = new WeakReference<>(map);
+            } else {
+                answers.get().put(result.getId(), result);
+            }
             return (Answers) o;
         } else {
             return null;
@@ -437,7 +487,13 @@ public class CaratDataStorage {
      */
     public void writeAnswers(Answers answers){
         if(answers == null) return;
-        this.answers = new WeakReference<>(answers);
+        if(this.answers == null || this.answers.get() == null){
+            HashMap<Integer, Answers> map = new HashMap<>();
+            map.put(answers.getId(), answers);
+            this.answers = new WeakReference<>(map);
+        } else {
+            this.answers.get().put(answers.getId(), answers);
+        }
         writeObject(answers, QUESTIONNAIRE_ANSWERS_FILE);
     }
 
@@ -463,6 +519,15 @@ public class CaratDataStorage {
             return hogStatsFreshness;
         } else {
             return readHogStatsFreshness();
+        }
+    }
+
+    public long getQuestionnaireFreshness(int id){
+        Long freshness = questionnaireFreshness.get(id);
+        if(freshness != null){
+            return freshness;
+        } else {
+            return readQuestionnaireFreshness(id);
         }
     }
 

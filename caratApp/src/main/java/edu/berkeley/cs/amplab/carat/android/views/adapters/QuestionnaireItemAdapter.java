@@ -18,6 +18,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InformationF
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InputFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.MultichoiceFragment;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
+import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 
@@ -30,8 +31,11 @@ public class QuestionnaireItemAdapter {
     private HashMap<Integer, QuestionnaireAnswer> answers;
     private static QuestionnaireItemAdapter instance = null;
 
+    // TODO: Allow creating instances for different questionnaire ids
     private QuestionnaireItemAdapter(){
-        this.items = CaratApplication.getStorage().getQuestionnaire();
+        Questionnaire questionnaire = CaratApplication.getStorage().getQuestionnaire(0);
+        if(questionnaire == null) return;
+        this.items = questionnaire.getItems();
         this.answers = new HashMap<>();
         questionCount = 0;
         for(QuestionnaireItem item : items){
@@ -47,9 +51,7 @@ public class QuestionnaireItemAdapter {
     }
 
     public void storeAnswers(){
-        if(this.answers == null || this.answers.values() == null){
-            return;
-        }
+        if(this.answers == null) return;
         Answers answers = new Answers();
         answers.setUuId(CaratApplication.myDeviceData.getCaratId());
         answers.setTimestamp(System.currentTimeMillis() / 1000);
@@ -59,7 +61,7 @@ public class QuestionnaireItemAdapter {
     }
 
     public void loadStoredAnswers(){
-        Answers answers = CaratApplication.getStorage().readAnswers();
+        Answers answers = CaratApplication.getStorage().getAnswers(0);
         if(answers != null && answers.getAnswers() != null){
             List<QuestionnaireAnswer> answerList  = answers.getAnswers();
             for(QuestionnaireAnswer answer : answerList){
