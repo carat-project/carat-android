@@ -3,16 +3,13 @@ package edu.berkeley.cs.amplab.carat.android.fragments.questionnaire;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -85,9 +82,11 @@ public class ChoiceFragment extends Fragment {
     @Override
     public void onResume(){
         super.onResume();
-        // This needs to happen on resume so saved values are
+        // These need to happen on resume so saved values are
         // properly set when the view is popped from backstack.
-        loadSavedValues();
+        saved = adapter.getAnswer(id);
+        preselectRadioButton();
+        prefillInput();
         mainActivity.hideKeyboard(otherInput);
     }
 
@@ -138,18 +137,21 @@ public class ChoiceFragment extends Fragment {
         }
     }
 
-    public void loadSavedValues(){
-        saved = adapter.getAnswer(id);
-        if(saved == null
-                || saved.getAnswers() == null
-                || saved.getAnswers().size() <= 0){
-            return;
+    public void preselectRadioButton(){
+        int savedSelection = -1;
+        if(saved != null && saved.getAnswers() != null
+                && saved.getAnswers().size() >0){
+            savedSelection = saved.getAnswers().get(0);
         }
-
-        int savedSelection = saved.getAnswers().get(0);
-        String input = saved.getInput();
         selectRadioButton(savedSelection);
-        if(other) otherInput.setText(input);
+    }
+
+    public void prefillInput(){
+        String input = "";
+        if(saved != null && saved.getInput() != null){
+            input = saved.getInput();
+        }
+        otherInput.setText(input);
     }
 
     public void selectRadioButton(int selection){
