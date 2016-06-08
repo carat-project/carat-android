@@ -145,4 +145,8 @@ public class Constants {
     public static final String FRAGMENT_PROCESS_LIST = "fragment_process_list";
     public static final String FRAGMENT_HIDE_SMALL = "fragment_hide_small";
 
+    public static final String FRAGMENT_QUESTIONNAIRE_CHOICE = "questionnaire_choice";
+    public static final String FRAGMENT_QUESTIONNAIRE_MULTICHOICE = "questionnaire_multichoice";
+    public static final String FRAGMENT_QUESTIONNAIRE_INFORMATION = "questionnaire_information";
+    public static final String FRAGMENT_QUESTIONNAIRE_INPUT = "questionnaire_input";
 }

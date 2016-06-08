@@ -15,7 +15,7 @@ public class StaticAction {
     private int expandedTitle;
     private int expandedText;
     public enum ActionType{
-        SURVEY, COLLECT
+        GOOGLE_SURVEY, QUESTIONNAIRE, COLLECT
     }
 
     /**

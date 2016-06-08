@@ -713,11 +713,23 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         }
     }
 
+    public void showKeyboard(View v){
+        InputMethodManager imm = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
+        if (v == null) v = this.getCurrentFocus();
+        if (v == null) v = new View(this);
+        imm.showSoftInput(v, InputMethodManager.SHOW_FORCED);
+    }
+
     public void hideKeyboard(View v){
         InputMethodManager imm = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
         if (v == null) v = this.getCurrentFocus();
         if (v == null) v = new View(this);
         imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
+    }
+
+    public void loadHomeScreen(){
+        hideKeyboard(null);
+        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
     }
 
     @Override
