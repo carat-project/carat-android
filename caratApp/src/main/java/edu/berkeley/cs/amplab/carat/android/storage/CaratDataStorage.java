@@ -2,6 +2,7 @@ package edu.berkeley.cs.amplab.carat.android.storage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -17,11 +18,19 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import org.apache.thrift.TBase;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFileTransport;
+
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.HogBugReport;
 import edu.berkeley.cs.amplab.carat.thrift.HogsBugs;
+import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
 public class CaratDataStorage {
@@ -29,6 +38,8 @@ public class CaratDataStorage {
     public static final String FILENAME = "carat-reports.dat";
     public static final String BLACKLIST_FILE = "carat-blacklist.dat";
     public static final String QUESTIONNAIRE_URL_FILE = "questionnaire-url.txt";
+    public static final String QUESTIONNAIRE_FILE = "carat-questionnaire.dat";
+    public static final String QUESTIONNAIRE_ANSWERS_FILE = "carat-questionnaire-answers.dat";
     public static final String BLACKLIST_FRESHNESS = "carat-blacklist-freshness.dat";
     public static final String QUICKHOGS_FRESHNESS = "carat-quickhogs-freshness.dat";
     public static final String GLOBLIST_FILE = "carat-globlist.dat";
@@ -58,6 +69,8 @@ public class CaratDataStorage {
     private WeakReference<List<HogStats>> hogStatsData = null;
     private WeakReference<List<String>> blacklistedApps = null;
     private WeakReference<List<String>> blacklistedGlobs = null;
+    private WeakReference<List<QuestionnaireItem>> questionnaire = null;
+    private WeakReference<Answers> answers = null;
 
     public CaratDataStorage(Context a) {
         this.a = a;
@@ -319,6 +332,22 @@ public class CaratDataStorage {
             return readGloblist();
     }
 
+    public List<QuestionnaireItem> getQuestionnaire(){
+        if(questionnaire != null && questionnaire.get() != null){
+            return questionnaire.get();
+        } else {
+            return readQuestionnaire();
+        }
+    }
+
+    public Answers getAnswers(){
+        if(answers != null && answers.get() != null){
+            return answers.get();
+        } else{
+            return readAnswers();
+        }
+    }
+
     /**
      * @return a list of blacklisted apps
      */
@@ -365,6 +394,51 @@ public class CaratDataStorage {
             return;
         blacklistedGlobs = new WeakReference<List<String>>(globlist);
         writeObject(globlist, GLOBLIST_FILE);
+    }
+
+    /**
+     * @return list of stored questionnaire items
+     */
+    @SuppressWarnings("unchecked")
+    public List<QuestionnaireItem> readQuestionnaire(){
+        Object o = readObject(QUESTIONNAIRE_FILE);
+        if(o != null){
+            questionnaire = new WeakReference<>((List<QuestionnaireItem>) o);
+            return (List<QuestionnaireItem>) o;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @param questionList list of questionnaire items
+     */
+    public void writeQuestionnaire(List<QuestionnaireItem> questionList){
+        if(questionList == null) return;
+        questionnaire = new WeakReference<>(questionList);
+        writeObject(questionList, QUESTIONNAIRE_FILE);
+    }
+
+    /**
+     * @return stored questionnaire answers
+     */
+    public Answers readAnswers(){
+        Object o = readObject(QUESTIONNAIRE_ANSWERS_FILE);
+        if(o != null){
+            answers = new WeakReference<>((Answers) o);
+            return (Answers) o;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @param answers questionnaire answers
+     */
+    public void writeAnswers(Answers answers){
+        if(answers == null) return;
+        this.answers = new WeakReference<>(answers);
+        writeObject(answers, QUESTIONNAIRE_ANSWERS_FILE);
     }
 
     /**
