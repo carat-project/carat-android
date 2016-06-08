@@ -11,14 +11,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
 
+import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.views.adapters.QuestionnaireItemAdapter;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
@@ -29,6 +32,7 @@ import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 public class InputFragment extends Fragment {
     private MainActivity mainActivity;
     private QuestionnaireItemAdapter adapter;
+    private QuestionnaireAnswer saved;
 
     private int index, id;
     private String text, subtext;
@@ -60,9 +64,17 @@ public class InputFragment extends Fragment {
         mainFrame = (RelativeLayout) inflater.inflate(R.layout.questionnaire_input, container, false);
         setupViewReferences();
         setActionbarTitle();
-        setupProceedButtonListener();
-        setupInputListener();
+        setupListeners();
         return mainFrame;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        // This needs to happen on resume so saved values are
+        // properly set when the view is popped from backstack.
+        loadSavedValues();
+        mainActivity.hideKeyboard(input);
     }
 
     @Override
@@ -88,6 +100,7 @@ public class InputFragment extends Fragment {
         textView.setText(text);
         subtextView.setText(subtext);
         if(last){
+            // Allow proceeding with an empty input when submitting
             proceedButton.setText(R.string.submit);
             proceedButton.setEnabled(true);
         } else {
@@ -97,10 +110,27 @@ public class InputFragment extends Fragment {
         if(numeric) input.setInputType(InputType.TYPE_CLASS_NUMBER);
     }
 
+    public void setupListeners(){
+        setupProceedButtonListener();
+        setupInputListener();
+        setupExitButtonListener();
+    }
+
+    public void loadSavedValues(){
+        saved = adapter.getAnswer(id);
+        if(saved == null || saved.getInput() == null){
+            return;
+        }
+
+        String savedInput = saved.getInput();
+        input.setText(savedInput);
+    }
+
     private void setupInputListener(){
         input.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                adapter.cacheInMemory(getAnswer());
                 if(!last){
                     boolean validity = validateInput(input.getText().toString());
                     proceedButton.setEnabled(validity);
@@ -109,12 +139,20 @@ public class InputFragment extends Fragment {
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+                // No operation
             }
 
             @Override
             public void afterTextChanged(Editable s) {
+                // No operation
+            }
+        });
 
+        input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus){
+                // Hide keyboard when user clicks outside the input
+                if(!hasFocus) mainActivity.hideKeyboard(mainFrame);
             }
         });
     }
@@ -126,6 +164,18 @@ public class InputFragment extends Fragment {
                 QuestionnaireAnswer answer = getAnswer();
                 adapter.saveAnswer(answer);
                 adapter.loadItem(mainActivity, index+1);
+                saved = answer;
+            }
+        });
+    }
+
+    public void setupExitButtonListener(){
+        footerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Exit questionnaire and return to actions view
+                ActionsFragment fragment = new ActionsFragment();
+                mainActivity.replaceFragment(fragment, Constants.FRAGMENT_ACTIONS_TAG);
             }
         });
     }

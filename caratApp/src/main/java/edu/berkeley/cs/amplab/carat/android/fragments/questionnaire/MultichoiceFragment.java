@@ -36,14 +36,15 @@ import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 public class MultichoiceFragment extends Fragment {
     private MainActivity mainActivity;
     private QuestionnaireItemAdapter adapter;
+    private QuestionnaireAnswer saved;
 
-    private int index, id;
+    private int index, id, lastIndex;
     private String text, subtext;
     private List<String> choices;
     private boolean other, numeric, last;
 
     private RelativeLayout mainFrame;
-    private TextView footerView;
+    private TextView textView, subtextView, footerView;
     private LinearLayout buttonContainer;
     private EditText otherInput;
     private Button proceedButton;
@@ -62,15 +63,18 @@ public class MultichoiceFragment extends Fragment {
         fragment.choices = item.getChoices();
         fragment.other = item.other;
         fragment.numeric = item.numeric;
+        fragment.lastIndex = fragment.choices.size()-1;
         return fragment;
-
     }
 
     @Override
     public void onResume(){
         super.onResume();
+        // These needs to happen on resume so saved values are
+        // properly set when the view is popped from backstack.
         preselectCheckboxes();
-        mainActivity.hideKeyboard(mainFrame);
+        prefillInput();
+        mainActivity.hideKeyboard(otherInput);
     }
 
     @Override
@@ -79,7 +83,16 @@ public class MultichoiceFragment extends Fragment {
         mainFrame = (RelativeLayout) inflater.inflate(R.layout.questionnaire_multichoice, container, false);
         setActionbarTitle();
         setupViewReferences();
+        setupViewValues();
         populateCheckboxes();
+
+        // Unlike with radio buttons, saved values need to be loaded
+        // before listeners to ensure that prefilling data does not
+        // trigger cache saves.
+        saved = adapter.getAnswer(id);
+        preselectCheckboxes();
+        prefillInput();
+
         setupListeners();
         return mainFrame;
     }
@@ -103,22 +116,20 @@ public class MultichoiceFragment extends Fragment {
     }
 
     public void setupViewReferences(){
-        TextView textView = (TextView) mainFrame.findViewById(R.id.content_text);
-        TextView subtextView = (TextView) mainFrame.findViewById(R.id.content_subtext);
+        textView = (TextView) mainFrame.findViewById(R.id.content_text);
+        subtextView = (TextView) mainFrame.findViewById(R.id.content_subtext);
         otherInput = (EditText) mainFrame.findViewById(R.id.specify_other);
         proceedButton = (Button) mainFrame.findViewById(R.id.proceed_button);
         footerView = (TextView) mainFrame.findViewById(R.id.exit_button);
         buttonContainer = (LinearLayout) mainFrame.findViewById(R.id.button_container);
         buttonContainer.removeAllViews(); // Remove placeholders
+    }
 
+    public void setupViewValues(){
         textView.setText(text);
         subtextView.setText(subtext);
         proceedButton.setText(R.string.nextQuestion);
-        if(last){
-            proceedButton.setText(R.string.submit);
-        } else {
-            proceedButton.setText(R.string.nextQuestion);
-        }
+        proceedButton.setText(last ? R.string.submit : R.string.nextQuestion);
         footerView.setText(R.string.backToApp);
         if(other) otherInput.setVisibility(View.VISIBLE);
         if(numeric) otherInput.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -134,13 +145,27 @@ public class MultichoiceFragment extends Fragment {
         }
     }
 
+    public void prefillInput(){
+        String input = "";
+        if(saved != null && saved.getInput() != null){
+            input = saved.getInput();
+        }
+        otherInput.setText(input);
+    }
+
     public void preselectCheckboxes(){
-        List<Integer> preselected = getPreselectedChoices();
+        List<Integer> selections = new ArrayList<>();
+        if(saved != null && saved.getAnswers() != null){
+            selections = saved.getAnswers();
+        }
+        selectCheckboxes(selections);
+    }
+
+    public void selectCheckboxes(List<Integer> preselected){
         if(preselected == null) return;
         int childCount = buttonContainer.getChildCount();
         for(int i=0; i < childCount; i++){
             CheckBox button = (CheckBox) buttonContainer.getChildAt(i);
-            Log.d("Carat", "Tag name :" + button.getTag());
             int tag = (int) button.getTag();
             if(button.getTag() != null && preselected.contains(tag)){
                 button.setChecked(true);
@@ -160,12 +185,18 @@ public class MultichoiceFragment extends Fragment {
         final int buttonCount = buttonContainer.getChildCount();
         for(int i=0; i< buttonCount; i++){
             final int index = i;
-            CheckBox button = (CheckBox) buttonContainer.getChildAt(index);
+            final CheckBox button = (CheckBox) buttonContainer.getChildAt(index);
             button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    // Cache the answers here in case the user navigates to the previous view
+                    // and wants to continue where they left off when coming back here.
+                    // This should not cause problems with empty inputs since the user will
+                    // be unable to continue/submit as long as the field is empty.
+                    adapter.cacheInMemory(getAnswer());
+
                     proceedButton.setEnabled(checkButtonStates());
-                    if(other && index == buttonCount-1 && isChecked){
+                    if(other && index == lastIndex && isChecked){
                         otherInput.requestFocus();
                         mainActivity.showKeyboard(otherInput);
                     } else {
@@ -190,7 +221,7 @@ public class MultichoiceFragment extends Fragment {
             CheckBox button = (CheckBox) buttonContainer.getChildAt(i);
             if(button.isChecked()){
                 checked = true;
-                if(other && i == buttonCount - 1){
+                if(other && i == lastIndex){
                    return validateInput(otherInput.getText().toString());
                 }
             }
@@ -208,6 +239,7 @@ public class MultichoiceFragment extends Fragment {
                 QuestionnaireAnswer answer = getAnswer();
                 adapter.saveAnswer(answer);
                 adapter.loadItem(mainActivity, index+1);
+                saved = answer;
             }
         });
     }
@@ -220,8 +252,7 @@ public class MultichoiceFragment extends Fragment {
                 // otherwise check the box for 'other'
                 if(!hasFocus) mainActivity.hideKeyboard(mainFrame);
                 else {
-                    int count = buttonContainer.getChildCount();
-                    CheckBox other = (CheckBox) buttonContainer.getChildAt(count-1);
+                    CheckBox other = (CheckBox) buttonContainer.getChildAt(lastIndex);
                     other.setChecked(true);
                 }
             }
@@ -229,6 +260,7 @@ public class MultichoiceFragment extends Fragment {
         otherInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
+                adapter.cacheInMemory(getAnswer());
                 proceedButton.setEnabled(checkButtonStates());
             }
 
@@ -255,19 +287,10 @@ public class MultichoiceFragment extends Fragment {
         QuestionnaireAnswer answer = new QuestionnaireAnswer()
                 .setQuestionId(id)
                 .setAnswers(answers);
-        if(answers.contains(buttonContainer.getChildCount()-1)){
+        if(other && answers.contains(lastIndex)){
             answer.setInput(otherInput.getText().toString());
         }
         return answer;
-    }
-
-    private List<Integer> getPreselectedChoices(){
-        QuestionnaireAnswer answer = adapter.getAnswer(id);
-        if(answer == null) return null;
-        List<Integer> answers = answer.getAnswers();
-        if(answers == null || answers.size() <= 0) return null;
-        Log.d("Carat", "getPreselectedChoices: "+answers);
-        return answers;
     }
 
     private List<Integer> getSelectedChoices(){

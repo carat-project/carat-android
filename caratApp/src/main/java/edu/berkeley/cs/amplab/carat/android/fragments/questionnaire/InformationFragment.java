@@ -12,9 +12,12 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.views.adapters.QuestionnaireItemAdapter;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
@@ -26,13 +29,14 @@ public class InformationFragment extends Fragment {
     private MainActivity mainActivity;
     private QuestionnaireItemAdapter adapter;
 
-    private int index, id;
+    private int index;
     private String content;
     private boolean last;
 
     private RelativeLayout mainFrame;
     private WebView webView;
     private Button proceedButton;
+    private TextView footerView;
 
     public InformationFragment() {
         this.adapter = QuestionnaireItemAdapter.getInstance();
@@ -42,7 +46,6 @@ public class InformationFragment extends Fragment {
         InformationFragment fragment = new InformationFragment();
         fragment.index = index;
         fragment.last = last;
-        fragment.id = item.getQuestionId();
         fragment.content = item.getContent();
         return fragment;
     }
@@ -53,8 +56,15 @@ public class InformationFragment extends Fragment {
         mainFrame = (RelativeLayout) inflater.inflate(R.layout.questionnaire_information, container, false);
         setActionbarTitle();
         setupViewReferences();
+        setupViewValues();
         setupProceedButtonListener();
         return mainFrame;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        mainActivity.hideKeyboard(mainFrame);
     }
 
     @Override
@@ -71,13 +81,12 @@ public class InformationFragment extends Fragment {
     public void setupViewReferences(){
         webView = (WebView) mainFrame.findViewById(R.id.webView);
         proceedButton = (Button) mainFrame.findViewById(R.id.proceed_button);
-        if(last){
-            proceedButton.setText(R.string.submit);
-        } else {
-            proceedButton.setText(R.string.continueText);
-        }
+    }
 
-        // Optimize and prioritize loading webview data
+    public void setupViewValues(){
+        proceedButton.setText(last ? R.string.submit : R.string.continueText);
+
+        // Optimizations for webview loading speed
         if(Build.VERSION.SDK_INT >= 19){
             webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         } else if(Build.VERSION.SDK_INT >= 11){
@@ -95,5 +104,4 @@ public class InformationFragment extends Fragment {
             }
         });
     }
-
 }
