@@ -229,7 +229,9 @@
 
     <string name="survey_title">SURVEY</string>
     <string name="survey_action_title">Tell us about yourself!</string>
-    <string name="survey_action_subtitle">Participate in Carat survey</string>
+    <string name="survey_action_subtitle">Participate in Carat questionnaire</string>
+    <string name="action_questionnaire">Help us improve Carat!</string>
+    <string name="action_questionnaire_subtitle">Participate in questionnaire</string>
     <string name="submitted">Submitted</string>
     <string name="thank_you">Thank you!</string>
 
@@ -316,8 +318,18 @@ delete these from your file.
     <string name="helpcarat_subtitle">Get better results</string>
     <string name="helpcarat_expanded_title">How to help Carat collect data?</string>
 
+    <!-- Questionnaire -->
+    <string name="other">Other</string>
+    <string name="writeHere">Write here</string>
+    <string name="submit">Submit</string>
+    <string name="continueText">continue</string>
+    <string name="nextQuestion">Next question</string>
+    <string name="participationThanks">Thank you for participating!</string>
+    <string name="backToApp">≪ BACK TO APPLICATION</string>
+    <string name="acceptAndContinue">ACCEPT AND CONTINUE</string>
     <string name="questionnaire">Please help us improve Carat</string>
     <string name="questionnaire2">Answer a questionnaire (takes 5&#8211;10 minutes)</string>
+    <string name="question">QUESTION</string>
     <string name="feedback">Give feedback (email)</string>
     <string name="share">Share …</string>
     <string name="sharewith">Share with:</string>

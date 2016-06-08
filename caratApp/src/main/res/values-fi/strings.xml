@@ -221,8 +221,10 @@
     <string name="bug">Bugi</string>
 
     <string name="survey_title">KYSELY</string>
-    <string name="survey_action_title">Esittele itsesi!</string>
+    <string name="survey_action_title">Kerro meille itsestäsi!</string>
     <string name="survey_action_subtitle">Osallistu Caratin kyselyyn</string>
+    <string name="action_questionnaire">Auta parantamaan Caratia!</string>
+    <string name="action_questionnaire_subtitle">Osallistu kyselyyn</string>
     <string name="submitted">Lähetetty</string>
     <string name="thank_you">Kiitos!</string>
 
@@ -282,8 +284,18 @@
     <string name="helpcarat_subtitle">Parempia Carat-tuloksia!</string>
     <string name="helpcarat_expanded_title">Kuinka autan Caratia keräämään dataa?</string>
 
+    <!-- Questionnaire -->
+    <string name="other">Muu</string>
+    <string name="writeHere">Kirjoita tähän</string>
+    <string name="submit">Lähetä</string>
+    <string name="continueText">jatka</string>
+    <string name="nextQuestion">Seuraava kysymys</string>
+    <string name="backToApp">≪ TAKAISIN SOVELLUKSEEN</string>
+    <string name="acceptAndContinue">HYVÄKSY JA JATKA</string>
     <string name="questionnaire">Auta meitä parantamaan Caratia</string>
     <string name="questionnaire2">Vastaa kyselyyn (5&#8211;10 min)</string>
+    <string name="participationThanks">Kiitos osallistumisestasi!</string>
+    <string name="question">KYSYMYS</string>
     <string name="feedback">Anna palautetta (email)</string>
     <string name="share">Jaa …</string>
     <string name="sharewith">Jaa käyttäen:</string>
