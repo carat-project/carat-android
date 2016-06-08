@@ -265,22 +265,26 @@ struct QuestionnaireItem {
 	7: optional bool numeric;			// Limit input to numbers? Default: false
 }
 
+struct Questionnaire {
+	1: required i32 id;							// Questionnaire identifier
+	2: required list<QuestionnaireItem> items;	// List of items
+	3: required double expiration;				// Expiration date timestamp
+}
+
 //
 // Fields for questionnaire answers
 //
 struct QuestionnaireAnswer {
-	1: required i32 questionId;
-	2: optional list<i32> answers;
-	3: optional string input;
+	1: required i32 questionId;		// Question id
+	2: optional list<i32> answers;	// List of answer ids
+	3: optional string input;		// Text-based answer
 }
 
 struct Answers {
-	1: required string uuId;
-	2: optional double timestamp;
-	3: required list<QuestionnaireAnswer> answers;
+	1: required string uuId;						// Carat user id
+	2: optional double timestamp;					// Submit timestamp
+	3: required list<QuestionnaireAnswer> answers;	// List of answers
 }
-
-typedef list<QuestionnaireItem> Questionnaire;
 
 typedef list<Feature> FeatureList
 
