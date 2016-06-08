@@ -266,7 +266,7 @@ struct QuestionnaireItem {
 }
 
 struct Questionnaire {
-	1: required i32 id;							// Questionnaire identifier
+	1: required i32 id;							// Questionnaire id
 	2: required list<QuestionnaireItem> items;	// List of items
 	3: required double expiration;				// Expiration date timestamp
 }
@@ -281,9 +281,10 @@ struct QuestionnaireAnswer {
 }
 
 struct Answers {
-	1: required string uuId;						// Carat user id
-	2: optional double timestamp;					// Submit timestamp
-	3: required list<QuestionnaireAnswer> answers;	// List of answers
+	1: required i32 id;								// Questionnaire id
+	2: required string uuId;						// Carat user id
+	3: optional double timestamp;					// Submit timestamp
+	4: required list<QuestionnaireAnswer> answers;	// List of answers
 }
 
 typedef list<Feature> FeatureList
