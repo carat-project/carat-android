@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -26,11 +27,11 @@ import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.dialogs.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.CallbackWebViewFragment;
-import edu.berkeley.cs.amplab.carat.android.fragments.DeviceFragment;
 import edu.berkeley.cs.amplab.carat.android.model_classes.StaticAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.ClickTracking;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
 /**
@@ -117,8 +118,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
                     convertView.setTag(expandedHolder);
                     break;
                 case STATIC_ACTION:
-                    int offset = groupPosition - appActions.size();
-                    StaticAction item = staticActions.get(offset);
+                    StaticAction item = staticActions.get(groupPosition);
                     if(!item.isExpandable()) return convertView;
                     convertView = inflater.inflate(R.layout.actions_list_static_child, null);
                     StaticViewHolder staticHolder = getStaticViewHolder(convertView);
@@ -132,11 +132,10 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         // Set child values
         switch(type) {
             case NORMAL_ACTION:
-                SimpleHogBug app = appActions.get(groupPosition);
+                SimpleHogBug app = appActions.get(groupPosition-staticActions.size());
                 setViewsInChild(convertView, app);
                 break;
             case STATIC_ACTION:
-                groupPosition -= appActions.size();
                 StaticAction action = staticActions.get(groupPosition);
                 if(action.isExpandable()){
                     setStaticViewInChild(convertView, action);
@@ -197,7 +196,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
 
     @Override
     public int getChildType(int groupPosition, int childPosition){
-        return (groupPosition >= appActions.size()) ? STATIC_ACTION : NORMAL_ACTION;
+        return (groupPosition >= staticActions.size()) ? NORMAL_ACTION : STATIC_ACTION;
     }
 
     @Override
@@ -220,13 +219,12 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         }
 
         if (appActions == null || groupPosition < 0) return convertView;
-        if(groupPosition >= appActions.size()){
-            groupPosition -= appActions.size();
+        if(groupPosition < staticActions.size()){
             StaticAction staticAction = staticActions.get(groupPosition);
             if(staticAction == null) return convertView;
             setStaticViews(convertView, staticAction);
         } else {
-            SimpleHogBug item = appActions.get(groupPosition);
+            SimpleHogBug item = appActions.get(groupPosition - staticActions.size());
             if (item == null) return convertView;
             setItemViews(convertView, item);
         }
@@ -362,9 +360,8 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
     @Override
     public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
         // Static actions might have a different action
-        if(groupPosition >= appActions.size()){
-            int offset = groupPosition - appActions.size();
-            StaticAction action = staticActions.get(offset);
+        if(groupPosition < staticActions.size()){
+            StaticAction action = staticActions.get(groupPosition);
             if(!action.isExpandable()){
                 handleStationaryAction(action);
                 return true;
@@ -384,9 +381,8 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
 
     @Override
     public void onGroupExpand(int groupPosition) {
-        if(groupPosition >= appActions.size()){
-            int offset = groupPosition - appActions.size();
-            StaticAction action = staticActions.get(offset);
+        if(groupPosition < staticActions.size()){
+            StaticAction action = staticActions.get(groupPosition);
             if(!action.isExpandable()) return;
         }
         if (groupPosition != previousGroup){
@@ -409,13 +405,17 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
     
     private void handleStationaryAction(StaticAction action){
         switch(action.getType()){
-            case SURVEY:
+            case GOOGLE_SURVEY:
                 // Construct form url and open in a custom webview fragment
                 String surveyUrl = constructSurveyURL();
                 CallbackWebViewFragment webView = createCallbackFragment(surveyUrl);
                 mainActivity.replaceFragment(webView, Constants.FRAGMENT_CB_WEBVIEW_TAG);
                 mainActivity.setUpActionBar(R.string.survey_title, true);
                 break;
+            case QUESTIONNAIRE:
+                QuestionnaireItemAdapter adapter = QuestionnaireItemAdapter.getInstance();
+                adapter.loadStoredAnswers();
+                adapter.loadItem(mainActivity, 0);
         }
     }
 
