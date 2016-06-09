@@ -85,7 +85,7 @@
 
     <string name="bugs">BUGS</string>
     <string name="hogs">HOGS</string>
-    <string name="global_hogs">GLOBAL HOGS</string>
+    <string name="global_hogs">TOP HOGS</string>
     <string name="statistics">STATISTICS</string>
     <string name="actions">ACTIONS</string>
 
@@ -167,7 +167,7 @@
 
     <!-- GLOBAL RESULTS -->
     <string name="global_results">GLOBAL RESULTS</string>
-    <string name="show_global">SHOW GLOBAL</string>
+    <string name="show_global">WORLDWIDE</string>
     <string name="all_reports">ALL REPORTS</string>
     <string name="global_general_statistics">GENERAL STATISTICS</string>
     <string name="global_general_all_message">Out of 431,882 installed applications, 9 are energy-intensive
