@@ -323,7 +323,8 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         reportsThread = new Thread(new Runnable() {
             @Override
             public void run(){
-                application.refreshUi();
+                // TODO: this is true when we want to fetch / send samples
+                application.refreshUi(false);
             }
         });
         reportsThread.start();

@@ -48,7 +48,7 @@ public class SampleSender {
             final SharedPreferences p = PreferenceManager
                     .getDefaultSharedPreferences(c);
             final boolean useWifiOnly = p.getBoolean(c.getString(R.string.wifi_only_key), false);
-            Log.i("wifi-preference-SampleSender", String.valueOf(useWifiOnly));
+            //Log.i("SampleSender", String.valueOf(useWifiOnly));
     
             boolean connected = (!useWifiOnly && networkStatus == SamplingLibrary.NETWORKSTATUS_CONNECTED)
                     || networkType.equals("WIFI");

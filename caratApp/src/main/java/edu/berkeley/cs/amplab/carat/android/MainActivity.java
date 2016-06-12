@@ -181,7 +181,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         new Thread() {
             public void run() {
-                ((CaratApplication) getApplication()).refreshUi();
+                // TODO: this is true when we want to fetch / send samples
+                ((CaratApplication) getApplication()).refreshUi(true);
             }
         }.start();
 

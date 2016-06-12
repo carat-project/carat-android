@@ -498,7 +498,7 @@ public class CaratApplication extends Application {
     }
 
 
-    public void refreshUi() {
+    public void refreshUi(boolean fromResume) {
         boolean connecting = false;
         boolean newData = false;
         Log.d("debug", "*** Start refresh");
@@ -548,7 +548,8 @@ public class CaratApplication extends Application {
             connecting = true;
         }
 
-        if (connecting) {
+        // TODO: Handle correctly
+        if (fromResume && connecting) {
             // wait for WiFi to come up
             main.runOnUiThread(new Runnable() {
                 @Override
@@ -592,7 +593,9 @@ public class CaratApplication extends Application {
         });
         //CaratApplication.setActionFinished();
 
-        SampleSender.sendSamples(CaratApplication.this);
+        // TODO: Handle correctly
+        if (fromResume)
+            SampleSender.sendSamples(CaratApplication.this);
         main.runOnUiThread(new Runnable() {
             @Override
             public void run() {main.refreshDashboardProgress();
