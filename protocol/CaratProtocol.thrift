@@ -268,7 +268,7 @@ struct QuestionnaireItem {
 struct Questionnaire {
 	1: required i32 id;							// Questionnaire id
 	2: required list<QuestionnaireItem> items;	// List of items
-	3: optional double expiration;				// Expiration date timestamp
+	3: optional i64 expiration;					// Expiration date timestamp
 }
 
 //
@@ -278,12 +278,13 @@ struct QuestionnaireAnswer {
 	1: required i32 questionId;		// Question id
 	2: optional list<i32> answers;	// List of answer ids
 	3: optional string input;		// Text-based answer
+	4: required bool other;			// Other input enabled
 }
 
 struct Answers {
 	1: required i32 id;								// Questionnaire id
 	2: required string uuId;						// Carat user id
-	3: optional double timestamp;					// Submit timestamp
+	3: required i64 timestamp;						// Submit timestamp
 	4: required list<QuestionnaireAnswer> answers;	// List of answers
 }
 
