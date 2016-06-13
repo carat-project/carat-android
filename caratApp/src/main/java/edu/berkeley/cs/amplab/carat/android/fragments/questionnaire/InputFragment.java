@@ -44,12 +44,13 @@ public class InputFragment extends Fragment {
     private Button proceedButton;
 
     public InputFragment() {
-        this.adapter = QuestionnaireItemAdapter.getInstance();
+        // Empty constructor required by Android API
     }
 
-    public static InputFragment from(QuestionnaireItem item, int index, boolean last){
+    public static InputFragment from(QuestionnaireItem item, QuestionnaireItemAdapter adapter, int index, boolean last){
         InputFragment fragment = new InputFragment();
         fragment.index = index;
+        fragment.adapter = adapter;
         fragment.last = last;
         fragment.id = item.getQuestionId();
         fragment.text = item.getTitle();

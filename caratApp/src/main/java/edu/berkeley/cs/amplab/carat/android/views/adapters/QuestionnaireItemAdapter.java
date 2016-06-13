@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IllegalFormatCodePointException;
 import java.util.List;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
@@ -26,15 +27,13 @@ import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
  * Created by Jonatan Hamberg on 20.4.2016.
  */
 public class QuestionnaireItemAdapter {
-    private int questionCount;
+    private int id, questionCount;
     private List<QuestionnaireItem> items;
     private HashMap<Integer, QuestionnaireAnswer> answers;
-    private static QuestionnaireItemAdapter instance = null;
 
-    // TODO: Allow creating instances for different questionnaire ids
-    private QuestionnaireItemAdapter(){
-        Questionnaire questionnaire = CaratApplication.getStorage().getQuestionnaire(0);
+    public QuestionnaireItemAdapter(Questionnaire questionnaire){
         if(questionnaire == null) return;
+        this.id = questionnaire.getId();
         this.items = questionnaire.getItems();
         this.answers = new HashMap<>();
         questionCount = 0;
@@ -43,17 +42,10 @@ public class QuestionnaireItemAdapter {
         }
     }
 
-    public static QuestionnaireItemAdapter getInstance() {
-        if (instance == null) {
-            instance = new QuestionnaireItemAdapter();
-        }
-        return instance;
-    }
-
     public void storeAnswers(){
         if(this.answers == null) return;
         Answers answers = new Answers();
-        answers.setId(0);
+        answers.setId(id);
         answers.setUuId(CaratApplication.myDeviceData.getCaratId());
         answers.setTimestamp(System.currentTimeMillis() / 1000);
         answers.setAnswers(new ArrayList<>(this.answers.values()));
@@ -62,7 +54,7 @@ public class QuestionnaireItemAdapter {
     }
 
     public void loadStoredAnswers(){
-        Answers answers = CaratApplication.getStorage().getAnswers(0);
+        Answers answers = CaratApplication.getStorage().getAnswers(id);
         if(answers != null && answers.getAnswers() != null){
             List<QuestionnaireAnswer> answerList  = answers.getAnswers();
             for(QuestionnaireAnswer answer : answerList){
@@ -102,21 +94,21 @@ public class QuestionnaireItemAdapter {
         // Tags need to be appended with an identifier so fragment manager
         // doesn't accidentally use the backstack for replacing the current
         // fragment.
-        switch(item.type){
-            case INFORMATION:
-                next = InformationFragment.from(item, index, last);
+        switch(item.type.toLowerCase()){
+            case "information":
+                next = InformationFragment.from(item, this, index, last);
                 tag = Constants.FRAGMENT_QUESTIONNAIRE_INFORMATION + index;
                 break;
-            case CHOICE:
-                next = ChoiceFragment.from(item, index, last);
+            case "choice":
+                next = ChoiceFragment.from(item, this, index, last);
                 tag = Constants.FRAGMENT_QUESTIONNAIRE_CHOICE + index;
                 break;
-            case MULTICHOICE:
-                next = MultichoiceFragment.from(item, index, last);
+            case "multichoice":
+                next = MultichoiceFragment.from(item, this, index, last);
                 tag = Constants.FRAGMENT_QUESTIONNAIRE_MULTICHOICE + index;
                 break;
-            case INPUT:
-                next = InputFragment.from(item, index, last);
+            case "input":
+                next = InputFragment.from(item, this, index, last);
                 tag = Constants.FRAGMENT_QUESTIONNAIRE_INPUT + index;
                 break;
             default:

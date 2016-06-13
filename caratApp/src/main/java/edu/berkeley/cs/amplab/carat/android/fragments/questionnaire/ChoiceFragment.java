@@ -26,6 +26,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.views.adapters.QuestionnaireItemAdapter;
+import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 
@@ -49,11 +50,12 @@ public class ChoiceFragment extends Fragment {
     private Button proceedButton;
 
     public ChoiceFragment() {
-        adapter = QuestionnaireItemAdapter.getInstance();
+        // Empty constructor required by Android API
     }
 
-    public static ChoiceFragment from(QuestionnaireItem item, int index, boolean last){
+    public static ChoiceFragment from(QuestionnaireItem item, QuestionnaireItemAdapter adapter, int index, boolean last){
         ChoiceFragment fragment = new ChoiceFragment();
+        fragment.adapter = adapter;
         fragment.index = index;
         fragment.last = last;
         fragment.id = item.getQuestionId();

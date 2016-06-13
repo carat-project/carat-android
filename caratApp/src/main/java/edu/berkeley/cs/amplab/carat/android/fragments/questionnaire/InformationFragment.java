@@ -39,12 +39,13 @@ public class InformationFragment extends Fragment {
     private TextView footerView;
 
     public InformationFragment() {
-        this.adapter = QuestionnaireItemAdapter.getInstance();
+        // Empty constructor required by Android API
     }
 
-    public static InformationFragment from(QuestionnaireItem item, int index, boolean last){
+    public static InformationFragment from(QuestionnaireItem item, QuestionnaireItemAdapter adapter, int index, boolean last){
         InformationFragment fragment = new InformationFragment();
         fragment.index = index;
+        fragment.adapter = adapter;
         fragment.last = last;
         fragment.content = item.getContent();
         return fragment;
