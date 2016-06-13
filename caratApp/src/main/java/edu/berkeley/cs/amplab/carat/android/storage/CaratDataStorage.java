@@ -40,7 +40,7 @@ public class CaratDataStorage {
     public static final String FILENAME = "carat-reports.dat";
     public static final String BLACKLIST_FILE = "carat-blacklist.dat";
     public static final String QUESTIONNAIRE_URL_FILE = "questionnaire-url.txt";
-    public static final String QUESTIONNAIRE_FILE = "carat-questionnaire";
+    public static final String QUESTIONNAIRE_FILE = "carat-questionnaire.dat";
     public static final String QUESTIONNAIRE_ANSWERS_FILE = "carat-questionnaire-answers";
     public static final String QUESTIONNAIRE_FRESHNESS = "carat-questionnaire-freshness";
     public static final String BLACKLIST_FRESHNESS = "carat-blacklist-freshness.dat";
@@ -343,14 +343,26 @@ public class CaratDataStorage {
             return readGloblist();
     }
 
-    public Questionnaire getQuestionnaire(int id){
+    public HashMap<Integer, Questionnaire> getQuestionnaires(){
         if(questionnaires != null && questionnaires.get() != null){
-            Questionnaire questionnaire = questionnaires.get().get(id);
-            if(questionnaire != null){
-                return questionnaire;
+            HashMap<Integer, Questionnaire> map = questionnaires.get();
+            if(map != null){
+                return map;
             }
         }
-        return readQuestionnaire(id);
+        return readQuestionnaires();
+    }
+
+    public Questionnaire getQuestionnaire(int id){
+        HashMap<Integer, Questionnaire> map = null;
+        if(questionnaires != null && questionnaires.get() != null){
+            map = questionnaires.get();
+        }
+        if(map == null) map = readQuestionnaires();
+        if(map != null) {
+            return map.get(id);
+        }
+        return null;
     }
 
     public Answers getAnswers(int id){
@@ -415,18 +427,16 @@ public class CaratDataStorage {
      * @return list of stored questionnaire items
      */
     @SuppressWarnings("unchecked")
-    public Questionnaire readQuestionnaire(int id){
-        Object o = readObject(QUESTIONNAIRE_FILE + "-" + id + ".dat");
+    public HashMap<Integer, Questionnaire> readQuestionnaires(){
+        Object o = readObject(QUESTIONNAIRE_FILE);
         if(o != null){
-            Questionnaire questionnaire = (Questionnaire) o;
-            if(questionnaires == null || questionnaires.get() == null){
-                HashMap<Integer, Questionnaire> map = new HashMap<>();
-                map.put(questionnaire.getId(), questionnaire);
-                questionnaires = new WeakReference<>(map);
-            } else {
-                questionnaires.get().put(questionnaire.getId(), questionnaire);
+            List<Questionnaire> list = (List<Questionnaire>) o;
+            HashMap<Integer, Questionnaire> map = new HashMap<>();
+            for(Questionnaire q : list) {
+                map.put(q.getId(), q);
             }
-            return questionnaire;
+            questionnaires = new WeakReference<>(map);
+            return map;
         } else {
             return null;
         }
@@ -435,17 +445,14 @@ public class CaratDataStorage {
     /**
      * @param questionnaire list of questionnaire items
      */
-    public void writeQuestionnaire(Questionnaire questionnaire){
-        if(questionnaire== null) return;
-        int id = questionnaire.getId();
-        if(questionnaires == null || questionnaires.get() == null){
-            HashMap<Integer, Questionnaire> map = new HashMap<>();
-            map.put(questionnaire.getId(), questionnaire);
-            questionnaires = new WeakReference<>(map);
-        } else {
-            questionnaires.get().put(questionnaire.getId(), questionnaire);
+    public void writeQuestionnaires(List<Questionnaire> questionnaire){
+        if(questionnaire== null || questionnaire.isEmpty()) return;
+        HashMap<Integer, Questionnaire> map = new HashMap<>();
+        for(Questionnaire q : questionnaire) {
+            map.put(q.getId(), q);
         }
-        writeObject(questionnaire, QUESTIONNAIRE_FILE + "-" + id +".dat");
+        questionnaires = new WeakReference<>(map);
+        writeObject(questionnaire, QUESTIONNAIRE_FILE);
     }
 
     /**

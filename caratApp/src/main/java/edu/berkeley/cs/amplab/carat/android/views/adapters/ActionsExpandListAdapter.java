@@ -31,6 +31,7 @@ import edu.berkeley.cs.amplab.carat.android.model_classes.StaticAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.ClickTracking;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
@@ -413,7 +414,10 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
                 mainActivity.setUpActionBar(R.string.survey_title, true);
                 break;
             case QUESTIONNAIRE:
-                QuestionnaireItemAdapter adapter = QuestionnaireItemAdapter.getInstance();
+                int id = action.getId();
+                Questionnaire questionnaire = CaratApplication.getStorage().getQuestionnaire(id);
+                if(questionnaire == null) return;
+                QuestionnaireItemAdapter adapter = new QuestionnaireItemAdapter(questionnaire);
                 adapter.loadStoredAnswers();
                 adapter.loadItem(mainActivity, 0);
         }

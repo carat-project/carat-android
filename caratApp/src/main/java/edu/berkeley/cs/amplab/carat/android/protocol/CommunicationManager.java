@@ -30,10 +30,8 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
 import edu.berkeley.cs.amplab.carat.thrift.HogBugReport;
-import edu.berkeley.cs.amplab.carat.thrift.ItemType;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
-import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 import edu.berkeley.cs.amplab.carat.thrift.Registration;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
@@ -550,17 +548,15 @@ public class CommunicationManager {
 			// Not enough time passed since last check
 			return false;
 		}
-
 		CaratService.Client instance = null;
 		try {
 			// This needs to be EU, other servers will not provide meaningful data
 			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.EU);
-			Questionnaire questionnaire = instance.getQuestionnaire(uuid);
-			CaratApplication.getStorage().writeQuestionnaire(questionnaire);
+			List<Questionnaire> questionnaires = instance.getQuestionnaires(uuid);
+			CaratApplication.getStorage().writeQuestionnaires(questionnaires);
 			safeClose(instance);
 			return true;
 		} catch (Throwable th){
-			Log.e(TAG, "Could not retrieve questionnaire!", th);
 			safeClose(instance);
 		}
 		return false;
