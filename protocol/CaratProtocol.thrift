@@ -260,10 +260,12 @@ struct QuestionnaireItem {
 
 struct Questionnaire {
 	1: required i32 id;							// Questionnaire id
-	2: optional i64 expiration;					// Expiration date timestamp
-	3: optional string title;					// Action title
-	4: optional string text;					// Action text
-	5: required list<QuestionnaireItem> items;	// List of items
+	2: optional list<i32> prerequisites			// Required questionnaires before this
+	3: optional i64 cooldown;					// Days to wait after prerequisites are met
+	4: optional i64 expiration;					// Expiration date as seconds from epoch
+	5: optional string title;					// Action title
+	6: optional string text;					// Action text
+	7: required list<QuestionnaireItem> items;	// List of items
 }
 
 //
@@ -279,8 +281,9 @@ struct QuestionnaireAnswer {
 struct Answers {
 	1: required i32 id;								// Questionnaire id
 	2: required string uuId;						// Carat user id
-	3: required i64 timestamp;						// Submit timestamp
-	4: required list<QuestionnaireAnswer> answers;	// List of answers
+	3: required i64 timestamp;						// Submit timestamp in seconds
+	4: required bool complete;						// All questions answered y/n
+	5: required list<QuestionnaireAnswer> answers;	// List of answers
 }
 
 typedef list<Feature> FeatureList

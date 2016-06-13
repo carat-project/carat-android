@@ -601,13 +601,13 @@ public class QuestionnaireAnswer implements org.apache.thrift.TBase<Questionnair
           case 2: // ANSWERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
-                struct.answers = new ArrayList<Integer>(_list104.size);
-                int _elem105;
-                for (int _i106 = 0; _i106 < _list104.size; ++_i106)
+                org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
+                struct.answers = new ArrayList<Integer>(_list112.size);
+                int _elem113;
+                for (int _i114 = 0; _i114 < _list112.size; ++_i114)
                 {
-                  _elem105 = iprot.readI32();
-                  struct.answers.add(_elem105);
+                  _elem113 = iprot.readI32();
+                  struct.answers.add(_elem113);
                 }
                 iprot.readListEnd();
               }
@@ -661,9 +661,9 @@ public class QuestionnaireAnswer implements org.apache.thrift.TBase<Questionnair
           oprot.writeFieldBegin(ANSWERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.answers.size()));
-            for (int _iter107 : struct.answers)
+            for (int _iter115 : struct.answers)
             {
-              oprot.writeI32(_iter107);
+              oprot.writeI32(_iter115);
             }
             oprot.writeListEnd();
           }
@@ -710,9 +710,9 @@ public class QuestionnaireAnswer implements org.apache.thrift.TBase<Questionnair
       if (struct.isSetAnswers()) {
         {
           oprot.writeI32(struct.answers.size());
-          for (int _iter108 : struct.answers)
+          for (int _iter116 : struct.answers)
           {
-            oprot.writeI32(_iter108);
+            oprot.writeI32(_iter116);
           }
         }
       }
@@ -731,13 +731,13 @@ public class QuestionnaireAnswer implements org.apache.thrift.TBase<Questionnair
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list109 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
-          struct.answers = new ArrayList<Integer>(_list109.size);
-          int _elem110;
-          for (int _i111 = 0; _i111 < _list109.size; ++_i111)
+          org.apache.thrift.protocol.TList _list117 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+          struct.answers = new ArrayList<Integer>(_list117.size);
+          int _elem118;
+          for (int _i119 = 0; _i119 < _list117.size; ++_i119)
           {
-            _elem110 = iprot.readI32();
-            struct.answers.add(_elem110);
+            _elem118 = iprot.readI32();
+            struct.answers.add(_elem118);
           }
         }
         struct.setAnswersIsSet(true);

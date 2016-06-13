@@ -39,10 +39,12 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Questionnaire");
 
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField EXPIRATION_FIELD_DESC = new org.apache.thrift.protocol.TField("expiration", org.apache.thrift.protocol.TType.I64, (short)2);
-  private static final org.apache.thrift.protocol.TField TITLE_FIELD_DESC = new org.apache.thrift.protocol.TField("title", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField TEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("text", org.apache.thrift.protocol.TType.STRING, (short)4);
-  private static final org.apache.thrift.protocol.TField ITEMS_FIELD_DESC = new org.apache.thrift.protocol.TField("items", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField PREREQUISITES_FIELD_DESC = new org.apache.thrift.protocol.TField("prerequisites", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField COOLDOWN_FIELD_DESC = new org.apache.thrift.protocol.TField("cooldown", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField EXPIRATION_FIELD_DESC = new org.apache.thrift.protocol.TField("expiration", org.apache.thrift.protocol.TType.I64, (short)4);
+  private static final org.apache.thrift.protocol.TField TITLE_FIELD_DESC = new org.apache.thrift.protocol.TField("title", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField TEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("text", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField ITEMS_FIELD_DESC = new org.apache.thrift.protocol.TField("items", org.apache.thrift.protocol.TType.LIST, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,6 +53,8 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
   }
 
   public int id; // required
+  public List<Integer> prerequisites; // optional
+  public long cooldown; // optional
   public long expiration; // optional
   public String title; // optional
   public String text; // optional
@@ -59,10 +63,12 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ID((short)1, "id"),
-    EXPIRATION((short)2, "expiration"),
-    TITLE((short)3, "title"),
-    TEXT((short)4, "text"),
-    ITEMS((short)5, "items");
+    PREREQUISITES((short)2, "prerequisites"),
+    COOLDOWN((short)3, "cooldown"),
+    EXPIRATION((short)4, "expiration"),
+    TITLE((short)5, "title"),
+    TEXT((short)6, "text"),
+    ITEMS((short)7, "items");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -79,13 +85,17 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       switch(fieldId) {
         case 1: // ID
           return ID;
-        case 2: // EXPIRATION
+        case 2: // PREREQUISITES
+          return PREREQUISITES;
+        case 3: // COOLDOWN
+          return COOLDOWN;
+        case 4: // EXPIRATION
           return EXPIRATION;
-        case 3: // TITLE
+        case 5: // TITLE
           return TITLE;
-        case 4: // TEXT
+        case 6: // TEXT
           return TEXT;
-        case 5: // ITEMS
+        case 7: // ITEMS
           return ITEMS;
         default:
           return null;
@@ -128,14 +138,20 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
 
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
-  private static final int __EXPIRATION_ISSET_ID = 1;
+  private static final int __COOLDOWN_ISSET_ID = 1;
+  private static final int __EXPIRATION_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.EXPIRATION,_Fields.TITLE,_Fields.TEXT};
+  private static final _Fields optionals[] = {_Fields.PREREQUISITES,_Fields.COOLDOWN,_Fields.EXPIRATION,_Fields.TITLE,_Fields.TEXT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.PREREQUISITES, new org.apache.thrift.meta_data.FieldMetaData("prerequisites", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32))));
+    tmpMap.put(_Fields.COOLDOWN, new org.apache.thrift.meta_data.FieldMetaData("cooldown", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.EXPIRATION, new org.apache.thrift.meta_data.FieldMetaData("expiration", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.TITLE, new org.apache.thrift.meta_data.FieldMetaData("title", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -168,6 +184,11 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
   public Questionnaire(Questionnaire other) {
     __isset_bitfield = other.__isset_bitfield;
     this.id = other.id;
+    if (other.isSetPrerequisites()) {
+      List<Integer> __this__prerequisites = new ArrayList<Integer>(other.prerequisites);
+      this.prerequisites = __this__prerequisites;
+    }
+    this.cooldown = other.cooldown;
     this.expiration = other.expiration;
     if (other.isSetTitle()) {
       this.title = other.title;
@@ -192,6 +213,9 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
   public void clear() {
     setIdIsSet(false);
     this.id = 0;
+    this.prerequisites = null;
+    setCooldownIsSet(false);
+    this.cooldown = 0;
     setExpirationIsSet(false);
     this.expiration = 0;
     this.title = null;
@@ -220,6 +244,68 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
 
   public void setIdIsSet(boolean value) {
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
+  }
+
+  public int getPrerequisitesSize() {
+    return (this.prerequisites == null) ? 0 : this.prerequisites.size();
+  }
+
+  public java.util.Iterator<Integer> getPrerequisitesIterator() {
+    return (this.prerequisites == null) ? null : this.prerequisites.iterator();
+  }
+
+  public void addToPrerequisites(int elem) {
+    if (this.prerequisites == null) {
+      this.prerequisites = new ArrayList<Integer>();
+    }
+    this.prerequisites.add(elem);
+  }
+
+  public List<Integer> getPrerequisites() {
+    return this.prerequisites;
+  }
+
+  public Questionnaire setPrerequisites(List<Integer> prerequisites) {
+    this.prerequisites = prerequisites;
+    return this;
+  }
+
+  public void unsetPrerequisites() {
+    this.prerequisites = null;
+  }
+
+  /** Returns true if field prerequisites is set (has been assigned a value) and false otherwise */
+  public boolean isSetPrerequisites() {
+    return this.prerequisites != null;
+  }
+
+  public void setPrerequisitesIsSet(boolean value) {
+    if (!value) {
+      this.prerequisites = null;
+    }
+  }
+
+  public long getCooldown() {
+    return this.cooldown;
+  }
+
+  public Questionnaire setCooldown(long cooldown) {
+    this.cooldown = cooldown;
+    setCooldownIsSet(true);
+    return this;
+  }
+
+  public void unsetCooldown() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __COOLDOWN_ISSET_ID);
+  }
+
+  /** Returns true if field cooldown is set (has been assigned a value) and false otherwise */
+  public boolean isSetCooldown() {
+    return EncodingUtils.testBit(__isset_bitfield, __COOLDOWN_ISSET_ID);
+  }
+
+  public void setCooldownIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __COOLDOWN_ISSET_ID, value);
   }
 
   public long getExpiration() {
@@ -342,6 +428,22 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       }
       break;
 
+    case PREREQUISITES:
+      if (value == null) {
+        unsetPrerequisites();
+      } else {
+        setPrerequisites((List<Integer>)value);
+      }
+      break;
+
+    case COOLDOWN:
+      if (value == null) {
+        unsetCooldown();
+      } else {
+        setCooldown((Long)value);
+      }
+      break;
+
     case EXPIRATION:
       if (value == null) {
         unsetExpiration();
@@ -382,6 +484,12 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
     case ID:
       return Integer.valueOf(getId());
 
+    case PREREQUISITES:
+      return getPrerequisites();
+
+    case COOLDOWN:
+      return Long.valueOf(getCooldown());
+
     case EXPIRATION:
       return Long.valueOf(getExpiration());
 
@@ -407,6 +515,10 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
     switch (field) {
     case ID:
       return isSetId();
+    case PREREQUISITES:
+      return isSetPrerequisites();
+    case COOLDOWN:
+      return isSetCooldown();
     case EXPIRATION:
       return isSetExpiration();
     case TITLE:
@@ -438,6 +550,24 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       if (!(this_present_id && that_present_id))
         return false;
       if (this.id != that.id)
+        return false;
+    }
+
+    boolean this_present_prerequisites = true && this.isSetPrerequisites();
+    boolean that_present_prerequisites = true && that.isSetPrerequisites();
+    if (this_present_prerequisites || that_present_prerequisites) {
+      if (!(this_present_prerequisites && that_present_prerequisites))
+        return false;
+      if (!this.prerequisites.equals(that.prerequisites))
+        return false;
+    }
+
+    boolean this_present_cooldown = true && this.isSetCooldown();
+    boolean that_present_cooldown = true && that.isSetCooldown();
+    if (this_present_cooldown || that_present_cooldown) {
+      if (!(this_present_cooldown && that_present_cooldown))
+        return false;
+      if (this.cooldown != that.cooldown)
         return false;
     }
 
@@ -489,6 +619,16 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
     if (present_id)
       list.add(id);
 
+    boolean present_prerequisites = true && (isSetPrerequisites());
+    list.add(present_prerequisites);
+    if (present_prerequisites)
+      list.add(prerequisites);
+
+    boolean present_cooldown = true && (isSetCooldown());
+    list.add(present_cooldown);
+    if (present_cooldown)
+      list.add(cooldown);
+
     boolean present_expiration = true && (isSetExpiration());
     list.add(present_expiration);
     if (present_expiration)
@@ -526,6 +666,26 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
     }
     if (isSetId()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPrerequisites()).compareTo(other.isSetPrerequisites());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPrerequisites()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.prerequisites, other.prerequisites);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCooldown()).compareTo(other.isSetCooldown());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCooldown()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cooldown, other.cooldown);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -593,6 +753,22 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
     sb.append("id:");
     sb.append(this.id);
     first = false;
+    if (isSetPrerequisites()) {
+      if (!first) sb.append(", ");
+      sb.append("prerequisites:");
+      if (this.prerequisites == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.prerequisites);
+      }
+      first = false;
+    }
+    if (isSetCooldown()) {
+      if (!first) sb.append(", ");
+      sb.append("cooldown:");
+      sb.append(this.cooldown);
+      first = false;
+    }
     if (isSetExpiration()) {
       if (!first) sb.append(", ");
       sb.append("expiration:");
@@ -684,7 +860,33 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // EXPIRATION
+          case 2: // PREREQUISITES
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
+                struct.prerequisites = new ArrayList<Integer>(_list96.size);
+                int _elem97;
+                for (int _i98 = 0; _i98 < _list96.size; ++_i98)
+                {
+                  _elem97 = iprot.readI32();
+                  struct.prerequisites.add(_elem97);
+                }
+                iprot.readListEnd();
+              }
+              struct.setPrerequisitesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // COOLDOWN
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.cooldown = iprot.readI64();
+              struct.setCooldownIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // EXPIRATION
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.expiration = iprot.readI64();
               struct.setExpirationIsSet(true);
@@ -692,7 +894,7 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // TITLE
+          case 5: // TITLE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.title = iprot.readString();
               struct.setTitleIsSet(true);
@@ -700,7 +902,7 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // TEXT
+          case 6: // TEXT
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.text = iprot.readString();
               struct.setTextIsSet(true);
@@ -708,17 +910,17 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // ITEMS
+          case 7: // ITEMS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
-                struct.items = new ArrayList<QuestionnaireItem>(_list96.size);
-                QuestionnaireItem _elem97;
-                for (int _i98 = 0; _i98 < _list96.size; ++_i98)
+                org.apache.thrift.protocol.TList _list99 = iprot.readListBegin();
+                struct.items = new ArrayList<QuestionnaireItem>(_list99.size);
+                QuestionnaireItem _elem100;
+                for (int _i101 = 0; _i101 < _list99.size; ++_i101)
                 {
-                  _elem97 = new QuestionnaireItem();
-                  _elem97.read(iprot);
-                  struct.items.add(_elem97);
+                  _elem100 = new QuestionnaireItem();
+                  _elem100.read(iprot);
+                  struct.items.add(_elem100);
                 }
                 iprot.readListEnd();
               }
@@ -748,6 +950,25 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       oprot.writeFieldBegin(ID_FIELD_DESC);
       oprot.writeI32(struct.id);
       oprot.writeFieldEnd();
+      if (struct.prerequisites != null) {
+        if (struct.isSetPrerequisites()) {
+          oprot.writeFieldBegin(PREREQUISITES_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.prerequisites.size()));
+            for (int _iter102 : struct.prerequisites)
+            {
+              oprot.writeI32(_iter102);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetCooldown()) {
+        oprot.writeFieldBegin(COOLDOWN_FIELD_DESC);
+        oprot.writeI64(struct.cooldown);
+        oprot.writeFieldEnd();
+      }
       if (struct.isSetExpiration()) {
         oprot.writeFieldBegin(EXPIRATION_FIELD_DESC);
         oprot.writeI64(struct.expiration);
@@ -771,9 +992,9 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
         oprot.writeFieldBegin(ITEMS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.items.size()));
-          for (QuestionnaireItem _iter99 : struct.items)
+          for (QuestionnaireItem _iter103 : struct.items)
           {
-            _iter99.write(oprot);
+            _iter103.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -799,22 +1020,40 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       oprot.writeI32(struct.id);
       {
         oprot.writeI32(struct.items.size());
-        for (QuestionnaireItem _iter100 : struct.items)
+        for (QuestionnaireItem _iter104 : struct.items)
         {
-          _iter100.write(oprot);
+          _iter104.write(oprot);
         }
       }
       BitSet optionals = new BitSet();
-      if (struct.isSetExpiration()) {
+      if (struct.isSetPrerequisites()) {
         optionals.set(0);
       }
-      if (struct.isSetTitle()) {
+      if (struct.isSetCooldown()) {
         optionals.set(1);
       }
-      if (struct.isSetText()) {
+      if (struct.isSetExpiration()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetTitle()) {
+        optionals.set(3);
+      }
+      if (struct.isSetText()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetPrerequisites()) {
+        {
+          oprot.writeI32(struct.prerequisites.size());
+          for (int _iter105 : struct.prerequisites)
+          {
+            oprot.writeI32(_iter105);
+          }
+        }
+      }
+      if (struct.isSetCooldown()) {
+        oprot.writeI64(struct.cooldown);
+      }
       if (struct.isSetExpiration()) {
         oprot.writeI64(struct.expiration);
       }
@@ -832,27 +1071,44 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       struct.id = iprot.readI32();
       struct.setIdIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list101 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.items = new ArrayList<QuestionnaireItem>(_list101.size);
-        QuestionnaireItem _elem102;
-        for (int _i103 = 0; _i103 < _list101.size; ++_i103)
+        org.apache.thrift.protocol.TList _list106 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.items = new ArrayList<QuestionnaireItem>(_list106.size);
+        QuestionnaireItem _elem107;
+        for (int _i108 = 0; _i108 < _list106.size; ++_i108)
         {
-          _elem102 = new QuestionnaireItem();
-          _elem102.read(iprot);
-          struct.items.add(_elem102);
+          _elem107 = new QuestionnaireItem();
+          _elem107.read(iprot);
+          struct.items.add(_elem107);
         }
       }
       struct.setItemsIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
+        {
+          org.apache.thrift.protocol.TList _list109 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+          struct.prerequisites = new ArrayList<Integer>(_list109.size);
+          int _elem110;
+          for (int _i111 = 0; _i111 < _list109.size; ++_i111)
+          {
+            _elem110 = iprot.readI32();
+            struct.prerequisites.add(_elem110);
+          }
+        }
+        struct.setPrerequisitesIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.cooldown = iprot.readI64();
+        struct.setCooldownIsSet(true);
+      }
+      if (incoming.get(2)) {
         struct.expiration = iprot.readI64();
         struct.setExpirationIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(3)) {
         struct.title = iprot.readString();
         struct.setTitleIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(4)) {
         struct.text = iprot.readString();
         struct.setTextIsSet(true);
       }

@@ -41,7 +41,8 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField UU_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuId", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)3);
-  private static final org.apache.thrift.protocol.TField ANSWERS_FIELD_DESC = new org.apache.thrift.protocol.TField("answers", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField COMPLETE_FIELD_DESC = new org.apache.thrift.protocol.TField("complete", org.apache.thrift.protocol.TType.BOOL, (short)4);
+  private static final org.apache.thrift.protocol.TField ANSWERS_FIELD_DESC = new org.apache.thrift.protocol.TField("answers", org.apache.thrift.protocol.TType.LIST, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -52,6 +53,7 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
   public int id; // required
   public String uuId; // required
   public long timestamp; // required
+  public boolean complete; // required
   public List<QuestionnaireAnswer> answers; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -59,7 +61,8 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     ID((short)1, "id"),
     UU_ID((short)2, "uuId"),
     TIMESTAMP((short)3, "timestamp"),
-    ANSWERS((short)4, "answers");
+    COMPLETE((short)4, "complete"),
+    ANSWERS((short)5, "answers");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -80,7 +83,9 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
           return UU_ID;
         case 3: // TIMESTAMP
           return TIMESTAMP;
-        case 4: // ANSWERS
+        case 4: // COMPLETE
+          return COMPLETE;
+        case 5: // ANSWERS
           return ANSWERS;
         default:
           return null;
@@ -124,6 +129,7 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
   private static final int __TIMESTAMP_ISSET_ID = 1;
+  private static final int __COMPLETE_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -134,6 +140,8 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.COMPLETE, new org.apache.thrift.meta_data.FieldMetaData("complete", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.ANSWERS, new org.apache.thrift.meta_data.FieldMetaData("answers", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, QuestionnaireAnswer.class))));
@@ -148,6 +156,7 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     int id,
     String uuId,
     long timestamp,
+    boolean complete,
     List<QuestionnaireAnswer> answers)
   {
     this();
@@ -156,6 +165,8 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     this.uuId = uuId;
     this.timestamp = timestamp;
     setTimestampIsSet(true);
+    this.complete = complete;
+    setCompleteIsSet(true);
     this.answers = answers;
   }
 
@@ -169,6 +180,7 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       this.uuId = other.uuId;
     }
     this.timestamp = other.timestamp;
+    this.complete = other.complete;
     if (other.isSetAnswers()) {
       List<QuestionnaireAnswer> __this__answers = new ArrayList<QuestionnaireAnswer>(other.answers.size());
       for (QuestionnaireAnswer other_element : other.answers) {
@@ -189,6 +201,8 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     this.uuId = null;
     setTimestampIsSet(false);
     this.timestamp = 0;
+    setCompleteIsSet(false);
+    this.complete = false;
     this.answers = null;
   }
 
@@ -262,6 +276,29 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TIMESTAMP_ISSET_ID, value);
   }
 
+  public boolean isComplete() {
+    return this.complete;
+  }
+
+  public Answers setComplete(boolean complete) {
+    this.complete = complete;
+    setCompleteIsSet(true);
+    return this;
+  }
+
+  public void unsetComplete() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __COMPLETE_ISSET_ID);
+  }
+
+  /** Returns true if field complete is set (has been assigned a value) and false otherwise */
+  public boolean isSetComplete() {
+    return EncodingUtils.testBit(__isset_bitfield, __COMPLETE_ISSET_ID);
+  }
+
+  public void setCompleteIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __COMPLETE_ISSET_ID, value);
+  }
+
   public int getAnswersSize() {
     return (this.answers == null) ? 0 : this.answers.size();
   }
@@ -327,6 +364,14 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       }
       break;
 
+    case COMPLETE:
+      if (value == null) {
+        unsetComplete();
+      } else {
+        setComplete((Boolean)value);
+      }
+      break;
+
     case ANSWERS:
       if (value == null) {
         unsetAnswers();
@@ -349,6 +394,9 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     case TIMESTAMP:
       return Long.valueOf(getTimestamp());
 
+    case COMPLETE:
+      return Boolean.valueOf(isComplete());
+
     case ANSWERS:
       return getAnswers();
 
@@ -369,6 +417,8 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       return isSetUuId();
     case TIMESTAMP:
       return isSetTimestamp();
+    case COMPLETE:
+      return isSetComplete();
     case ANSWERS:
       return isSetAnswers();
     }
@@ -415,6 +465,15 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
         return false;
     }
 
+    boolean this_present_complete = true;
+    boolean that_present_complete = true;
+    if (this_present_complete || that_present_complete) {
+      if (!(this_present_complete && that_present_complete))
+        return false;
+      if (this.complete != that.complete)
+        return false;
+    }
+
     boolean this_present_answers = true && this.isSetAnswers();
     boolean that_present_answers = true && that.isSetAnswers();
     if (this_present_answers || that_present_answers) {
@@ -445,6 +504,11 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     list.add(present_timestamp);
     if (present_timestamp)
       list.add(timestamp);
+
+    boolean present_complete = true;
+    list.add(present_complete);
+    if (present_complete)
+      list.add(complete);
 
     boolean present_answers = true && (isSetAnswers());
     list.add(present_answers);
@@ -488,6 +552,16 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     }
     if (isSetTimestamp()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, other.timestamp);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetComplete()).compareTo(other.isSetComplete());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetComplete()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.complete, other.complete);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -538,6 +612,10 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
     sb.append(this.timestamp);
     first = false;
     if (!first) sb.append(", ");
+    sb.append("complete:");
+    sb.append(this.complete);
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("answers:");
     if (this.answers == null) {
       sb.append("null");
@@ -556,6 +634,7 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'uuId' was not present! Struct: " + toString());
     }
     // alas, we cannot check 'timestamp' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'complete' because it's a primitive and you chose the non-beans generator.
     if (answers == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'answers' was not present! Struct: " + toString());
     }
@@ -622,17 +701,25 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // ANSWERS
+          case 4: // COMPLETE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.complete = iprot.readBool();
+              struct.setCompleteIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // ANSWERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
-                struct.answers = new ArrayList<QuestionnaireAnswer>(_list112.size);
-                QuestionnaireAnswer _elem113;
-                for (int _i114 = 0; _i114 < _list112.size; ++_i114)
+                org.apache.thrift.protocol.TList _list120 = iprot.readListBegin();
+                struct.answers = new ArrayList<QuestionnaireAnswer>(_list120.size);
+                QuestionnaireAnswer _elem121;
+                for (int _i122 = 0; _i122 < _list120.size; ++_i122)
                 {
-                  _elem113 = new QuestionnaireAnswer();
-                  _elem113.read(iprot);
-                  struct.answers.add(_elem113);
+                  _elem121 = new QuestionnaireAnswer();
+                  _elem121.read(iprot);
+                  struct.answers.add(_elem121);
                 }
                 iprot.readListEnd();
               }
@@ -655,6 +742,9 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       if (!struct.isSetTimestamp()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'timestamp' was not found in serialized data! Struct: " + toString());
       }
+      if (!struct.isSetComplete()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'complete' was not found in serialized data! Struct: " + toString());
+      }
       struct.validate();
     }
 
@@ -673,13 +763,16 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
       oprot.writeI64(struct.timestamp);
       oprot.writeFieldEnd();
+      oprot.writeFieldBegin(COMPLETE_FIELD_DESC);
+      oprot.writeBool(struct.complete);
+      oprot.writeFieldEnd();
       if (struct.answers != null) {
         oprot.writeFieldBegin(ANSWERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.answers.size()));
-          for (QuestionnaireAnswer _iter115 : struct.answers)
+          for (QuestionnaireAnswer _iter123 : struct.answers)
           {
-            _iter115.write(oprot);
+            _iter123.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -705,11 +798,12 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       oprot.writeI32(struct.id);
       oprot.writeString(struct.uuId);
       oprot.writeI64(struct.timestamp);
+      oprot.writeBool(struct.complete);
       {
         oprot.writeI32(struct.answers.size());
-        for (QuestionnaireAnswer _iter116 : struct.answers)
+        for (QuestionnaireAnswer _iter124 : struct.answers)
         {
-          _iter116.write(oprot);
+          _iter124.write(oprot);
         }
       }
     }
@@ -723,15 +817,17 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       struct.setUuIdIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
+      struct.complete = iprot.readBool();
+      struct.setCompleteIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list117 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.answers = new ArrayList<QuestionnaireAnswer>(_list117.size);
-        QuestionnaireAnswer _elem118;
-        for (int _i119 = 0; _i119 < _list117.size; ++_i119)
+        org.apache.thrift.protocol.TList _list125 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.answers = new ArrayList<QuestionnaireAnswer>(_list125.size);
+        QuestionnaireAnswer _elem126;
+        for (int _i127 = 0; _i127 < _list125.size; ++_i127)
         {
-          _elem118 = new QuestionnaireAnswer();
-          _elem118.read(iprot);
-          struct.answers.add(_elem118);
+          _elem126 = new QuestionnaireAnswer();
+          _elem126.read(iprot);
+          struct.answers.add(_elem126);
         }
       }
       struct.setAnswersIsSet(true);
