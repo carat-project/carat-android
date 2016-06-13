@@ -36,7 +36,6 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
-import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
 import static edu.berkeley.cs.amplab.carat.android.model_classes.StaticAction.ActionType;
@@ -231,22 +230,23 @@ public class CaratApplication extends Application {
             String surveyUrl = CaratApplication.getStorage().getQuestionnaireUrl();
             if(surveyUrl != null && surveyUrl.contains("http")){
                 actions.add(new StaticAction(ActionType.GOOGLE_SURVEY,
-                        R.string.survey_action_title,
-                        R.string.survey_action_subtitle));
+                        getContext().getString(R.string.survey_action_title),
+                        getContext().getString(R.string.survey_action_subtitle)));
             }
 
             // Local survey
-            Questionnaire questionnaire = CaratApplication.getStorage().getQuestionnaire(0);
-            if(questionnaire != null && !questionnaire.getItems().isEmpty()){
-                actions.add(new StaticAction(ActionType.QUESTIONNAIRE,
-                        R.string.action_questionnaire,
-                        R.string.action_questionnaire_subtitle));
+            HashMap<Integer, Questionnaire> questionnaires = CaratApplication.getStorage().getQuestionnaires();
+            if(questionnaires != null && !questionnaires.isEmpty()){
+                for(Questionnaire q : questionnaires.values()){
+                    actions.add(new StaticAction(ActionType.QUESTIONNAIRE,
+                            q.getTitle(), q.getText(), q.getId()));
+                }
             }
 
             // Help Carat collect data
             if(getActionsAmount() == 0){
                 actions.add(new StaticAction(ActionType.COLLECT,
-                        R.string.helpcarat, R.string.helpcarat_subtitle)
+                        getContext().getString(R.string.helpcarat), getContext().getString(R.string.helpcarat_subtitle))
                         .makeExpandable(R.string.helpcarat_expanded_title,
                                 R.string.no_actions_message));
             }

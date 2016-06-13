@@ -8,9 +8,10 @@ import edu.berkeley.cs.amplab.carat.android.R;
  */
 public class StaticAction {
     private ActionType type;
+    private Integer id;
     private int icon;
-    private int title;
-    private int subtitle;
+    private String title;
+    private String subtitle;
     private boolean expandable;
     private int expandedTitle;
     private int expandedText;
@@ -23,13 +24,19 @@ public class StaticAction {
      * @param type Action type
      * @param title Title resource id
      * @param subtitle Subtitle resource id
+     * @param id Resource id
      */
-    public StaticAction(ActionType type, int title, int subtitle){
+    public StaticAction(ActionType type, String title, String subtitle, Integer id){
         this.type = type;
         this.title = title;
         this.subtitle = subtitle;
         this.expandable = false;
         this.icon = R.drawable.ic_launcher_transp;
+        this.id = id;
+    }
+
+    public StaticAction(ActionType type, String title, String subtitle){
+        this(type, title, subtitle, null);
     }
 
     /**
@@ -70,11 +77,11 @@ public class StaticAction {
         return icon;
     }
 
-    public int getTitle() {
+    public String getTitle() {
         return title;
     }
 
-    public int getSubtitle() {
+    public String getSubtitle() {
         return subtitle;
     }
 
@@ -84,5 +91,9 @@ public class StaticAction {
 
     public int getExpandedTitle(){
         return expandedTitle;
+    }
+
+    public int getId(){
+        return id;
     }
 }
