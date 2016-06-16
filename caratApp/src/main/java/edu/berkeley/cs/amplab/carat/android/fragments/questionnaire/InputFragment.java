@@ -55,7 +55,7 @@ public class InputFragment extends Fragment {
         fragment.id = item.getQuestionId();
         fragment.text = item.getTitle();
         fragment.subtext = item.getContent();
-        fragment.numeric = item.numeric;
+        fragment.numeric = item.isInputNumeric();
         return fragment;
     }
 

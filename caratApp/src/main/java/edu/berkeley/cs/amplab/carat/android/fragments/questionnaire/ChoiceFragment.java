@@ -62,8 +62,8 @@ public class ChoiceFragment extends Fragment {
         fragment.text = item.getTitle();
         fragment.subtext = item.getContent();
         fragment.choices = item.getChoices();
-        fragment.other = item.other;
-        fragment.numeric = item.numeric;
+        fragment.other = item.isOtherOption();
+        fragment.numeric = item.isInputNumeric();
         fragment.lastIndex = fragment.choices.size()-1;
         return fragment;
     }
