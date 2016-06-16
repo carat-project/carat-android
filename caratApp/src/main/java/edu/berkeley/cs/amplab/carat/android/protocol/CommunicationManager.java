@@ -8,9 +8,8 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
@@ -20,13 +19,13 @@ import com.flurry.android.FlurryAgent;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.util.Log;
+
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
-import edu.berkeley.cs.amplab.carat.android.Item;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
 import edu.berkeley.cs.amplab.carat.thrift.HogBugReport;
@@ -335,7 +334,11 @@ public class CommunicationManager {
 		}
 
 		// Download questionnaire
-		getQuestionnaire(uuId);
+		getQuestionnaires(uuId);
+
+		// Upload all answers for different questionnaires, there should
+		// not be many (most of the time none) so doing this here is ok.
+		uploadAnswers();
 
 		if (blacklistShouldBeRefreshed) {
 			refreshBlacklist();
@@ -541,8 +544,7 @@ public class CommunicationManager {
 		}.start();
 	}
 
-	// TODO: Remake into getQuestionnaires which fetches a list of questionnaires
-	private boolean getQuestionnaire(String uuid){
+	private boolean getQuestionnaires(String uuid){
 		double freshness = CaratApplication.getStorage().getQuestionnaireFreshness(0);
 		if(System.currentTimeMillis() - freshness < Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE) {
 			// Not enough time passed since last check
@@ -553,9 +555,70 @@ public class CommunicationManager {
 			// This needs to be EU, other servers will not provide meaningful data
 			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.EU);
 			List<Questionnaire> questionnaires = instance.getQuestionnaires(uuid);
+			if(questionnaires == null) return false;
+			if(Constants.DEBUG){
+				Log.d(TAG, "Downloaded questionnaires " + questionnaires);
+			}
+			questionnaires = filterPendingAnswered(questionnaires);
 			CaratApplication.getStorage().writeQuestionnaires(questionnaires);
 			safeClose(instance);
 			return true;
+		} catch (Throwable th){
+			safeClose(instance);
+		}
+		return false;
+	}
+
+	/**
+	 * Filter out questionnaires that already have pending answers.
+	 * @param questionnaires list of questionnaires
+	 * @return filtered questionnaires
+     */
+	private List<Questionnaire> filterPendingAnswered(List<Questionnaire> questionnaires){
+		HashMap<Integer, Answers> answers = CaratApplication.getStorage().getAllAnswers();
+		if(answers != null && !answers.isEmpty()){
+			List<Questionnaire> filtered = new ArrayList<>();
+			for(Questionnaire q : questionnaires){
+				Answers a = answers.get(q.getId());
+				if(a == null || !a.isComplete()){
+					filtered.add(q);
+				}
+			}
+			questionnaires = filtered;
+		}
+		return questionnaires;
+	}
+
+	private void uploadAnswers(){
+		// Failed submissions are collected in a map and saved back in
+		// storage for the next scheduled upload.
+		HashMap<Integer, Answers> answerList = CaratApplication.getStorage().getAllAnswers();
+		if(answerList == null || answerList.isEmpty()) return;
+		List<Answers> failed = new ArrayList<>();
+		for(Answers answers : answerList.values()){
+			boolean success = false;
+			if(answers.isComplete()){
+				success = uploadAnswers(answers);
+			}
+			if(!success){
+				failed.add(answers);
+			}
+		}
+		// Optimally an empty list gets written here
+		CaratApplication.getStorage().writeAllAnswers(failed);
+	}
+
+	private boolean uploadAnswers(Answers answers){
+		if(Constants.DEBUG){
+			Log.d(TAG, "Uploading anwers: " + answers);
+		}
+		CaratService.Client instance = null;
+		try {
+			// This needs to be EU, other servers will not provide meaningful data
+			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.EU);
+			boolean success = instance.uploadAnswers(answers);
+			safeClose(instance);
+			return success;
 		} catch (Throwable th){
 			safeClose(instance);
 		}

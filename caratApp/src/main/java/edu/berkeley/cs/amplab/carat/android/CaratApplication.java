@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
@@ -27,8 +27,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import edu.berkeley.cs.amplab.carat.android.model_classes.MyDeviceData;
-import edu.berkeley.cs.amplab.carat.android.model_classes.StaticAction;
-import edu.berkeley.cs.amplab.carat.android.protocol.Action;
+import edu.berkeley.cs.amplab.carat.android.model_classes.CustomAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.android.protocol.SampleSender;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
@@ -38,7 +37,7 @@ import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
-import static edu.berkeley.cs.amplab.carat.android.model_classes.StaticAction.ActionType;
+import static edu.berkeley.cs.amplab.carat.android.model_classes.CustomAction.ActionType;
 
 /**
  * Application class for Carat Android App. Place App-global static constants
@@ -223,13 +222,13 @@ public class CaratApplication extends Application {
      * Here is where you define static actions
      * @return List of static actions
      */
-    public static ArrayList<StaticAction> getStaticActions(){
-            ArrayList<StaticAction> actions = new ArrayList<>();
+    public static ArrayList<CustomAction> getStaticActions(){
+            ArrayList<CustomAction> actions = new ArrayList<>();
 
             // Google forms survey
             String surveyUrl = CaratApplication.getStorage().getQuestionnaireUrl();
             if(surveyUrl != null && surveyUrl.contains("http")){
-                actions.add(new StaticAction(ActionType.GOOGLE_SURVEY,
+                actions.add(new CustomAction(ActionType.GOOGLE_SURVEY,
                         getContext().getString(R.string.survey_action_title),
                         getContext().getString(R.string.survey_action_subtitle)));
             }
@@ -238,14 +237,20 @@ public class CaratApplication extends Application {
             HashMap<Integer, Questionnaire> questionnaires = CaratApplication.getStorage().getQuestionnaires();
             if(questionnaires != null && !questionnaires.isEmpty()){
                 for(Questionnaire q : questionnaires.values()){
-                    actions.add(new StaticAction(ActionType.QUESTIONNAIRE,
-                            q.getTitle(), q.getText(), q.getId()));
+                    // This is checked server-side as well, but better safe than sorry
+                    if(q.isSetExpirationDate()){
+                        long expirationDate = q.getExpirationDate();
+                        long now = System.currentTimeMillis();
+                        if(now >= expirationDate) continue;
+                    }
+                    actions.add(new CustomAction(ActionType.QUESTIONNAIRE,
+                            q.getActionTitle(), q.getActionText(), q.getId()));
                 }
             }
 
             // Help Carat collect data
             if(getActionsAmount() == 0){
-                actions.add(new StaticAction(ActionType.COLLECT,
+                actions.add(new CustomAction(ActionType.COLLECT,
                         getContext().getString(R.string.helpcarat), getContext().getString(R.string.helpcarat_subtitle))
                         .makeExpandable(R.string.helpcarat_expanded_title,
                                 R.string.no_actions_message));

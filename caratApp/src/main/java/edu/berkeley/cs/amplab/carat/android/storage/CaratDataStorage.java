@@ -36,6 +36,7 @@ import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
 public class CaratDataStorage {
+    public static final String TAG = "CaratDataStorage";
 
     public static final String FILENAME = "carat-reports.dat";
     public static final String BLACKLIST_FILE = "carat-blacklist.dat";
@@ -120,12 +121,6 @@ public class CaratDataStorage {
     public void writeHogStatsFreshness(){
         hogStatsFreshness = System.currentTimeMillis();
         writeText(hogStatsFreshness + "", HOGSTATS_FRESHNESS);
-    }
-
-    public void writeQuestionnaireFreshness(int id){
-        long freshness = System.currentTimeMillis();
-        questionnaireFreshness.put(id, freshness);
-        writeText(freshness + "", QUESTIONNAIRE_FRESHNESS + "-" +id + ".dat");
     }
 
     public void writeHogStatsDate(String date){
@@ -343,6 +338,16 @@ public class CaratDataStorage {
             return readGloblist();
     }
 
+    public HashMap<Integer, Answers> getAllAnswers(){
+        if(answers != null && answers.get() != null){
+            HashMap<Integer, Answers> map = answers.get();
+            if(map != null){
+                return map;
+            }
+        }
+        return readAnswers();
+    }
+
     public HashMap<Integer, Questionnaire> getQuestionnaires(){
         if(questionnaires != null && questionnaires.get() != null){
             HashMap<Integer, Questionnaire> map = questionnaires.get();
@@ -352,6 +357,7 @@ public class CaratDataStorage {
         }
         return readQuestionnaires();
     }
+
 
     public Questionnaire getQuestionnaire(int id){
         HashMap<Integer, Questionnaire> map = null;
@@ -365,14 +371,33 @@ public class CaratDataStorage {
         return null;
     }
 
-    public Answers getAnswers(int id){
-        if(answers != null && answers.get() != null){
-            Answers result = answers.get().get(id);
-            if(result != null){
-                return result;
-            }
+    public boolean deleteQuestionnaire(int id){
+
+        HashMap<Integer, Questionnaire> map = null;
+        if(questionnaires != null && questionnaires.get() != null){
+            map = questionnaires.get();
         }
-        return readAnswers(id);
+        if(map == null) map = readQuestionnaires();
+        if(map != null){
+            map.remove(id);
+            questionnaires = new WeakReference<>(map);
+            List<Questionnaire> result = new ArrayList<>(map.values());
+            writeQuestionnaires(result);
+            return true;
+        }
+        return false;
+    }
+
+    public Answers getAnswers(int id){
+        HashMap<Integer, Answers> map = null;
+        if(answers != null && answers.get() != null){
+            map = answers.get();
+        }
+        if(map == null) map = readAnswers();
+        if(map != null){
+            return map.get(id);
+        }
+        return null;
     }
 
     /**
@@ -436,6 +461,9 @@ public class CaratDataStorage {
                 map.put(q.getId(), q);
             }
             questionnaires = new WeakReference<>(map);
+            if(Constants.DEBUG){
+                Log.d(TAG, "Read questionnaires " + map);
+            }
             return map;
         } else {
             return null;
@@ -443,16 +471,16 @@ public class CaratDataStorage {
     }
 
     /**
-     * @param questionnaire list of questionnaire items
+     * @param questionnaires list of questionnaire items
      */
-    public void writeQuestionnaires(List<Questionnaire> questionnaire){
-        if(questionnaire== null || questionnaire.isEmpty()) return;
+    public void writeQuestionnaires(List<Questionnaire> questionnaires){
+        if(questionnaires== null) return;
         HashMap<Integer, Questionnaire> map = new HashMap<>();
-        for(Questionnaire q : questionnaire) {
+        for(Questionnaire q : questionnaires) {
             map.put(q.getId(), q);
         }
-        questionnaires = new WeakReference<>(map);
-        writeObject(questionnaire, QUESTIONNAIRE_FILE);
+        this.questionnaires = new WeakReference<>(map);
+        writeObject(questionnaires, QUESTIONNAIRE_FILE);
     }
 
     /**
@@ -462,7 +490,7 @@ public class CaratDataStorage {
     public long readQuestionnaireFreshness(int id){
         String freshness = readText(QUESTIONNAIRE_FRESHNESS + "-" + id + ".dat");
         if (Constants.DEBUG)
-            Log.d("CaratDataStorage", "Read questionnaire freshness: " + freshness);
+            Log.d(TAG, "Read questionnaire freshness: " + freshness);
         if (freshness != null)
             return Long.parseLong(freshness);
         else
@@ -472,37 +500,50 @@ public class CaratDataStorage {
     /**
      * @return stored questionnaire answers
      */
-    public Answers readAnswers(int id){
-        Object o = readObject(QUESTIONNAIRE_ANSWERS_FILE + "-" + id + ".dat");
+    @SuppressWarnings("unchecked")
+    public HashMap<Integer, Answers> readAnswers(){
+        Object o = readObject(QUESTIONNAIRE_ANSWERS_FILE);
         if(o != null){
-            Answers result = (Answers) o;
-            if(answers == null || answers.get() == null){
-                HashMap<Integer, Answers> map = new HashMap<>();
-                map.put(result.getId(), result);
-                answers = new WeakReference<>(map);
-            } else {
-                answers.get().put(result.getId(), result);
+            List<Answers> result = (List<Answers>) o;
+            HashMap<Integer, Answers> map = new HashMap<>();
+            for(Answers a : result) {
+                map.put(a.getId(), a);
             }
-            return (Answers) o;
+            answers = new WeakReference<>(map);
+            if(Constants.DEBUG){
+                Log.d(TAG, "Read answers "+map);
+            }
+            return map;
         } else {
             return null;
         }
     }
 
-    /**
-     * @param answers questionnaire answers
-     */
-    public void writeAnswers(Answers answers){
-        if(answers == null) return;
-        int id = answers.getId();
-        if(this.answers == null || this.answers.get() == null){
-            HashMap<Integer, Answers> map = new HashMap<>();
-            map.put(answers.getId(), answers);
-            this.answers = new WeakReference<>(map);
-        } else {
-            this.answers.get().put(answers.getId(), answers);
+    public void writeAllAnswers(List<Answers> save){
+        HashMap<Integer, Answers> map = new HashMap<>();
+        for(Answers a : save){
+            map.put(a.getId(), a);
         }
-        writeObject(answers, QUESTIONNAIRE_ANSWERS_FILE+ "-" + id + ".dat");
+        answers = new WeakReference<>(map);
+        writeObject(save, QUESTIONNAIRE_ANSWERS_FILE);
+    }
+
+    /**
+     * @param save questionnaire answers
+     */
+    public void writeAnswers(Answers save){
+        // Get the map of current answers, insert the new one and create a new weakref.
+        // Finally flush values back to storage as a list of answers.
+        HashMap<Integer, Answers> map = null;
+        if(answers != null && answers.get() != null){
+            map = answers.get();
+        }
+        if(map == null) map = readAnswers();
+        if(map == null) map = new HashMap<>();
+        map.put(save.getId(), save);
+        answers = new WeakReference<>(map);
+        List<Answers> result = new ArrayList<>(map.values());
+        writeObject(result, QUESTIONNAIRE_ANSWERS_FILE);
     }
 
     /**
