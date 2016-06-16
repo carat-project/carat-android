@@ -46,7 +46,7 @@
             android:layout_below="@id/process_name"
             android:layout_toLeftOf="@id/collapse_icon"
             android:layout_marginRight="4dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="8dp"
             android:layout_toRightOf="@id/process_icon"
             android:text="Expected Improvement: 1h 42m" />
 

@@ -3,7 +3,7 @@ package edu.berkeley.cs.amplab.carat.android.model_classes;
 import edu.berkeley.cs.amplab.carat.android.R;
 
 /**
- * Static actions
+ * Custom actions
  * Created by Jonatan Hamberg on 23.3.2016.
  */
 public class CustomAction {
