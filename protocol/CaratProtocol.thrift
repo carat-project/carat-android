@@ -119,6 +119,8 @@ struct Feature {
 	2: optional string value;
 }
 
+typedef list<Feature> FeatureList
+
 //
 // System settings
 //
@@ -251,26 +253,36 @@ struct HogBugReport {
 struct QuestionnaireItem {
 	1: required string type;			// Information, choice, multichoice, input
 	2: optional i32 questionId;			// Used to identify answers
-	3: optional string title;			// Item title
-	4: optional string content;			// Item content
+	3: optional string title;			// Bolded title on top of content text
+	4: optional string content;			// Normal content text
 	5: optional list<string> choices;	// List of choices
-	6: optional bool other; 			// Show input box for the last choice
-	7: optional bool numeric;			// Limit input to numbers? Default: false
+	6: optional bool otherOption; 		// Show input box below the last choice
+	7: optional bool inputNumeric;		// Limit input to numeric values only
 }
 
 struct Questionnaire {
 	1: required i32 id;							// Questionnaire id
 	2: optional list<i32> prerequisites			// Required questionnaires before this
 	3: optional i64 cooldown;					// Days to wait after prerequisites are met
-	4: optional i64 expiration;					// Expiration date as seconds from epoch
-	5: optional string title;					// Action title
-	6: optional string text;					// Action text
-	7: required list<QuestionnaireItem> items;	// List of items
+	4: optional i64 expirationDate;				// Expiration date as milliseconds from epoch
+
+	// Options for repeating the same questionnaire over again
+	5: optional bool repeat;					// Enable repeating
+	6: optional i64 repeatInterval				// IMPORTANT: Days between repeats
+	7: optional i64 repeatCount					// Times to repeat. Default: infinite
+	8: optional i64	repeatDays					// Days to repeat after first answer
+
+	// Display a custom CTA message in actions
+	9: optional string actionTitle;
+	10: optional string actionText;
+
+	11: required list<QuestionnaireItem> items;
 }
 
 //
 // Fields for questionnaire answers
 //
+
 struct QuestionnaireAnswer {
 	1: required i32 questionId;		// Question id
 	2: optional list<i32> answers;	// List of answer ids
@@ -285,8 +297,6 @@ struct Answers {
 	4: required bool complete;						// All questions answered y/n
 	5: required list<QuestionnaireAnswer> answers;	// List of answers
 }
-
-typedef list<Feature> FeatureList
 
 //
 // The CARAT service.

@@ -6,7 +6,7 @@ import edu.berkeley.cs.amplab.carat.android.R;
  * Static actions
  * Created by Jonatan Hamberg on 23.3.2016.
  */
-public class StaticAction {
+public class CustomAction {
     private ActionType type;
     private Integer id;
     private int icon;
@@ -26,7 +26,7 @@ public class StaticAction {
      * @param subtitle Subtitle resource id
      * @param id Resource id
      */
-    public StaticAction(ActionType type, String title, String subtitle, Integer id){
+    public CustomAction(ActionType type, String title, String subtitle, Integer id){
         this.type = type;
         this.title = title;
         this.subtitle = subtitle;
@@ -35,7 +35,7 @@ public class StaticAction {
         this.id = id;
     }
 
-    public StaticAction(ActionType type, String title, String subtitle){
+    public CustomAction(ActionType type, String title, String subtitle){
         this(type, title, subtitle, null);
     }
 
@@ -45,7 +45,7 @@ public class StaticAction {
      * @param text Text resource id
      * @return Static action instance
      */
-    public StaticAction makeExpandable(int title, int text){
+    public CustomAction makeExpandable(int title, int text){
         this.expandable = true;
         this.expandedTitle = title;
         this.expandedText = text;
@@ -57,7 +57,7 @@ public class StaticAction {
      * @param resId Action icon resource id
      * @return Static action instance
      */
-    public StaticAction addIcon(int resId){
+    public CustomAction addIcon(int resId){
         this.icon = resId;
         return this;
     }
