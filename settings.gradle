@@ -1,4 +1,2 @@
 include ':mPChartLib'
-include ':androidsupportv4preferencefragment'
-include ':androidswitchbackport'
 include ':caratApp'
