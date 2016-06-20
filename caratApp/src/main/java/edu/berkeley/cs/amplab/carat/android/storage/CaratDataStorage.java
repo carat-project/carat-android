@@ -15,6 +15,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.nfc.Tag;
 import android.util.Log;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
@@ -38,6 +39,7 @@ public class CaratDataStorage {
     public static final String HOGSTATS_FRESHNESS = "carat-hogstats-freshness.dat";
     public static final String HOGSTATS_DATE = "carat-hogstats-date.dat";
     public static final String HOGSTATS_FILE = "carat-hogstats.dat";
+    public static final String SAMPLES_LASTUPLOAD = "carat-lastupload.dat";
 
     public static final String SAMPLES_REPORTED = "carat-samples-reported.dat";
 
@@ -49,6 +51,7 @@ public class CaratDataStorage {
     private long quickHogsFreshness = 0;
     private long samples_reported = 0;
     private long hogStatsFreshness = 0;
+    private long lastUploadTimestamp = 0;
     private String hogStatsDate = null;
     private String questionnaireUrl = null;
     private WeakReference<Reports> caratData = null;
@@ -91,6 +94,11 @@ public class CaratDataStorage {
     public void writeQuickHogsFreshness() {
         quickHogsFreshness = System.currentTimeMillis();
         writeText(quickHogsFreshness + "", QUICKHOGS_FRESHNESS);
+    }
+
+    public void writeLastUploadTimestamp(){
+        lastUploadTimestamp = System.currentTimeMillis();
+        writeText(lastUploadTimestamp + "", SAMPLES_LASTUPLOAD);
     }
 
     public void writeHogStats(List<HogStats> stats){
@@ -270,6 +278,25 @@ public class CaratDataStorage {
         return freshness;
     }
 
+    public long getLastUploadTimestamp(){
+        if(lastUploadTimestamp != -1){
+            return lastUploadTimestamp;
+        } else {
+            return readLastUploadTimestamp();
+        }
+    }
+
+    public long readLastUploadTimestamp(){
+        String s = readText(SAMPLES_LASTUPLOAD);
+        if(Constants.DEBUG){
+            Log.d("CaratDataStorage", "Read last sampel upload " + s);
+        }
+        if(s != null){
+            return Long.parseLong(s);
+        } else {
+            return 0;
+        }
+    }
 
     public long readBlacklistFreshness() {
         String s = readText(BLACKLIST_FRESHNESS);

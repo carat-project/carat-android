@@ -241,6 +241,10 @@ public class CaratApplication extends Application {
             return actions;
     }
 
+    public boolean isOnBackground(){
+        return main.isOnBackground();
+    }
+
     public static void refreshStaticActionCount(){
         main.setStaticActionsAmount(getStaticActions().size());
     }
@@ -497,29 +501,33 @@ public class CaratApplication extends Application {
         return Constants.REGISTERED_UUID;
     }
 
-
-    public void refreshUi(boolean fromResume) {
-        boolean connecting = false;
-        boolean newData = false;
-        Log.d("debug", "*** Start refresh");
-        Context co = getApplicationContext();
-        // TODO: using a shared preferences object might cause problem in different OS versions. replace with a private one. see MainActivity.AsyncTask.doInBackground().
-        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(co);
+    public boolean isNetworkReady() {
+        Context context = getContext();
+        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean useWifiOnly = p.getBoolean(getString(R.string.wifi_only_key), false);
-        if (Constants.DEBUG)
-            Log.d(TAG, "Wi-Fi only: " + useWifiOnly);
         String networkStatus = SamplingLibrary.getNetworkStatus(getApplicationContext());
-        String networkType = SamplingLibrary.getNetworkType(co);
-
-        boolean connected = (!useWifiOnly && networkStatus == SamplingLibrary.NETWORKSTATUS_CONNECTED)
+        String networkType = SamplingLibrary.getNetworkType(context);
+        return (!useWifiOnly && networkStatus.equalsIgnoreCase(SamplingLibrary.NETWORKSTATUS_CONNECTED))
                 || networkType.equals("WIFI");
+    }
 
+    public void checkAndRefreshReports(){
         long freshness = getStorage().getFreshness();
         long elapsed = System.currentTimeMillis() - freshness;
+        if(elapsed < Constants.FRESHNESS_TIMEOUT) return;
 
-        // Check freshness here to avoid unnecessary load on older devices
-        if (connected && commManager != null && elapsed > Constants.FRESHNESS_TIMEOUT) {
-            // Show we are updating...
+        // Wait for 5 seconds to see if network comes up
+        String status = SamplingLibrary.getNetworkStatus(getApplicationContext());
+        if(status.equals(SamplingLibrary.NETWORKSTATUS_CONNECTING)){
+            try {Thread.sleep(Constants.COMMS_WIFI_WAIT);}
+            catch (InterruptedException e1) {
+                // No operation
+            }
+        }
+
+        // Check network status and data freshness, then update
+        if(isNetworkReady()){
+            boolean success = false;
             main.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -528,14 +536,12 @@ public class CaratApplication extends Application {
             });
             CaratApplication.setActionInProgress();
             try {
-                commManager.refreshAllReports();
-            } catch (Throwable th) {
-                // Any sort of malformed response, too short string,
-                // etc...
+                success = commManager.refreshAllReports();
+            } catch (Throwable th){
+                // Any sort of malformed response
                 Log.w(TAG, "Failed to refresh reports: " + th + Constants.MSG_TRY_AGAIN);
                 th.printStackTrace();
             }
-            connecting = false;
             CaratApplication.setActionProgress(90, getString(R.string.finishing), false);
             main.runOnUiThread(new Runnable() {
                 @Override
@@ -543,66 +549,21 @@ public class CaratApplication extends Application {
                     main.setProgressCircle(false);
                 }
             });
-        } else if (networkStatus.equals(SamplingLibrary.NETWORKSTATUS_CONNECTING)) {
-            Log.w(TAG, "Network status: " + networkStatus + ", trying again in 10s.");
-            connecting = true;
+            if(success){
+                setReportData();
+                CaratApplication.refreshStaticActionCount();
+            }
         }
+    }
 
-        // TODO: Handle correctly
-        if (fromResume && connecting) {
-            // wait for WiFi to come up
-            main.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    main.setProgressCircle(true);
-                }
-            });
-            try {
-                Thread.sleep(Constants.COMMS_WIFI_WAIT);
-            } catch (InterruptedException e1) {
-                // ignore
+    public void checkAndSendSamples(){
+        long lastUploaded = getStorage().getLastUploadTimestamp();
+        long elapsed = System.currentTimeMillis() - lastUploaded;
+        if(elapsed > Constants.FRESHNESS_TIMEOUT){
+            if(SampleSender.sendSamples(CaratApplication.this)){
+                getStorage().writeLastUploadTimestamp();
             }
-
-            // Show we are updating...
-            CaratApplication.setActionInProgress();
-            try {
-                commManager.refreshAllReports();
-            } catch (Throwable th) {
-                // Any sort of malformed response, too short string,
-                // etc...
-                Log.w(TAG, "Failed to refresh reports: " + th + Constants.MSG_TRY_AGAIN);
-                th.printStackTrace();
-            }
-
-            setActionProgress(90, getString(R.string.finishing), false);
-            main.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    main.setProgressCircle(false);
-                }
-            });
         }
-
-        //CaratApplication.setActionFinished();
-        setReportData();
-        CaratApplication.refreshStaticActionCount();
-        main.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {main.refreshCurrentFragment();
-            }
-        });
-        //CaratApplication.setActionFinished();
-
-        // TODO: Handle correctly
-        if (fromResume)
-            SampleSender.sendSamples(CaratApplication.this);
-        main.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {main.refreshDashboardProgress();
-            }
-        });
-
-        Log.d("debug", "*** End refresh");
     }
 
     public boolean isSendingSamples(){
