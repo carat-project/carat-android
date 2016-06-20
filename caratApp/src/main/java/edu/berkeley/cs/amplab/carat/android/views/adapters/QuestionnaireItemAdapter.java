@@ -18,6 +18,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.ChoiceFragme
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InformationFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InputFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.MultichoiceFragment;
+import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
@@ -42,15 +43,18 @@ public class QuestionnaireItemAdapter {
         }
     }
 
-    public void storeAnswers(){
+    public void storeAnswers(boolean submitted){
         if(this.answers == null) return;
         Answers answers = new Answers();
         answers.setId(id);
+        answers.setComplete(submitted);
         answers.setUuId(CaratApplication.myDeviceData.getCaratId());
-        answers.setTimestamp(System.currentTimeMillis() / 1000);
+        answers.setTimestamp(System.currentTimeMillis());
         answers.setAnswers(new ArrayList<>(this.answers.values()));
-
         CaratApplication.getStorage().writeAnswers(answers);
+        if(submitted){
+            CaratApplication.getStorage().deleteQuestionnaire(id);
+        }
     }
 
     public void loadStoredAnswers(){
@@ -69,7 +73,7 @@ public class QuestionnaireItemAdapter {
 
     public void saveAnswer(QuestionnaireAnswer answer){
         answers.put(answer.getQuestionId(), answer);
-        storeAnswers();
+        storeAnswers(false);
     }
 
     public QuestionnaireAnswer getAnswer(int questionId){
@@ -119,16 +123,11 @@ public class QuestionnaireItemAdapter {
     }
 
     public void completeQuestionnaire(MainActivity mainActivity){
-        // TODO: Send results, set answered flag
-        exitQuestionnaire(mainActivity);
-    }
-
-    public void exitQuestionnaire(MainActivity mainActivity){
+        storeAnswers(true);
         Context context = mainActivity.getApplicationContext();
         mainActivity.loadHomeScreen();
         String thanksMessage = mainActivity.getString(R.string.participationThanks);
         Toast.makeText(context, thanksMessage, Toast.LENGTH_LONG).show();
     }
-
 }
 
