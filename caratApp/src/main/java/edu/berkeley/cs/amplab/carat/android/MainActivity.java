@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         p = PreferenceManager.getDefaultSharedPreferences(this);
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        //PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         if (!p.getBoolean(getResources().getString(R.string.save_accept_eula), false)) {
             Intent i = new Intent(this, TutorialActivity.class);
             this.startActivityForResult(i, Constants.REQUESTCODE_ACCEPT_EULA);
@@ -244,7 +244,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(application != null){
                     application.checkAndRefreshReports();
                     application.checkAndSendSamples();
-                    refreshCurrentFragment();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            refreshCurrentFragment();
+                        }
+                    });
                 }
                 if(Constants.DEBUG){
                     Log.d(TAG, "** Stopped refreshing data **");
