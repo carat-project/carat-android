@@ -17,6 +17,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,7 +53,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragme
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
 
-public class MainActivity extends ActionBarActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String FLURRY_KEYFILE = "flurry.properties";
     private static final String TAG = "CaratMainActivity";
@@ -258,7 +259,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         inflater.inflate(R.menu.menu_carat, menu);
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean useWifiOnly = p.getBoolean(getString(R.string.wifi_only_key), false);
+        final boolean allowBackground = p.getBoolean("bgRefresh", false);
         menu.findItem(R.id.action_wifi_only).setChecked(useWifiOnly);
+        menu.findItem(R.id.action_allow_background).setChecked(allowBackground);
         //setProgressCircle(false);
         return super.onCreateOptionsMenu(menu);
 
