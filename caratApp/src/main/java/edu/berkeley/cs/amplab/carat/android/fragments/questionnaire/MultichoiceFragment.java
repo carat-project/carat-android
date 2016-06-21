@@ -25,7 +25,9 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.fragments.*;
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.views.adapters.QuestionnaireItemAdapter;
+import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 
@@ -40,6 +42,7 @@ public class MultichoiceFragment extends Fragment {
     private int index, id, lastIndex;
     private String text, subtext;
     private List<String> choices;
+    private List<Integer> location;
     private boolean other, numeric, last;
 
     private RelativeLayout mainFrame;
@@ -64,6 +67,7 @@ public class MultichoiceFragment extends Fragment {
         fragment.other = item.isOtherOption();
         fragment.numeric = item.isInputNumeric();
         fragment.lastIndex = fragment.choices.size()-1;
+        fragment.location = item.getLocation();
         return fragment;
     }
 
@@ -290,7 +294,20 @@ public class MultichoiceFragment extends Fragment {
         if(other && answers.contains(lastIndex)){
             answer.setInput(otherInput.getText().toString());
         }
+        if(location != null && locationAllowed(answers)){
+            String location = SamplingLibrary.getCoarseLocation(getContext());
+            answer.setLocation(location);
+        }
         return answer;
+    }
+
+    private boolean locationAllowed(List<Integer> answers){
+        for(int id : answers){
+            if(location.contains(id)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<Integer> getSelectedChoices(){

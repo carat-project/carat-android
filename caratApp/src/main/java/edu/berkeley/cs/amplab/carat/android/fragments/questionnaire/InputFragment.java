@@ -11,17 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import java.util.List;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.views.adapters.QuestionnaireItemAdapter;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
@@ -36,7 +34,7 @@ public class InputFragment extends Fragment {
 
     private int index, id;
     private String text, subtext;
-    private boolean last, numeric;
+    private boolean last, numeric, collectLocation;
 
     private RelativeLayout mainFrame;
     private TextView footerView;
@@ -56,6 +54,7 @@ public class InputFragment extends Fragment {
         fragment.text = item.getTitle();
         fragment.subtext = item.getContent();
         fragment.numeric = item.isInputNumeric();
+        fragment.collectLocation = item.isSetLocation();
         return fragment;
     }
 
@@ -186,6 +185,10 @@ public class InputFragment extends Fragment {
         QuestionnaireAnswer answer = new QuestionnaireAnswer()
                 .setQuestionId(id)
                 .setInput(value);
+        if(collectLocation){
+            String location = SamplingLibrary.getCoarseLocation(getContext());
+            answer.setLocation(location);
+        }
         return answer;
     }
 

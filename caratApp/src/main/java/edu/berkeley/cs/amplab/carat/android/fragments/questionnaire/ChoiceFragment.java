@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,8 +24,8 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.views.adapters.QuestionnaireItemAdapter;
-import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 
@@ -41,6 +40,7 @@ public class ChoiceFragment extends Fragment {
     private int index, id, lastIndex;
     private String text, subtext;
     private List<String> choices;
+    private List<Integer> location;
     private boolean other, numeric, last;
 
     private RelativeLayout mainFrame;
@@ -65,6 +65,7 @@ public class ChoiceFragment extends Fragment {
         fragment.other = item.isOtherOption();
         fragment.numeric = item.isInputNumeric();
         fragment.lastIndex = fragment.choices.size()-1;
+        fragment.location = item.getLocation();
         return fragment;
     }
 
@@ -271,7 +272,8 @@ public class ChoiceFragment extends Fragment {
         RadioButton button = (RadioButton) buttonGroup.findViewById(checked);
 
         List<Integer> answerList = new ArrayList<>();
-        answerList.add((int)button.getTag());
+        int choice = (int)button.getTag();
+        answerList.add(choice);
         QuestionnaireAnswer answer = new QuestionnaireAnswer()
                 .setQuestionId(id)
                 .setAnswers(answerList);
@@ -279,6 +281,10 @@ public class ChoiceFragment extends Fragment {
         // Only save the input if other option has been selected
         if(other && button.getTag().equals(lastIndex)){
             answer.setInput(otherInput.getText().toString());
+        }
+        if(location != null && !location.isEmpty() && location.contains(choice)){
+            String location = SamplingLibrary.getCoarseLocation(getContext());
+            answer.setLocation(location);
         }
         return answer;
     }

@@ -1622,6 +1622,32 @@ public final class SamplingLibrary {
 	}
 
 	/**
+	 * Get location as coarse latitude and longitude.
+	 * IMPORTANT: Use only with user's consent!
+	 * @param context Application context
+	 * @return Comma-separated latitude and longitude
+	 */
+	public static String getCoarseLocation(Context context) {
+		String provider = getBestProvider(context);
+		double latitude, longitude;
+		LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+		if (provider != null && !provider.equals("gps")) {
+			Location location = lm.getLastKnownLocation(provider);
+			try {
+				latitude = location.getLatitude();
+				longitude = location.getLongitude();
+				return String.valueOf(latitude)+","+String.valueOf(longitude);
+			} catch (Throwable th){
+				if(Constants.DEBUG){
+					Log.d("SamplingLibrary", "Failed getting coarse location!");
+					th.printStackTrace();
+				}
+			}
+		}
+		return "Unknown";
+	}
+
+	/**
 	 * Return a list of enabled LocationProviders, such as GPS, Network, etc.
 	 * 
 	 * @param context
