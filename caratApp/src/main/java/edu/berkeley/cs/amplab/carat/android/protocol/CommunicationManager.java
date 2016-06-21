@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
@@ -545,10 +546,16 @@ public class CommunicationManager {
 	}
 
 	private boolean getQuestionnaires(String uuid){
-		double freshness = CaratApplication.getStorage().getQuestionnaireFreshness(0);
+		double freshness = CaratApplication.getStorage().getQuestionnaireFreshness();
 		if(System.currentTimeMillis() - freshness < Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE) {
-			// Not enough time passed since last check
+			if(Constants.DEBUG){
+				long waitFor = (long)(Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE - (System.currentTimeMillis() - freshness));
+				Log.d(TAG, "Still need to wait "+ TimeUnit.MILLISECONDS.toSeconds(waitFor) +"s for next questionnaire check.");
+			}
 			return false;
+		}
+		if(Constants.DEBUG){
+			Log.d(TAG, "Enough time passed, checking for questionnaires.");
 		}
 		CaratService.Client instance = null;
 		try {
@@ -561,6 +568,8 @@ public class CommunicationManager {
 			}
 			questionnaires = filterPendingAnswered(questionnaires);
 			CaratApplication.getStorage().writeQuestionnaires(questionnaires);
+			long timestamp = System.currentTimeMillis();
+			CaratApplication.getStorage().writeQuestionnaireFreshness(timestamp);
 			safeClose(instance);
 			return true;
 		} catch (Throwable th){
@@ -590,20 +599,36 @@ public class CommunicationManager {
 	}
 
 	private void uploadAnswers(){
-		// Failed submissions are collected in a map and saved back in
-		// storage for the next scheduled upload.
+		// Failed submissions are collected in a map and saved back in storage
+		// for the next scheduled upload.
 		HashMap<Integer, Answers> answerList = CaratApplication.getStorage().getAllAnswers();
 		if(answerList == null || answerList.isEmpty()) return;
 		List<Answers> failed = new ArrayList<>();
+		int successCount = 0;
 		for(Answers answers : answerList.values()){
 			boolean success = false;
+			// Do not submit partial answers
 			if(answers.isComplete()){
 				success = uploadAnswers(answers);
 			}
-			if(!success){
+			if(success){
+				successCount++;
+			} else {
 				failed.add(answers);
 			}
 		}
+
+		if(Constants.DEBUG){
+			Log.d(TAG, "Uploaded " + successCount + "/" + answerList.size() + " answers");
+		}
+
+		// Reset freshness here so we can immediately check if new
+		// questionnaires have become available as a result of
+		// submitting answers.
+		if(successCount > 0){
+			CaratApplication.getStorage().writeQuestionnaireFreshness(0);
+		}
+
 		// Optimally an empty list gets written here
 		CaratApplication.getStorage().writeAllAnswers(failed);
 	}

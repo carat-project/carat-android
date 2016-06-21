@@ -64,7 +64,7 @@ public class CaratDataStorage {
     private long quickHogsFreshness = 0;
     private long samples_reported = 0;
     private long hogStatsFreshness = 0;
-    private HashMap<Integer, Long> questionnaireFreshness;
+    private long questionnaireFreshness = 0;
     private String hogStatsDate = null;
     private String questionnaireUrl = null;
     private WeakReference<Reports> caratData = null;
@@ -82,7 +82,6 @@ public class CaratDataStorage {
         freshness = readFreshness();
         blacklistFreshness = readBlacklistFreshness();
         quickHogsFreshness = readQuickHogsFreshness();
-        questionnaireFreshness = new HashMap<>();
         caratData = new WeakReference<Reports>(readReports());
         readBugReport();
         readHogReport();
@@ -484,17 +483,21 @@ public class CaratDataStorage {
     }
 
     /**
-     * @param id questionnaire id
      * @return questionnaire freshness
      */
-    public long readQuestionnaireFreshness(int id){
-        String freshness = readText(QUESTIONNAIRE_FRESHNESS + "-" + id + ".dat");
+    public long readQuestionnaireFreshness(){
+        String freshness = readText(QUESTIONNAIRE_FRESHNESS);
         if (Constants.DEBUG)
             Log.d(TAG, "Read questionnaire freshness: " + freshness);
         if (freshness != null)
             return Long.parseLong(freshness);
         else
             return -1;
+    }
+
+    public void writeQuestionnaireFreshness(long millis){
+        questionnaireFreshness = millis;
+        writeText(questionnaireFreshness+"", QUESTIONNAIRE_FRESHNESS);
     }
 
     /**
@@ -571,12 +574,12 @@ public class CaratDataStorage {
         }
     }
 
-    public long getQuestionnaireFreshness(int id){
-        Long freshness = questionnaireFreshness.get(id);
-        if(freshness != null){
+    public long getQuestionnaireFreshness(){
+        Long freshness = questionnaireFreshness;
+        if(freshness != 0){
             return freshness;
         } else {
-            return readQuestionnaireFreshness(id);
+            return readQuestionnaireFreshness();
         }
     }
 
