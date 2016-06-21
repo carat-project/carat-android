@@ -258,6 +258,7 @@ struct QuestionnaireItem {
 	5: optional list<string> choices;	// List of choices
 	6: optional bool otherOption; 		// Show input box below the last choice
 	7: optional bool inputNumeric;		// Limit input to numeric values only
+	8: optional list<i32> location;		// Answer ids which allow collecting location
 }
 
 struct Questionnaire {
@@ -288,6 +289,7 @@ struct QuestionnaireAnswer {
 	2: optional list<i32> answers;	// List of answer ids
 	3: optional string input;		// Text-based answer
 	4: required bool other;			// Other input enabled
+	5: optional string location;	// Comma-separated latitude and longitude
 }
 
 struct Answers {
