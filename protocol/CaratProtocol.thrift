@@ -249,7 +249,6 @@ struct HogBugReport {
 //
 // Fields for questionnaire questions
 //
-
 struct QuestionnaireItem {
 	1: required string type;			// Information, choice, multichoice, input
 	2: optional i32 questionId;			// Used to identify answers
@@ -269,8 +268,8 @@ struct Questionnaire {
 
 	// Options for repeating the same questionnaire over again
 	5: optional bool repeat;					// Enable repeating
-	6: optional i64 repeatInterval				// IMPORTANT: Days between repeats
-	7: optional i64 repeatCount					// Times to repeat. Default: infinite
+	6: optional i64 repeatCooldown				// Milliseconds between repeats
+	7: optional i64 repeatLimit					// Times to repeat. Default: infinite
 	8: optional i64	repeatDays					// Days to repeat after first answer
 
 	// Display a custom CTA message in actions
