@@ -38,7 +38,7 @@ public class SampleSender {
     // Prevent instantiation
     private SampleSender(){}
     
-    public static void sendSamples(CaratApplication app) {
+    public static boolean sendSamples(CaratApplication app) {
         synchronized(sendLock){
             Context c = app.getApplicationContext();
     
@@ -48,7 +48,7 @@ public class SampleSender {
             final SharedPreferences p = PreferenceManager
                     .getDefaultSharedPreferences(c);
             final boolean useWifiOnly = p.getBoolean(c.getString(R.string.wifi_only_key), false);
-            Log.i("wifi-preference-SampleSender", String.valueOf(useWifiOnly));
+            //Log.i("SampleSender", String.valueOf(useWifiOnly));
     
             boolean connected = (!useWifiOnly && networkStatus == SamplingLibrary.NETWORKSTATUS_CONNECTED)
                     || networkType.equals("WIFI");
@@ -147,36 +147,11 @@ public class SampleSender {
                 options.put("count", successSum+"");
                 ClickTracking.track(uuId, "sentsamples", options, c);
                 /* End Click Tracking: Track sample sending. */
-                
-            }/* else if (networkStatus
-                    .equals(SamplingLibrary.NETWORKSTATUS_CONNECTING)) {
-                Log.w(TAG, "Network status: " + networkStatus
-                        + ", trying again in 10s.");
-                connecting = true;
-            } else {
-                Log.w(TAG, "Network status: " + networkStatus + TRY_AGAIN);
-                connecting = false;
+
+                return (db.countSamples() == 0 || successSum == samples);
             }
-            if (connecting) {
-                // wait for wifi to come up
-                try {
-                    Thread.sleep(CaratApplication.COMMS_WIFI_WAIT);
-                } catch (InterruptedException e1) {
-                    // ignore
-                }
-                connecting = false;
-            } else {
-                try {
-                    Thread.sleep(CaratApplication.COMMS_INTERVAL);
-                } catch (InterruptedException e) {
-                    // wait for wifi to come up
-                    try {
-                        Thread.sleep(CaratApplication.COMMS_WIFI_WAIT);
-                    } catch (InterruptedException e1) {
-                        // ignore
-                    }
-                }
-            }*/
+            
+            return false;
         }
     }
 

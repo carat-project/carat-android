@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,6 +17,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -51,9 +53,12 @@ import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragme
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
 
-public class MainActivity extends ActionBarActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String FLURRY_KEYFILE = "flurry.properties";
+    private static final String TAG = "CaratMainActivity";
+
+    private SharedPreferences p;
 
     private String batteryLife;
     private String bugAmount, hogAmount, actionsAmount;
@@ -63,6 +68,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private long[] lastPoint = null;
     private String lastUpdatingValue;
     private String lastSampleValue;
+    private boolean onBackground = false;
+    private boolean schedulerRunning = false;
 
     private boolean shouldAddTabs = true;
 
@@ -97,6 +104,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        onBackground = false;
+        schedulerRunning = false;
         getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getWindow().requestFeature(Window.FEATURE_PROGRESS);
 
@@ -106,8 +115,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             getWindow().setStatusBarColor(getResources().getColor(R.color.statusbar_color));
         }
 
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        p = PreferenceManager.getDefaultSharedPreferences(this);
+        //PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         if (!p.getBoolean(getResources().getString(R.string.save_accept_eula), false)) {
             Intent i = new Intent(this, TutorialActivity.class);
             this.startActivityForResult(i, Constants.REQUESTCODE_ACCEPT_EULA);
@@ -175,19 +184,78 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     @Override
     protected void onResume() {
+        Log.d(TAG, "Application entered the foreground");
+        onBackground = false;
         if ((!isStatsDataAvailable()) && CaratApplication.isInternetAvailable()) {
             getStatsFromServer();
         }
-
-        new Thread() {
-            public void run() {
-                ((CaratApplication) getApplication()).refreshUi();
-            }
-        }.start();
+        // Refresh reports and upload samples every 15 minutes
+        synchronized (this){
+            scheduleRefresh(Constants.FRESHNESS_TIMEOUT);
+        }
 
         super.onResume();
         setValues();
+    }
 
+    public void scheduleRefresh(final long interval){
+        // This method is primarily called by onResume, meaning that a
+        // timer might already be running. In that case we still want
+        // to force a refresh to make the UI feel responsive.
+        refresh();
+        if(schedulerRunning){
+            return;
+        }
+
+        // Use a handler here since it allows a background thread to
+        // communicate with the UI, which is needed to refresh the
+        // current fragment after downloading new data.
+        final Handler timer = new Handler();
+        timer.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Stop the scheduler when application is no longer in the
+                // foreground unless user has enabled sending samples and
+                // downloading reports while in the background.
+                boolean allowBackground = p.getBoolean("bgRefresh", false);
+                schedulerRunning = !isOnBackground() || allowBackground;
+                if(schedulerRunning){
+                    refresh();
+                    timer.postDelayed(this, interval);
+                } else if(Constants.DEBUG){
+                    Log.d(TAG, "** Data refresh timer stopped ** ");
+                }
+            }
+        }, interval);
+        schedulerRunning = true;
+        if(Constants.DEBUG){
+            Log.d(TAG, "** Data refresh timer started **");
+        }
+    }
+
+    public void refresh(){
+        if(Constants.DEBUG){
+            Log.d(TAG, "** Started refreshing data **");
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                CaratApplication application = (CaratApplication) getApplication();
+                if(application != null){
+                    application.checkAndRefreshReports();
+                    application.checkAndSendSamples();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            refreshCurrentFragment();
+                        }
+                    });
+                }
+                if(Constants.DEBUG){
+                    Log.d(TAG, "** Stopped refreshing data **");
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -196,7 +264,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         inflater.inflate(R.menu.menu_carat, menu);
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean useWifiOnly = p.getBoolean(getString(R.string.wifi_only_key), false);
+        final boolean allowBackground = p.getBoolean("bgRefresh", false);
         menu.findItem(R.id.action_wifi_only).setChecked(useWifiOnly);
+        menu.findItem(R.id.action_allow_background).setChecked(allowBackground);
         //setProgressCircle(false);
         return super.onCreateOptionsMenu(menu);
 
@@ -209,15 +279,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         switch (id) {
             case R.id.action_wifi_only:
                 if (item.isChecked()) {
-                    SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
                     p.edit().putBoolean(getString(R.string.wifi_only_key), false).commit();
                     item.setChecked(false);
                 } else {
-                    SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
                     p.edit().putBoolean(getString(R.string.wifi_only_key), true).commit();
                     item.setChecked(true);
                 }
@@ -244,6 +312,11 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 AboutFragment aboutFragment = new AboutFragment();
                 replaceFragment(aboutFragment, Constants.FRAGMENT_ABOUT_TAG);
                 break;
+            case R.id.action_allow_background:
+                boolean flip = !item.isChecked();
+                p.edit().putBoolean("bgRefresh", flip).commit();
+                item.setChecked(flip);
+                break;
             case android.R.id.home:
                 if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                     getSupportFragmentManager().popBackStack();
@@ -262,7 +335,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "Application exited to the background");
+        onBackground = true;
         SamplingLibrary.resetRunningProcessInfo();
+    }
+
+    public boolean isOnBackground(){
+        return onBackground;
     }
 
     private void showStorePage() {
@@ -381,15 +460,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_holder);
             if(fragment instanceof HogStatsFragment){
                 ((HogStatsFragment) fragment).refresh();
-            }
-        }
-    }
-
-    public void refreshDashboardProgress() {
-        if (getSupportFragmentManager() != null) {
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_holder);
-            if (fragment instanceof DashboardFragment) {
-                ((DashboardFragment) fragment).refreshProgress();
             }
         }
     }

@@ -2,9 +2,11 @@ package edu.berkeley.cs.amplab.carat.android.fragments;
 
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -32,6 +34,7 @@ import edu.berkeley.cs.amplab.carat.android.views.CircleDisplay;
  * Created by Valto on 30.9.2015.
  */
 public class DashboardFragment extends Fragment implements View.OnClickListener {
+    private final static String TAG = "CaratDashboard";
 
     private CaratApplication application;
     private MainActivity mainActivity;
@@ -88,9 +91,10 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         setValues();
         shareButton.setVisibility(View.VISIBLE);
         shareBar.setVisibility(View.GONE);
-        // Keep refreshing view
         if(!schedulerRunning){
-            scheduleRefresh();
+            synchronized (this){
+                scheduleRefresh();
+            }
         } else {
             refresh();
         }
@@ -238,16 +242,19 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     }
 
     // Schedules a dashboard refresh timer
-    public void scheduleRefresh() {
-        // Allow only one timer at a time
-        if(schedulerRunning) {
-            refresh();
+    private void scheduleRefresh() {
+        // Immediately refresh for responsiveness.
+        refresh();
+
+        // There might be another scheduler running
+        if(schedulerRunning){
             return;
         }
 
-        checkReportsAndRefresh(); // Fire immediately
-
-        // Set offset so the initial minute won't take so long
+        // In a worst scenario, we setup the timer X minutes and 59 seconds after refreshing
+        // data, which means the status text will effectively lag 59 seconds behind. To avoid
+        // this, we can subtract the remaining seconds from the first interval to properly
+        // sync with the data refresh cycle.
         final long interval = Constants.DASHBOARD_REFRESH_INTERVAL;
         long freshness = CaratApplication.getStorage().getFreshness();
         long elapsed = System.currentTimeMillis() - freshness;
@@ -259,11 +266,22 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         timer.postDelayed(new Runnable(){
             @Override
             public void run(){
-                checkReportsAndRefresh();
-                timer.postDelayed(this, interval);
+                // Stop scheduler when application is no longer in the foreground.
+                // This timer will be restarted by a call from onResume when user
+                // opens the app again.
+                schedulerRunning = !application.isOnBackground();
+                if(schedulerRunning){
+                    refresh();
+                    timer.postDelayed(this, interval);
+                } else if(Constants.DEBUG){
+                    Log.d(TAG, "Stopped refreshing dashboard");
+                }
             }
-        }, interval-offset);
+        }, interval-offset); // Sync
         schedulerRunning = true;
+        if(Constants.DEBUG){
+            Log.d(TAG, "Started refreshing the dashboard every "+ interval/1000 + " seconds");
+        }
     }
 
     // Refreshes most of the view
@@ -311,21 +329,5 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
             }
         });
 
-    }
-
-    // Check if we should update and refresh afterwards
-    public void checkReportsAndRefresh() {
-        if(application == null) return;
-
-        // Download new reports in separate networking thread
-        // Ignore if already updating
-        if(reportsThread != null && reportsThread.isAlive()) return;
-        reportsThread = new Thread(new Runnable() {
-            @Override
-            public void run(){
-                application.refreshUi();
-            }
-        });
-        reportsThread.start();
     }
 }
