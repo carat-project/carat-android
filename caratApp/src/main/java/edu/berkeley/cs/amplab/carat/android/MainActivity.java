@@ -194,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Refresh reports and upload samples every 15 minutes, but only
         // if user has accepted EULA.
+        acceptedEula = p.getBoolean(getResources().getString(R.string.save_accept_eula), false);
         if(acceptedEula){
             synchronized (this){
                 scheduleRefresh(Constants.FRESHNESS_TIMEOUT);

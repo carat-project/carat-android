@@ -20,6 +20,7 @@ import android.widget.TextView;
 import java.util.List;
 import java.util.Vector;
 
+import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.BugsTutorialFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.EulaTutorialFragment;
@@ -110,6 +111,7 @@ public class TutorialActivity extends ActionBarActivity implements View.OnClickL
                 setResult(RESULT_OK, returnIntent);
                 SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
                 p.edit().putBoolean(getString(R.string.save_accept_eula), true).commit();
+                ((CaratApplication)getApplication()).acceptEula();
                 finish();
             }
         }

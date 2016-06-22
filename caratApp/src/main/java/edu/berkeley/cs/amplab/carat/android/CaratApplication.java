@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -21,6 +23,7 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.SparseArray;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -256,6 +259,27 @@ public class CaratApplication extends Application {
                                 R.string.no_actions_message));
             }
             return actions;
+    }
+
+    public static void postNotification(String title, String text){
+        Context context = getContext();
+        PendingIntent carat = PendingIntent.getActivity(context, 0,
+                new Intent(context, MainActivity.class), 0);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.drawable.ic_notify)
+                .setContentTitle(title)
+                .setContentText(text);
+        mBuilder.setContentIntent(carat);
+        mBuilder.setAutoCancel(true);
+        NotificationManager mNotificationManager = (NotificationManager) context
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(1, mBuilder.build());
+    }
+
+    public void acceptEula(){
+        // Call this to start refreshing data
+        Log.d(TAG, "** Accepted EULA **");
+        main.onResume();
     }
 
     public boolean isOnBackground(){

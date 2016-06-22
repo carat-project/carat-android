@@ -567,6 +567,7 @@ public class CommunicationManager {
 				Log.d(TAG, "Downloaded questionnaires " + questionnaires);
 			}
 			questionnaires = filterPendingAnswered(questionnaires);
+			checkAndNotify(questionnaires); // Post notification if new
 			CaratApplication.getStorage().writeQuestionnaires(questionnaires);
 			long timestamp = System.currentTimeMillis();
 			CaratApplication.getStorage().writeQuestionnaireFreshness(timestamp);
@@ -576,6 +577,28 @@ public class CommunicationManager {
 			safeClose(instance);
 		}
 		return false;
+	}
+
+	/**
+	 * Go through downloaded questionnaires and check if any of them
+	 * is not already stored on device. Post a notification when a new
+	 * questionnaire is found.
+	 * @param questionnaires Downloaded questionnaires
+     */
+	private void checkAndNotify(List<Questionnaire> questionnaires){
+		Log.d(TAG, "Checking "+questionnaires);
+		HashMap<Integer, Questionnaire> stored = CaratApplication.getStorage().getQuestionnaires();
+		for(Questionnaire q : questionnaires){
+			Log.d(TAG, "Going through "+q);
+			if(stored == null || stored.get(q.getId()) == null){
+				Log.d(TAG, "Not stored, posting notification");
+				CaratApplication.postNotification(
+						"New questionnaire available!",
+						"Please open Carat"
+				);
+				return;
+			}
+		}
 	}
 
 	/**
