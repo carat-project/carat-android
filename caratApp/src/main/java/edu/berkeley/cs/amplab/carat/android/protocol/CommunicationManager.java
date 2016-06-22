@@ -334,12 +334,12 @@ public class CommunicationManager {
             }
 		}
 
-		// Download questionnaire
-		getQuestionnaires(uuId);
-
 		// Upload all answers for different questionnaires, there should
 		// not be many (most of the time none) so doing this here is ok.
 		uploadAnswers();
+
+		// Download questionnaire
+		getQuestionnaires(uuId);
 
 		if (blacklistShouldBeRefreshed) {
 			refreshBlacklist();
