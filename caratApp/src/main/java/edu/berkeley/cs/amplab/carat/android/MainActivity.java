@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private SharedPreferences p;
 
+    private boolean acceptedEula = false;
     private String batteryLife;
     private String bugAmount, hogAmount, actionsAmount;
     private int staticActionsAmount;
@@ -117,7 +118,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         p = PreferenceManager.getDefaultSharedPreferences(this);
         //PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        if (!p.getBoolean(getResources().getString(R.string.save_accept_eula), false)) {
+        acceptedEula = p.getBoolean(getResources().getString(R.string.save_accept_eula), false);
+        if (!acceptedEula) {
             Intent i = new Intent(this, TutorialActivity.class);
             this.startActivityForResult(i, Constants.REQUESTCODE_ACCEPT_EULA);
         }
@@ -189,9 +191,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if ((!isStatsDataAvailable()) && CaratApplication.isInternetAvailable()) {
             getStatsFromServer();
         }
-        // Refresh reports and upload samples every 15 minutes
-        synchronized (this){
-            scheduleRefresh(Constants.FRESHNESS_TIMEOUT);
+
+        // Refresh reports and upload samples every 15 minutes, but only
+        // if user has accepted EULA.
+        if(acceptedEula){
+            synchronized (this){
+                scheduleRefresh(Constants.FRESHNESS_TIMEOUT);
+            }
         }
 
         super.onResume();
