@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.GlobalFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.TabbedFragment;
@@ -147,8 +148,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        // TODO: Add this as an accessible flag
+        // Load fragment when coming from notification intent
+        int fragment = getIntent().getIntExtra("fragment", -1);
+        if(fragment != -1){
+            if(fragment == R.id.actions_layout){
+                ActionsFragment actionsFragment = new ActionsFragment();
+                replaceFragment(actionsFragment, Constants.FRAGMENT_ACTIONS_TAG);
+            }
+        }
 
+        // TODO: Add this as an accessible flag
         staticActionsAmount = CaratApplication.getStaticActions().size();
         lastUpdatingValue = getString(R.string.dashboard_text_loading);
     }
@@ -272,8 +281,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean useWifiOnly = p.getBoolean(getString(R.string.wifi_only_key), false);
         final boolean allowBackground = p.getBoolean("bgRefresh", false);
+        final boolean disableNotifications = p.getBoolean("noNotifications", false);
         menu.findItem(R.id.action_wifi_only).setChecked(useWifiOnly);
         menu.findItem(R.id.action_allow_background).setChecked(allowBackground);
+        menu.findItem(R.id.action_disable_notifications).setChecked(disableNotifications);
         //setProgressCircle(false);
         return super.onCreateOptionsMenu(menu);
 
@@ -296,6 +307,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     p.edit().putBoolean(getString(R.string.wifi_only_key), true).commit();
                     item.setChecked(true);
                 }
+                break;
+            case R.id.action_disable_notifications:
+                boolean flip = !item.isChecked();
+                p.edit().putBoolean("noNotifications", flip).commit();
+                item.setChecked(flip);
                 break;
             case R.id.action_hide_apps:
                 setHideSmallPreference();
@@ -320,9 +336,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 replaceFragment(aboutFragment, Constants.FRAGMENT_ABOUT_TAG);
                 break;
             case R.id.action_allow_background:
-                boolean flip = !item.isChecked();
-                p.edit().putBoolean("bgRefresh", flip).commit();
-                item.setChecked(flip);
+                boolean flip2 = !item.isChecked();
+                p.edit().putBoolean("bgRefresh", flip2).commit();
+                item.setChecked(flip2);
                 break;
             case android.R.id.home:
                 if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
@@ -438,6 +454,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void setProgressCircle(boolean visibility) {
+        if(getSupportActionBar() == null || getSupportActionBar().getCustomView() == null){
+            return;
+        }
         backArrow = (RelativeLayout) getSupportActionBar().getCustomView().findViewById(R.id.back_arrow);
         progressCircle = (ProgressBar) getSupportActionBar().getCustomView().findViewById(R.id.action_bar_progress_circle);
         progressCircle.getIndeterminateDrawable().setColorFilter(0xF2FFFFFF,

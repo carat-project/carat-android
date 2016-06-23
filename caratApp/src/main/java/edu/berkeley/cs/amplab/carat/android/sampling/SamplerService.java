@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import edu.berkeley.cs.amplab.carat.android.Constants;
@@ -185,6 +186,12 @@ public class SamplerService extends IntentService {
     }
     
     private void notify(Context context){
+		final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
+		final boolean disableNotifications = p.getBoolean("noNotifications", false);
+		if(disableNotifications){
+			return;
+		}
+
         long now = System.currentTimeMillis();
         long lastNotify = Sampler.getInstance().getLastNotify();
         
@@ -197,7 +204,6 @@ public class SamplerService extends IntentService {
             Sampler.getInstance().setLastNotify(now);
         PendingIntent launchCarat = PendingIntent.getActivity(context, 0,
                 new Intent(context, MainActivity.class), 0);
-
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
                 context)
                 .setSmallIcon(R.drawable.ic_notify)

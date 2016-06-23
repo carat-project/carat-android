@@ -586,15 +586,13 @@ public class CommunicationManager {
 	 * @param questionnaires Downloaded questionnaires
      */
 	private void checkAndNotify(List<Questionnaire> questionnaires){
-		Log.d(TAG, "Checking "+questionnaires);
 		HashMap<Integer, Questionnaire> stored = CaratApplication.getStorage().getQuestionnaires();
 		for(Questionnaire q : questionnaires){
-			Log.d(TAG, "Going through "+q);
 			if(stored == null || stored.get(q.getId()) == null){
-				Log.d(TAG, "Not stored, posting notification");
 				CaratApplication.postNotification(
 						"New questionnaire available!",
-						"Please open Carat"
+						"Please open Carat",
+						R.id.actions_layout
 				);
 				return;
 			}

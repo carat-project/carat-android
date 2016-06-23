@@ -128,6 +128,7 @@ public class CaratApplication extends Application {
 
         mConnectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
+
         // use a private preference file (created and used only by CaratApp).
         // don't use PreferenceManager.getDefaultSharedPreferences (it might cause problem in different OS versions).
         new Thread() {
@@ -262,9 +263,19 @@ public class CaratApplication extends Application {
     }
 
     public static void postNotification(String title, String text){
+        postNotification(title, text, null);
+    }
+
+    public static void postNotification(String title, String text, Integer fragment){
+        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getContext());
+        final boolean disableNotifications = p.getBoolean("noNotifications", false);
+        if(disableNotifications) return;
         Context context = getContext();
-        PendingIntent carat = PendingIntent.getActivity(context, 0,
-                new Intent(context, MainActivity.class), 0);
+        Intent intent = new Intent(context, MainActivity.class);
+        if(fragment != null){
+            intent.putExtra("fragment", fragment);
+        }
+        PendingIntent carat = PendingIntent.getActivity(context, 0, intent, 0);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_notify)
                 .setContentTitle(title)
@@ -277,8 +288,9 @@ public class CaratApplication extends Application {
     }
 
     public void acceptEula(){
-        // Call this to start refreshing data
-        Log.d(TAG, "** Accepted EULA **");
+        if(Constants.DEBUG){
+            Log.d(TAG, "** Accepted EULA **");
+        }
         main.onResume();
     }
 
