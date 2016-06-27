@@ -265,18 +265,20 @@ struct Questionnaire {
 	2: optional list<i32> prerequisites			// Required questionnaires before this
 	3: optional i64 cooldown;					// Days to wait after prerequisites are met
 	4: optional i64 expirationDate;				// Expiration date as milliseconds from epoch
+	5: optional i64 newUserLimit;				// Filter out new users by installation age in ms
 
 	// Options for repeating the same questionnaire over again
-	5: optional bool repeat;					// Enable repeating
-	6: optional i64 repeatCooldown				// Milliseconds between repeats
-	7: optional i64 repeatLimit					// Times to repeat. Default: infinite
-	8: optional i64	repeatDays					// Days to repeat after first answer
+	6: optional bool repeat;					// Enable repeating
+	7: optional i64 repeatCooldown				// Milliseconds between repeats
+	8: optional i64 repeatLimit					// Times to repeat. Default: infinite
+	9: optional i64	repeatDays					// Days to repeat after first answer
 
 	// Display a custom CTA message in actions
-	9: optional string actionTitle;
-	10: optional string actionText;
+	10: optional string actionTitle;
+	11: optional string actionText;
 
-	11: required list<QuestionnaireItem> items;
+
+	12: required list<QuestionnaireItem> items;
 }
 
 //
