@@ -49,9 +49,6 @@ public class HogStatsFragment extends Fragment{
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         mainFrame = (LinearLayout) inflater.inflate(R.layout.fragment_hog_stats, container, false);
-        search = (SearchView)mainFrame.findViewById(R.id.hog_statistics_search);
-        loadingScreen = (RelativeLayout) mainFrame.findViewById(R.id.loading_screen);
-        search.setIconifiedByDefault(false);
         return mainFrame;
     }
 
@@ -67,11 +64,18 @@ public class HogStatsFragment extends Fragment{
         initViewRefs();
         expandableListView.setVisibility(View.VISIBLE);
 
-        if(expandableListView.getAdapter() == null){
+        adapter = (HogStatsExpandAdapter)expandableListView.getExpandableListAdapter();
+        if(adapter == null){
             updateHogStatsAsynchronously();
             HogStatsExpandAdapter adapter = setupAdapter();
             expandableListView.setAdapter(adapter);
             setupListeners(adapter);
+        } else {
+            List<HogStats> list = CaratApplication.getStorage().getHogStats();
+            if(list != null && !list.isEmpty()){
+                adapter.refresh(list);
+                loadingScreen.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -93,9 +97,10 @@ public class HogStatsFragment extends Fragment{
     }
 
     public void initViewRefs(){
-        if(expandableListView == null){
-            expandableListView = (ExpandableListView) mainFrame.findViewById(R.id.expandable_hog_stats);
-        }
+        expandableListView = (ExpandableListView) mainFrame.findViewById(R.id.expandable_hog_stats);
+        search = (SearchView)mainFrame.findViewById(R.id.hog_statistics_search);
+        loadingScreen = (RelativeLayout) mainFrame.findViewById(R.id.loading_screen);
+        search.setIconifiedByDefault(false);
     }
 
     public void updateHogStatsAsynchronously(){
