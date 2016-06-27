@@ -35,7 +35,9 @@ import com.flurry.android.FlurryAgent;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -53,6 +55,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragment;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
+import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -282,9 +285,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final boolean useWifiOnly = p.getBoolean(getString(R.string.wifi_only_key), false);
         final boolean allowBackground = p.getBoolean("bgRefresh", false);
         final boolean disableNotifications = p.getBoolean("noNotifications", false);
+        final boolean disableQuestionnaires = p.getBoolean("noQuestionnaires", false);
         menu.findItem(R.id.action_wifi_only).setChecked(useWifiOnly);
         menu.findItem(R.id.action_allow_background).setChecked(allowBackground);
         menu.findItem(R.id.action_disable_notifications).setChecked(disableNotifications);
+        menu.findItem(R.id.action_disable_questionnaires).setChecked(disableQuestionnaires);
         //setProgressCircle(false);
         return super.onCreateOptionsMenu(menu);
 
@@ -313,6 +318,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 p.edit().putBoolean("noNotifications", flip).commit();
                 item.setChecked(flip);
                 break;
+            case R.id.action_disable_questionnaires:
+                boolean flip2 = !item.isChecked();
+                p.edit().putBoolean("noQuestionnaires", flip2).commit();
+                if(flip2){
+                    // Clean all questionnaires
+                    List<Questionnaire> empty = new ArrayList<>();
+                    CaratApplication.getStorage().writeQuestionnaires(empty);
+                    refreshCurrentFragment();
+                }
+                item.setChecked(flip2);
+                break;
             case R.id.action_hide_apps:
                 setHideSmallPreference();
                 break;
@@ -336,9 +352,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 replaceFragment(aboutFragment, Constants.FRAGMENT_ABOUT_TAG);
                 break;
             case R.id.action_allow_background:
-                boolean flip2 = !item.isChecked();
-                p.edit().putBoolean("bgRefresh", flip2).commit();
-                item.setChecked(flip2);
+                boolean flip3 = !item.isChecked();
+                p.edit().putBoolean("bgRefresh", flip3).commit();
+                item.setChecked(flip3);
                 break;
             case android.R.id.home:
                 if (getSupportFragmentManager().getBackStackEntryCount() > 0) {

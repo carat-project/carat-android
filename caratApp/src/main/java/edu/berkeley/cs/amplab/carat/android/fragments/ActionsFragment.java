@@ -108,7 +108,7 @@ public class ActionsFragment extends Fragment implements Serializable {
             if(SamplingLibrary.isRunning(mainActivity, s.getAppName())){
                 SimpleHogBug duplicate = running.get(s.getAppName());
                 if(duplicate != null
-                        && s.getAppPriority() == duplicate.getAppPriority()
+                        && s.getAppPriority().equalsIgnoreCase(duplicate.getAppPriority())
                         && s.getBenefit() == duplicate.getBenefit()){
                     continue;
                 }

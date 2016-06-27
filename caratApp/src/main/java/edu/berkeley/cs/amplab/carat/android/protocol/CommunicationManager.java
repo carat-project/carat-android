@@ -337,8 +337,11 @@ public class CommunicationManager {
 		// Upload all answers for different questionnaires, there should
 		// not be many (most of the time none) so doing this here is ok.
 		uploadAnswers();
-
-		getQuestionnaires(uuId);
+		boolean questionnairesDisabled = p.getBoolean("noQuestionnaires", false);
+		Log.d(TAG, "QUESTIONNAIRES DISABLED: "+questionnairesDisabled);
+		if(!questionnairesDisabled){
+			getQuestionnaires(uuId);
+		}
 
 		if (blacklistShouldBeRefreshed) {
 			refreshBlacklist();
@@ -613,10 +616,6 @@ public class CommunicationManager {
 				long limit = q.getNewUserLimit();
 				long installationDate = CaratApplication.getInstallationDate();
 				if(System.currentTimeMillis() - installationDate < limit){
-					if(Constants.DEBUG){
-						Log.d(TAG, "User is too new to receive this questionnaire: "+q.getId() +
-								"Wait for " + (limit - (System.currentTimeMillis() - installationDate)) + " ms");
-					}
 					continue;
 				}
 			}

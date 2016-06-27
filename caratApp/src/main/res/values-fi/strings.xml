@@ -92,6 +92,7 @@
     <!-- MENU -->
     <string name="menu_wifi_only">Käytä vain WiFiä</string>
     <string name="menu_disable_notifications">Älä näytä ilmoituksia</string>
+    <string name="menu_disable_questionnaires">Älä näytä kyselyitä</string>
     <string name="menu_allow_background">Päivitä taustalla</string>
     <string name="menu_hide_apps">Piilota sovellukset joiden vaikutus on pieni</string>
     <string name="menu_feedback">Anna palautetta</string>

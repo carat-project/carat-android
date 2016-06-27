@@ -19,6 +19,14 @@
         android:checked="false"/>
 
     <item
+        android:id="@+id/action_disable_questionnaires"
+        android:orderInCategory="100"
+        android:title="@string/menu_disable_questionnaires"
+        app:showAsAction="never"
+        android:checkable="true"
+        android:checked="false"/>
+
+    <item
         android:id="@+id/action_allow_background"
         android:orderInCategory="100"
         android:title="@string/menu_allow_background"

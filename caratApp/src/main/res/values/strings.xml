@@ -96,6 +96,7 @@
     <!-- MENU -->
     <string name="menu_wifi_only">Use Wifi only</string>
     <string name="menu_disable_notifications">Disable notifications</string>
+    <string name="menu_disable_questionnaires">Disable questionnaires</string>
     <string name="menu_allow_background">Update in the background</string>
     <string name="menu_hide_apps">Hide apps with a small impact</string>
     <string name="menu_feedback">Give feedback</string>
