@@ -53,6 +53,7 @@ public class CaratApplication extends Application {
     private static CaratApplication mInstance;
     // Used for logging
     private static final String TAG = "CaratApp";
+    private static long installDate = 0;
 
     public static Context mAppContext = null;
     public static SharedPreferences mPrefs = null;
@@ -128,7 +129,6 @@ public class CaratApplication extends Application {
 
         mConnectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-
         // use a private preference file (created and used only by CaratApp).
         // don't use PreferenceManager.getDefaultSharedPreferences (it might cause problem in different OS versions).
         new Thread() {
@@ -137,6 +137,7 @@ public class CaratApplication extends Application {
             }
         }.start();
 
+        getInstallationDate();
         setStorage(new CaratDataStorage(this));
         setReportData(); // Show initial data asap
 
@@ -296,6 +297,47 @@ public class CaratApplication extends Application {
 
     public boolean isOnBackground(){
         return main.isOnBackground();
+    }
+
+    /**
+     * This method is used to get the application installation date. It is initially
+     * called on application launch and the more complicated part should ideally need
+     * to run only once. This  part checks if the installation date is already
+     * stored in preferences, and if not, it tries checking it from package manager and
+     * if that fails, the installation date is set to current time.
+     *
+     * @return Installation time in milliseconds from epoch
+     */
+    public static long getInstallationDate(){
+        if(installDate != 0){
+            return installDate;
+        }
+        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getContext());
+        Context c = getContext();
+        String key = c.getString(R.string.installation_key);
+        PackageManager pm = c.getPackageManager();
+        String packageName = c.getPackageName();
+        long date = 0;
+        if(p.contains(key)){
+            return p.getLong(key, 0);
+        } else {
+            try{
+                date = pm.getPackageInfo(packageName, 0).firstInstallTime;
+            } catch(Throwable th){
+                if(Constants.DEBUG){
+                    Log.d(TAG, "Failed getting application installation date from package");
+                    th.printStackTrace();
+                }
+            }
+        }
+
+        if(date == 0){
+            date = System.currentTimeMillis();
+            // This can happen synchronously, it almost never runs
+            p.edit().putLong("installDate", date).commit();
+        }
+        installDate = date;
+        return date;
     }
 
     public static void refreshStaticActionCount(){
@@ -533,8 +575,9 @@ public class CaratApplication extends Application {
     }
 
     public static void setActionFinished() {
-        if (main != null) {
+        if(main != null){
             main.runOnUiThread(new Runnable() {
+                @Override
                 public void run() {
                     // Updating done
                     //main.setTitleNormal();

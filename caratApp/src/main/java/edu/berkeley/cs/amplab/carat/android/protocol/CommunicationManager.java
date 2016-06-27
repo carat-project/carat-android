@@ -338,7 +338,6 @@ public class CommunicationManager {
 		// not be many (most of the time none) so doing this here is ok.
 		uploadAnswers();
 
-		// Download questionnaire
 		getQuestionnaires(uuId);
 
 		if (blacklistShouldBeRefreshed) {
@@ -566,7 +565,7 @@ public class CommunicationManager {
 			if(Constants.DEBUG){
 				Log.d(TAG, "Downloaded questionnaires " + questionnaires);
 			}
-			questionnaires = filterPendingAnswered(questionnaires);
+			questionnaires = filterQuestionnaires(questionnaires);
 			checkAndNotify(questionnaires); // Post notification if new
 			CaratApplication.getStorage().writeQuestionnaires(questionnaires);
 			long timestamp = System.currentTimeMillis();
@@ -600,23 +599,36 @@ public class CommunicationManager {
 	}
 
 	/**
-	 * Filter out questionnaires that already have pending answers.
+	 * Filter out questionnaires that already have pending answers or a restriction
+	 * to how long user needs to have had Carat installed.
 	 * @param questionnaires list of questionnaires
 	 * @return filtered questionnaires
      */
-	private List<Questionnaire> filterPendingAnswered(List<Questionnaire> questionnaires){
+	private List<Questionnaire> filterQuestionnaires(List<Questionnaire> questionnaires){
 		HashMap<Integer, Answers> answers = CaratApplication.getStorage().getAllAnswers();
-		if(answers != null && !answers.isEmpty()){
-			List<Questionnaire> filtered = new ArrayList<>();
-			for(Questionnaire q : questionnaires){
-				Answers a = answers.get(q.getId());
-				if(a == null || !a.isComplete()){
-					filtered.add(q);
+		boolean answersAvailable = answers != null && !answers.isEmpty();
+		List<Questionnaire> filtered = new ArrayList<>();
+		for(Questionnaire q : questionnaires){
+			if(q.isSetNewUserLimit()){
+				long limit = q.getNewUserLimit();
+				long installationDate = CaratApplication.getInstallationDate();
+				if(System.currentTimeMillis() - installationDate < limit){
+					if(Constants.DEBUG){
+						Log.d(TAG, "User is too new to receive this questionnaire: "+q.getId() +
+								"Wait for " + (limit - (System.currentTimeMillis() - installationDate)) + " ms");
+					}
+					continue;
 				}
 			}
-			questionnaires = filtered;
+			if(answersAvailable){
+				Answers a = answers.get(q.getId());
+				if(a != null && a.isComplete()){
+					continue;
+				}
+			}
+			filtered.add(q);
 		}
-		return questionnaires;
+		return filtered;
 	}
 
 	private void uploadAnswers(){
