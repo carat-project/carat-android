@@ -326,7 +326,7 @@ delete these from your file.
     <string name="submit">Submit</string>
     <string name="continueText">continue</string>
     <string name="nextQuestion">Next question</string>
-    <string name="participationThanks">Thank you for participating!</string>
+    <string name="participationThanks">Questionnaire submitted!</string>
     <string name="backToApp">≪ BACK TO APPLICATION</string>
     <string name="acceptAndContinue">ACCEPT AND CONTINUE</string>
     <string name="questionnaire">Please help us improve Carat</string>

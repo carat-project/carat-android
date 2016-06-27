@@ -296,7 +296,7 @@
     <string name="acceptAndContinue">HYVÄKSY JA JATKA</string>
     <string name="questionnaire">Auta meitä parantamaan Caratia</string>
     <string name="questionnaire2">Vastaa kyselyyn (5&#8211;10 min)</string>
-    <string name="participationThanks">Kiitos osallistumisestasi!</string>
+    <string name="participationThanks">Kysely lähetetty!</string>
     <string name="question">KYSYMYS</string>
     <string name="feedback">Anna palautetta (email)</string>
     <string name="share">Jaa …</string>
