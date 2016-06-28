@@ -412,6 +412,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
                 mainActivity.setUpActionBar(R.string.survey_title, true);
                 break;
             case QUESTIONNAIRE:
+                CaratApplication.dismissNotifications();
                 int id = action.getId();
                 Questionnaire questionnaire = CaratApplication.getStorage().getQuestionnaire(id);
                 if(questionnaire == null) return;

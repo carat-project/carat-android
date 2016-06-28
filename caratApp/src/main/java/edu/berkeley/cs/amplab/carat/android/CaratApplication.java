@@ -268,10 +268,10 @@ public class CaratApplication extends Application {
     }
 
     public static void postNotification(String title, String text, Integer fragment){
-        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getContext());
+        Context context = getContext();
+        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean disableNotifications = p.getBoolean("noNotifications", false);
         if(disableNotifications) return;
-        Context context = getContext();
         Intent intent = new Intent(context, MainActivity.class);
         if(fragment != null){
             intent.putExtra("fragment", fragment);
@@ -286,6 +286,13 @@ public class CaratApplication extends Application {
         NotificationManager mNotificationManager = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(1, mBuilder.build());
+    }
+
+    public static void dismissNotifications(){
+        Context context = getContext();
+        NotificationManager mNotificationManager = (NotificationManager) context
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancelAll();
     }
 
     public void acceptEula(){
