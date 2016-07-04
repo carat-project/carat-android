@@ -2,16 +2,22 @@ package edu.berkeley.cs.amplab.carat.android.protocol;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Security;
 import java.util.Properties;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import android.content.Context;
 import android.util.Log;
+
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.utils.AssetUtils;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 
 /**
@@ -28,6 +34,10 @@ public class ProtocolClient {
     public static int SERVER_PORT_EU = 0;
     public static String SERVER_ADDRESS_EU = null;
 
+    public static final String TRUSTSTORE_PROPERTIES = "truststore.properties";
+    public static String TRUSTSTORE_NAME = null;
+    public static String TRUSTSTORE_PASS = null;
+
     public enum ServerLocation {GLOBAL, EU, USA}
 
     /**
@@ -42,31 +52,54 @@ public class ProtocolClient {
      */
     public static CaratService.Client getInstance(Context c, ServerLocation location) throws NumberFormatException, TTransportException {
         if(SERVER_ADDRESS_GLOBAL == null || SERVER_ADDRESS_EU == null){
-            if(!loadProperties(c)){
-                return null; // Failed to load properties
+            if(!loadServerProperties(c)){
+                return null; // Failed to load server properties
             }
         }
 
-        TSocket soc = null;
+        TTransport transport = null;
         if(location == ServerLocation.GLOBAL){
             if(SERVER_ADDRESS_GLOBAL == null || SERVER_PORT_GLOBAL == 0) return null;
-            soc = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
+            transport = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
         }
         else if(location == ServerLocation.EU){
+            if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null){
+                if(!loadSSLProperties(c)){
+                    return null; // Failed to load SSL properties
+                }
+            }
             if(SERVER_ADDRESS_EU == null || SERVER_PORT_EU == 0) return null;
-            soc = new TSocket(SERVER_ADDRESS_EU, SERVER_PORT_EU, Constants.THRIFT_CONNECTION_TIMEOUT);
+            TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
+            String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
+            params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
+            transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_EU, SERVER_PORT_EU, Constants.THRIFT_CONNECTION_TIMEOUT, params);
         }
 
-        TProtocol p = new TBinaryProtocol(soc, true, true);
+        TProtocol p = new TBinaryProtocol(transport, true, true);
         CaratService.Client instance = new CaratService.Client(p);
-        if (soc != null && !soc.isOpen()){
-            soc.open();
+        if (transport != null && !transport.isOpen()){
+            transport.open();
         }
 
         return instance;
     }
 
-    private static boolean loadProperties(Context c){
+    private static boolean loadSSLProperties(Context c){
+        Properties properties = new Properties();
+        try {
+            InputStream raw = c.getAssets().open(TRUSTSTORE_PROPERTIES);
+            properties.load(raw);
+            TRUSTSTORE_NAME = properties.getProperty("storeName");
+            TRUSTSTORE_PASS = properties.getProperty("storePass");
+            return TRUSTSTORE_NAME != null && TRUSTSTORE_PASS != null;
+        } catch(Throwable th){
+            Log.e(TAG, "Could not open truststore property file!");
+            th.printStackTrace();
+        }
+        return false;
+    }
+
+    private static boolean loadServerProperties(Context c){
         Properties properties = new Properties();
         try {
             InputStream raw = c.getAssets().open(SERVER_PROPERTIES);
@@ -97,5 +130,4 @@ public class ProtocolClient {
             Log.d("ProtocolClient", "trying to get an instance of CaratProtocol.");
         return getInstance(c, location);
     }
-    
 }

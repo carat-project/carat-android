@@ -5,8 +5,8 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        versionCode 104
-        versionName "2.14"
+        versionCode 105
+        versionName "2.15"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 10
         targetSdkVersion 21
@@ -67,6 +67,7 @@ repositories {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/universal-image-loader-1.9.5.jar')
+    compile 'org.bouncycastle:bcprov-jdk16:1.45'
     compile 'com.android.support:support-v4:23.2.1'
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.android.support:gridlayout-v7:23.2.1'

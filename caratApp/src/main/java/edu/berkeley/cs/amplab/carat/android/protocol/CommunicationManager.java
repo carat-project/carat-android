@@ -338,7 +338,6 @@ public class CommunicationManager {
 		// not be many (most of the time none) so doing this here is ok.
 		uploadAnswers();
 		boolean questionnairesDisabled = p.getBoolean("noQuestionnaires", false);
-		Log.d(TAG, "QUESTIONNAIRES DISABLED: "+questionnairesDisabled);
 		if(!questionnairesDisabled){
 			getQuestionnaires(uuId);
 		}
@@ -576,6 +575,9 @@ public class CommunicationManager {
 			safeClose(instance);
 			return true;
 		} catch (Throwable th){
+			if(Constants.DEBUG){
+				th.printStackTrace();
+			}
 			safeClose(instance);
 		}
 		return false;
@@ -616,7 +618,7 @@ public class CommunicationManager {
 				long limit = q.getNewUserLimit();
 				long installationDate = CaratApplication.getInstallationDate();
 				if(System.currentTimeMillis() - installationDate < limit){
-					continue;
+					if(!Constants.DEBUG) continue;
 				}
 			}
 			if(answersAvailable){

@@ -1,6 +1,7 @@
 package edu.berkeley.cs.amplab.carat.android;
 
 import java.net.InetAddress;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +29,8 @@ import android.util.Log;
 import android.util.SparseArray;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import edu.berkeley.cs.amplab.carat.android.model_classes.MyDeviceData;
 import edu.berkeley.cs.amplab.carat.android.model_classes.CustomAction;
@@ -122,6 +125,8 @@ public class CaratApplication extends Application {
      */
     @Override
     public void onCreate() {
+        // Ensure SSL compatibility with older Android versions
+        Security.addProvider(new BouncyCastleProvider());
 
         // Create global configuration and initialize ImageLoader
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
