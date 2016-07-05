@@ -17,6 +17,7 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
  */
 public class AssetUtils {
     private static final String TAG = "AssetUtils";
+    private static boolean invalidate = true;
 
     public static boolean isAssetCached(Context context, String fileName){
         File file = new File(context.getCacheDir(), fileName);
@@ -33,7 +34,7 @@ public class AssetUtils {
 
     public static File getAssetFile(Context context, String fileName) {
         File cached = new File(context.getCacheDir(), fileName);
-        if(cached.exists()){
+        if(!invalidate && cached.exists()){
             return cached;
         } else {
             return writeAssetToCache(context, fileName);
@@ -64,6 +65,7 @@ public class AssetUtils {
                 th.printStackTrace();
             }
         }
+        invalidate = false;
         return cached;
     }
 }
