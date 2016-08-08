@@ -356,17 +356,34 @@ delete these from your file.
     </string-array>
 
     <!-- Updating etc -->
-
     <string name="samplesreported">Samples reported</string>
     <string name="updating">Updating</string>
     <string name="updated">Updated </string>
-    <string name="ago">ago</string>
     <string name="neverupdated">Never updated</string>
     <string name="updatedjustnow">Updated just now</string>
     <string name="didntget">got no</string>
     <string name="updatingreports">Updating reports</string>
     <string name="blacklist">Blacklist</string>
     <string name="finishing">Finishing up</string>
+
+    <!--- Time quantity strings -->
+    <string name="ago">ago</string>
+    <plurals name="weeks">
+        <item quantity="one">a week</item>
+        <item quantity="other">%d weeks</item>
+    </plurals>
+    <plurals name="days">
+        <item quantity="one">a day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="hours">
+        <item quantity="one">an hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <plurals name="minutes">
+        <item quantity="one">a minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
 
     <string name="impact">Impact:</string>
     <string name="expected">Battery life impact:</string>

@@ -326,12 +326,30 @@
 
     <string name="updating">Päivitetään</string>
     <string name="updated">Päivitetty </string>
-    <string name="ago">sitten</string>
     <string name="samplesreported">mittausta lähetetty</string>
     <string name="didntget">ei saatu</string>
     <string name="updatingreports">Päivitetään raporttia</string>
     <string name="blacklist">Poistolista</string>
     <string name="finishing">Viimeistellään</string>
+
+    <!--- Time quantity strings -->
+    <string name="ago">sitten</string>
+    <plurals name="weeks">
+        <item quantity="one">viikko</item>
+        <item quantity="other">%d viikkoa</item>
+    </plurals>
+    <plurals name="days">
+        <item quantity="one">%d päivä </item>
+        <item quantity="other">%d päivää </item>
+    </plurals>
+    <plurals name="hours">
+        <item quantity="one">%d tunti</item>
+        <item quantity="other">%d tuntia</item>
+    </plurals>
+    <plurals name="minutes">
+        <item quantity="one">%d minuutti</item>
+        <item quantity="other">%d minuuttia</item>
+    </plurals>
 
     <string name="impact">Vaikutus:</string>
     <string name="expected">Vaikutus akunkestoon:</string>

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -36,6 +37,7 @@ import com.flurry.android.FlurryAgent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -717,27 +719,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public String getLastUpdated() {
-        String lastUpdated;
         long freshness = CaratApplication.getStorage().getFreshness();
+        if(freshness <= 0){
+            return getString(R.string.neverupdated);
+        }
         long elapsed = System.currentTimeMillis() - freshness;
-        long hour = TimeUnit.MILLISECONDS.toHours(elapsed);
-        long min =  TimeUnit.MILLISECONDS.toMinutes(elapsed);
-        long days = TimeUnit.MILLISECONDS.toDays(elapsed);
+        return getTimeString(elapsed);
+    }
 
-        if (CaratApplication.getStorage().getFreshness() <=0){
-            lastUpdated = getString(R.string.neverupdated);
+    public String getTimeString(long elapsedTime){
+        Resources res = getResources();
+        long longDays = TimeUnit.MILLISECONDS.toDays(elapsedTime);
+        if(elapsedTime < 0 || longDays >= Integer.MAX_VALUE){
+            return getString(R.string.neverupdated);
         }
-        else if (min == 0 && hour == 0){
-            lastUpdated = getString(R.string.updatedjustnow);
+
+        // Casts to int should be safe from here on because we check that days
+        // don't exceed Integer.MAX_VALUE. In other words, days cannot overflow
+        // because of the condition, hours cannot go beyond 24 because then we'd
+        // have days and same for the minutes.
+        int days = (int)longDays;
+        int weeks = days / 7;
+        if(weeks > 0){
+            return getString(R.string.updated) +
+                    " " + res.getQuantityString(R.plurals.weeks, weeks, weeks) +
+                    " " + getString(R.string.ago);
         }
-        else if (days > 0){
-            lastUpdated = getString(R.string.updated) + " " + days + "d " + hour + "h " + getString(R.string.ago);
+        if(days > 0){
+            return getString(R.string.updated) +
+                    " " + res.getQuantityString(R.plurals.days, days, days) +
+                    " " + getString(R.string.ago);
+        }
+        int hours = (int)TimeUnit.MILLISECONDS.toHours(elapsedTime);
+        if(hours > 0){
+            return getString(R.string.updated) +
+                    " " + res.getQuantityString(R.plurals.hours, hours, hours) +
+                    " " + getString(R.string.ago);
+        }
+        int minutes = (int)TimeUnit.MILLISECONDS.toMinutes(elapsedTime);
+        if(minutes > 0){
+            return getString(R.string.updated) +
+                    " " + res.getQuantityString(R.plurals.minutes, minutes, minutes) +
+                    " " + getString(R.string.ago);
         }
         else {
-            lastUpdated = getString(R.string.updated) + " " + hour + "h " + min + "m " + getString(R.string.ago);
+            return getString(R.string.updatedjustnow);
         }
-
-        return lastUpdated;
     }
 
     public boolean isStatsDataAvailable() {
