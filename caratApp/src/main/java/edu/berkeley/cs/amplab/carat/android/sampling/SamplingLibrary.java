@@ -2588,15 +2588,17 @@ public final class SamplingLibrary {
 			SubscriptionManager subscriptionManager = SubscriptionManager.from(context);
 			if(subscriptionManager != null){
 				List<SubscriptionInfo> subscriptions = subscriptionManager.getActiveSubscriptionInfoList();
-				for(SubscriptionInfo info : subscriptions){
-					CharSequence carrierName = info.getCarrierName();
-					if(carrierName != null && carrierName.length() > 0){
-						operator += carrierName + ";";
+				if(subscriptions != null){
+					for(SubscriptionInfo info : subscriptions){
+						CharSequence carrierName = info.getCarrierName();
+						if(carrierName != null && carrierName.length() > 0){
+							operator += carrierName + ";";
+						}
 					}
-				}
-				// Remove last delimiter
-				if(operator.length() >= 1){
-					operator = operator.substring(0, operator.length()-1);
+					// Remove last delimiter
+					if(operator.length() >= 1){
+						operator = operator.substring(0, operator.length()-1);
+					}
 				}
 			}
 		}
