@@ -11,16 +11,12 @@
         android:scaleType="centerCrop"
         android:src="@drawable/tutorial_hogs_bg" />
 
-
-    <TextView
-        style="@style/MediumBoldWhiteText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/hogs_scroll"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="15dp"
-        android:gravity="center"
-        android:text="@string/tutorial_fragment_hogs_title" />
+    <!-- Background filter for readability -->
+    <LinearLayout
+        android:background="#6D122134"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/hogs_scroll"
@@ -28,16 +24,35 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true">
 
-        <TextView
-            android:id="@+id/hogs_message"
-            style="@style/SmallWhiteText"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:gravity="center"
-            android:text="@string/tutorial_fragment_hogs_message" />
-    </ScrollView>
+            android:layout_gravity="center">
+
+                <TextView
+                    android:id="@+id/hogs_title"
+                    style="@style/MediumBoldWhiteText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="15dp"
+                    android:gravity="center"
+                    android:text="@string/tutorial_fragment_hogs_title" />
+
+                <TextView
+                    android:id="@+id/hogs_message"
+                    style="@style/SmallWhiteText"
+                    android:layout_below="@id/hogs_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginRight="25dp"
+                    android:gravity="center"
+                    android:text="@string/tutorial_fragment_hogs_message" />
+
+        </RelativeLayout>
+
+      </ScrollView>
 
 </RelativeLayout>

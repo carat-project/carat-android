@@ -20,7 +20,7 @@
         android:id="@+id/main_layout"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="84"
+        android:layout_weight="99"
         android:visibility="visible">
 
         <android.support.v4.view.ViewPager
@@ -72,8 +72,8 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="16"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:background="@color/blue">
 
         <Button
@@ -82,7 +82,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tutorial_accept"
-            android:layout_centerVertical="true"
+            android:layout_marginTop="16dp"
             android:layout_centerHorizontal="true" />
 
         <TextView
@@ -92,8 +92,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/tutorial_accept_button"
             android:layout_centerHorizontal="true"
-            android:paddingBottom="2dp"
             android:gravity="center"
+            android:layout_marginTop="2dp"
             android:text="@string/tutorial_eula_text" />
 
     </RelativeLayout>

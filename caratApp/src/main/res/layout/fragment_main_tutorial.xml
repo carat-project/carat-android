@@ -11,16 +11,12 @@
         android:scaleType="centerCrop"
         android:src="@drawable/tutorial_main_bg" />
 
-
-    <TextView
-        style="@style/MediumWhiteText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/main_scroll"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="15dp"
-        android:gravity="center"
-        android:text="@string/tutorial_fragment_main_title" />
+    <!-- Background filter for readability -->
+    <LinearLayout
+        android:background="#6D122134"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/main_scroll"
@@ -28,17 +24,33 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true">
 
-        <TextView
-            android:id="@+id/main_message"
-            style="@style/SmallWhiteText"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginRight="25dp"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:gravity="center"
-            android:text="@string/tutorial_fragment_main_message" />
-    </ScrollView>
+            android:layout_gravity="center">
+            <TextView
+                android:id="@+id/carat_title"
+                style="@style/MediumWhiteText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="15dp"
+                android:gravity="center"
+                android:text="@string/tutorial_fragment_main_title" />
+
+            <TextView
+                android:id="@+id/main_message"
+                style="@style/SmallWhiteText"
+                android:layout_below="@id/carat_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="25dp"
+                android:layout_marginRight="25dp"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:text="@string/tutorial_fragment_main_message" />
+        </RelativeLayout>
+ </ScrollView>
 
 </RelativeLayout>
