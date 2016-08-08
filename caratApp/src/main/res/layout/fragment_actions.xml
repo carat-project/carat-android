@@ -20,15 +20,17 @@
             android:id="@+id/actions_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxHeight="70dp"
+            android:adjustViewBounds="true"
             android:padding="15dp"
-            android:src="@drawable/gray_actions_icon" />
+            android:src="@drawable/gray_actions_icon"/>
 
         <TextView
             style="@style/SmallGrayText"
+            android:layout_toRightOf="@+id/actions_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toRightOf="@+id/actions_icon"
             android:paddingRight="5dp"
             android:text="@string/actions_list_message" />
 

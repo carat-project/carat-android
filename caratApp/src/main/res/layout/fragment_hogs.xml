@@ -19,6 +19,8 @@
 
         <ImageView
             android:id="@+id/hog_icon"
+            android:maxHeight="70dp"
+            android:adjustViewBounds="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="15dp"

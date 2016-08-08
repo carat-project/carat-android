@@ -17,6 +17,8 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:maxHeight="70dp"
+            android:adjustViewBounds="true"
             android:id="@+id/bug_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
