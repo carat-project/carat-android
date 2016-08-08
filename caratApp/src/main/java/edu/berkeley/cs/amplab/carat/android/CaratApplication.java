@@ -650,10 +650,10 @@ public class CaratApplication extends Application {
                 Log.w(TAG, "Failed to refresh reports: " + th + Constants.MSG_TRY_AGAIN);
                 th.printStackTrace();
             }
-            CaratApplication.setActionProgress(90, getString(R.string.finishing), false);
             main.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    main.setStatusText(getString(R.string.finishing));
                     main.setProgressCircle(false);
                 }
             });

@@ -16,7 +16,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -37,7 +36,6 @@ import com.flurry.android.FlurryAgent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -601,9 +599,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dashboardFragment.setUpdatingValue(what);
     }
 
+    public void setStatusText(String what){
+        lastUpdatingValue = what;
+        dashboardFragment.setStatusText(what);
+    }
+
     public void setSampleProgress(String what){
         lastSampleValue = what;
-        dashboardFragment.setSampleProgress(what);
+        dashboardFragment.setStatusText(what);
     }
 
     public String getSampleValue(){

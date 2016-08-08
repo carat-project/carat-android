@@ -163,11 +163,16 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     // Allows status string to be changed when updating
     public void setUpdatingValue(String what) {
         if (isAdded()) {
-            updatedText.setText(getString(R.string.updating) + " " + what);
+            // TODO: Status text system really needs refactoring..
+            if(what.equals(getString(R.string.finishing))){
+                updatedText.setText(getString(R.string.finishing));
+            } else {
+                updatedText.setText(getString(R.string.updating) + " " + what);
+            }
         }
     }
 
-    public void setSampleProgress(String what) {
+    public void setStatusText(String what) {
         if(isAdded()){
             updatedText.setText(what);
         }
