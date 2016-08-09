@@ -275,7 +275,8 @@ public class CaratApplication extends Application {
     public static void postNotification(String title, String text, Integer fragment){
         Context context = getContext();
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
-        final boolean disableNotifications = p.getBoolean("noNotifications", false);
+        final boolean disableNotifications =
+                p.getBoolean(context.getString(R.string.disable_notifications), false);
         if(disableNotifications) return;
         Intent intent = new Intent(context, MainActivity.class);
         if(fragment != null){
@@ -315,7 +316,7 @@ public class CaratApplication extends Application {
      * This method is used to get the application installation date. It is initially
      * called on application launch and the more complicated part should ideally need
      * to run only once. This  part checks if the installation date is already
-     * stored in preferences, and if not, it tries checking it from package manager and
+     * stored in settings, and if not, it tries checking it from package manager and
      * if that fails, the installation date is set to current time.
      *
      * @return Installation time in milliseconds from epoch

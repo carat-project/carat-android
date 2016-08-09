@@ -29,6 +29,9 @@
     <color name="yellow">#FFC600</color>
     <color name="percentage_bar_inactive">#b4b4b4</color>
     <color name="activity_indicator_background_transparent">#bf000000</color>
+    <color name="accent">@color/orange</color>
+    <color name="preference_accent">@color/accent</color>
+    <color name="preference_fallback_accent_color">@color/accent</color>
 </resources>
 
 <!-- 	<color name="green">#FF00FF00</color> -->

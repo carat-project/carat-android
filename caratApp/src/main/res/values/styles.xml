@@ -1,5 +1,9 @@
 <resources>
 
+    <style name="materialPreferences">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+    </style>
+
     <!-- custom button style -->
     <style name="button" parent="@android:style/Widget.Button">
         <item name="android:gravity">center_vertical|center_horizontal</item>

@@ -84,19 +84,29 @@
     <string name="global_hogs">YLEISIMMÄT HOGIT</string>
     <string name="statistics">STATISTIIKKA</string>
     <string name="actions">EHDOTUKSET</string>
+    <string name="settings">ASETUKSET</string>
 
     <string name="active_battery_life">Aktiivinen akunkesto</string>
     <string name="battery_life_value">10h 23m</string>
-    <string name="my_device">MINUN LAITTEENI</string>
+    <string name="my_device">LAITETIEDOT</string>
 
     <!-- MENU -->
-    <string name="menu_wifi_only">Käytä vain WiFiä</string>
+    <string name="menu_title">Asetukset</string>
+    <string name="menu_enabled">Päällä</string>
+    <string name="menu_disabled">Pois päältä</string>
+    <string name="menu_wifi_only">Käytä vain Wifiä</string>
+    <string name="menu_wifi_desc">Älä käytä mobiilidataa</string>
     <string name="menu_disable_notifications">Älä näytä ilmoituksia</string>
+    <string name="menu_notifications_desc">Ilmoituksia ei näytetä</string>
     <string name="menu_disable_questionnaires">Älä näytä kyselyitä</string>
-    <string name="menu_allow_background">Päivitä taustalla</string>
-    <string name="menu_hide_apps">Piilota sovellukset joiden vaikutus on pieni</string>
+    <string name="menu_questionnaires_desc">Piilota kyselyt ehdotuksista</string>
+    <string name="menu_allow_background">Automaattiset päivitykset</string>
+    <string name="menu_background_desc">Päivitä tietoja taustalla</string>
+    <string name="menu_hide_apps">Piilota sovelluksia vaikutuksen perusteella</string>
     <string name="menu_feedback">Anna palautetta</string>
+    <string name="menu_settings">Asetukset</string>
     <string name="menu_about">Tietoja</string>
+    <string name="menu_website">Vieraile verkkosivulla</string>
 
     <!-- BUGS -->
     <string name="what_are_these_numbers">Mitä nämä numerot ovat?</string>
@@ -313,13 +323,13 @@
 
     <!-- Navigation drawer items (tabs) -->
     <string-array name="drawer_items">
-        <item>Yhteenveto</item>
-        <item>Ehdotukset</item>
-        <item>Laite</item>
-        <item>Bugit</item>
-        <item>Hogit</item>
-        <item>Caratin asetukset</item>
-        <item>Tietoja</item>
+        <item>yhteenvetoa</item>
+        <item>ehdotuksia</item>
+        <item>laitetietoja</item>
+        <item>bugeja</item>
+        <item>hogeja</item>
+        <item>asetuksia</item>
+        <item>tietoja</item>
     </string-array>
 
     <!-- Updating etc -->
@@ -329,7 +339,7 @@
     <string name="samplesreported">mittausta lähetetty</string>
     <string name="didntget">ei saatu</string>
     <string name="updatingreports">Päivitetään raporttia</string>
-    <string name="blacklist">Poistolista</string>
+    <string name="blacklist">Poistolistaa</string>
     <string name="finishing">Viimeistellään</string>
 
     <!--- Time quantity strings -->

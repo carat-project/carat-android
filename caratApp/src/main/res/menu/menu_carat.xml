@@ -3,49 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="edu.berkeley.cs.amplab.carat.android.MainActivity">
     <item
-        android:id="@+id/action_wifi_only"
-        android:orderInCategory="100"
-        android:title="@string/menu_wifi_only"
-        app:showAsAction="never"
-        android:checkable="true"
-        android:checked="false"/>
-
-    <item
-        android:id="@+id/action_disable_notifications"
-        android:orderInCategory="100"
-        android:title="@string/menu_disable_notifications"
-        app:showAsAction="never"
-        android:checkable="true"
-        android:checked="false"/>
-
-    <item
-        android:id="@+id/action_disable_questionnaires"
-        android:orderInCategory="100"
-        android:title="@string/menu_disable_questionnaires"
-        app:showAsAction="never"
-        android:checkable="true"
-        android:checked="false"/>
-
-    <item
-        android:id="@+id/action_allow_background"
-        android:orderInCategory="100"
-        android:title="@string/menu_allow_background"
-        app:showAsAction="never"
-        android:checkable="true"
-        android:checked="false"/>
-
-    <item
-        android:id="@+id/action_hide_apps"
-        android:orderInCategory="100"
-        android:title="@string/menu_hide_apps"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_feedback"
         android:orderInCategory="100"
         android:title="@string/menu_feedback"
         app:showAsAction="never" />
-
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/menu_settings"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_about"
         android:orderInCategory="100"

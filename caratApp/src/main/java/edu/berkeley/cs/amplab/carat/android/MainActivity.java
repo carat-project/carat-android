@@ -18,6 +18,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -44,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.GlobalFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
+import edu.berkeley.cs.amplab.carat.android.fragments.SettingsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.TabbedFragment;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
@@ -121,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         p = PreferenceManager.getDefaultSharedPreferences(this);
-        //PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        //PreferenceManager.setDefaultValues(this, R.xml.settings, false);
         acceptedEula = p.getBoolean(getResources().getString(R.string.save_accept_eula), false);
         if (!acceptedEula) {
             Intent i = new Intent(this, TutorialActivity.class);
@@ -236,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Stop the scheduler when application is no longer in the
                 // foreground unless user has enabled sending samples and
                 // downloading reports while in the background.
-                boolean allowBackground = p.getBoolean("bgRefresh", false);
+                boolean allowBackground = p.getBoolean(getString(R.string.enable_background), false);
                 schedulerRunning = !isOnBackground() || allowBackground;
                 if(schedulerRunning){
                     refresh();
@@ -282,14 +284,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_carat, menu);
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        final boolean useWifiOnly = p.getBoolean(getString(R.string.wifi_only_key), false);
-        final boolean allowBackground = p.getBoolean("bgRefresh", false);
-        final boolean disableNotifications = p.getBoolean("noNotifications", false);
-        final boolean disableQuestionnaires = p.getBoolean("noQuestionnaires", false);
-        menu.findItem(R.id.action_wifi_only).setChecked(useWifiOnly);
-        menu.findItem(R.id.action_allow_background).setChecked(allowBackground);
-        menu.findItem(R.id.action_disable_notifications).setChecked(disableNotifications);
-        menu.findItem(R.id.action_disable_questionnaires).setChecked(disableQuestionnaires);
+
         //setProgressCircle(false);
         return super.onCreateOptionsMenu(menu);
 
@@ -304,34 +299,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = item.getItemId();
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         switch (id) {
-            case R.id.action_wifi_only:
-                if (item.isChecked()) {
-                    p.edit().putBoolean(getString(R.string.wifi_only_key), false).commit();
-                    item.setChecked(false);
-                } else {
-                    p.edit().putBoolean(getString(R.string.wifi_only_key), true).commit();
-                    item.setChecked(true);
-                }
-                break;
-            case R.id.action_disable_notifications:
-                boolean flip = !item.isChecked();
-                p.edit().putBoolean("noNotifications", flip).commit();
-                item.setChecked(flip);
-                break;
-            case R.id.action_disable_questionnaires:
-                boolean flip2 = !item.isChecked();
-                p.edit().putBoolean("noQuestionnaires", flip2).commit();
-                if(flip2){
-                    // Clean all questionnaires
-                    List<Questionnaire> empty = new ArrayList<>();
-                    CaratApplication.getStorage().writeQuestionnaires(empty);
-                    refreshCurrentFragment();
-                }
-                item.setChecked(flip2);
-                break;
-            case R.id.action_hide_apps:
-                setHideSmallPreference();
-                break;
             case R.id.action_feedback:
                 final String[] choices = new String[]{
                         "Rate us on Play Store",
@@ -347,14 +314,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }, choices);
                 break;
+            case R.id.action_settings:
+                PreferenceFragmentCompat settings = new SettingsFragment();
+                replaceFragment(settings, Constants.FRAGMENT_SETTINGS_TAG);
+                break;
             case R.id.action_about:
                 AboutFragment aboutFragment = new AboutFragment();
                 replaceFragment(aboutFragment, Constants.FRAGMENT_ABOUT_TAG);
-                break;
-            case R.id.action_allow_background:
-                boolean flip3 = !item.isChecked();
-                p.edit().putBoolean("bgRefresh", flip3).commit();
-                item.setChecked(flip3);
                 break;
             case android.R.id.home:
                 if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
@@ -455,6 +421,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.setUpActionBar(getString(resId), canGoBack);
     }
 
+    public void setUpActionBar(String title, boolean canGoBack, boolean showSettings){
+    }
+
     public void setUpActionBar(String title, boolean canGoBack){
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         getSupportActionBar().setCustomView(R.layout.actionbar);
@@ -482,6 +451,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             progressCircle.setVisibility(View.GONE);
         }
+    }
+
+    public void deleteQuestionnaires(){
+        List<Questionnaire> empty = new ArrayList<>();
+        CaratApplication.getStorage().writeQuestionnaires(empty);
+        refreshCurrentFragment();
     }
 
     public void refreshCurrentFragment() {

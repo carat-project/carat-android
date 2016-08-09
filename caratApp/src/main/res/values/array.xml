@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="ImpactValues">
+        <item>@string/num0</item>
+        <item>@string/num5</item>
+        <item>@string/num10</item>
+        <item>@string/num20</item>
+        <item>@string/num60</item>
+    </string-array>
+    <string-array name="ImpactOptions">
+        <item>@string/show_all</item>
+        <item>@string/five</item>
+        <item>@string/ten</item>
+        <item>@string/twenty</item>
+        <item>@string/hour</item>
+    </string-array>
+</resources>

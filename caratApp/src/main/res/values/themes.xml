@@ -3,11 +3,13 @@
     
      <!-- Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices. -->
+
     <style name="AppBaseTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
             backward-compatibility can go here.
         -->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="android:buttonStyle">@style/button</item>
     </style>
 
@@ -23,7 +25,7 @@
     </style>
 
     <style name="MyActionBar.TabBar" parent="AppBaseTheme">
-            <item name="android:background">@drawable/tab_bar_background</item>
+        <item name="android:background">@drawable/tab_bar_background</item>
     </style>
 
     <style name="MyActionBar.TabView" parent="AppBaseTheme">

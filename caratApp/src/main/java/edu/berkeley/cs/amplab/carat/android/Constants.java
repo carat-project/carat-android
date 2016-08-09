@@ -36,12 +36,6 @@ public class Constants {
     public static final String REGISTERED_OS = "carat.registered.os";
     public static final String REGISTERED_MODEL = "carat.registered.model";
 
-    // if you change the preference key of any of our preference widgets (in
-    // res/xml/preferences.xml),
-    // update the following constants as well
-    public static final String SHARE_PREFERENCE_KEY = "sharePrefKey";
-    public static final String FEEDBACK_PREFERENCE_KEY = "feedbackPrefKey";
-
     // for caching summary statistics fetched from server
     public static final String PREFERENCE_FILE_NAME = "caratPrefs";
     public static final String STATS_WELLBEHAVED_COUNT_PREFERENCE_KEY = "wellbehavedPrefKey";
@@ -142,6 +136,7 @@ public class Constants {
     public static final String FRAGMENT_ACTIONS_TAG = "fragment_actions";
     public static final String FRAGMENT_MY_DEVICE_TAG = "fragment_my_device";
     public static final String FRAGMENT_ABOUT_TAG = "fragment_about";
+    public static final String FRAGMENT_SETTINGS_TAG = "fragment_settings";
     public static final String FRAGMENT_CB_WEBVIEW_TAG = "fragment_callback_webview";
     public static final String FRAGMENG_HOG_STATS_TAG = "fragment_hog_stats";
     public static final String FRAGMENT_PROCESS_LIST = "fragment_process_list";

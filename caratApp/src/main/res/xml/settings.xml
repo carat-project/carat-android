@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:key="@string/wifi_only_key"
+        android:title="@string/menu_wifi_only"
+        android:summary="@string/menu_wifi_desc"
+        android:defaultValue="false" />
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:key="bgRefresh"
+        android:title="@string/menu_allow_background"
+        android:summary="@string/menu_background_desc"
+        android:defaultValue="false" />
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:key="noNotifications"
+        android:title="@string/menu_disable_notifications"
+        android:summary="@string/menu_notifications_desc"
+        android:defaultValue="false" />
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:key="noQuestionnaires"
+        android:title="@string/menu_disable_questionnaires"
+        android:summary="@string/menu_questionnaires_desc"
+        android:defaultValue="false" />
+    <android.support.v7.preference.ListPreference
+        android:key="@string/hog_hide_threshold"
+        android:title="@string/menu_hide_apps"
+        android:summary="%s"
+        android:entries="@array/ImpactOptions"
+        android:entryValues="@array/ImpactValues"
+        android:defaultValue="0"/>
+    <android.support.v7.preference.Preference
+        android:persistent="false"
+        android:key="pref_website"
+        android:selectable="false"
+        android:title="@string/menu_website"
+        android:summary="http://carat.cs.helsinki.fi"
+        android:id="@+id/preference2">
+        <intent android:action="android.intent.action.VIEW"
+            android:data="http://carat.cs.helsinki.fi" />
+    </android.support.v7.preference.Preference>
+</android.support.v7.preference.PreferenceScreen>
