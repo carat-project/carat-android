@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 
+import edu.berkeley.cs.amplab.carat.android.BuildConfig;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
@@ -70,7 +71,8 @@ public class AboutFragment extends Fragment {
 
     private void setAboutItems() {
         AboutItem item = new AboutItem();
-        item.setAboutTitle(getString(R.string.about_general_title));
+        String title = getString(R.string.about_general_title) + " " + BuildConfig.VERSION_NAME;
+        item.setAboutTitle(title);
         item.setAboutMessage(getString(R.string.about_general_message));
         item.setChildMessage(getString(R.string.about_general_child_message));
         allAboutItems.add(item);
