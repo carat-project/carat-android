@@ -51,7 +51,6 @@ import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefetchData;
 import edu.berkeley.cs.amplab.carat.android.activities.TutorialActivity;
-import edu.berkeley.cs.amplab.carat.android.dialogs.PreferenceListDialog;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragment;
@@ -594,11 +593,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void setTitleUpdatingFailed(String what) {
         setTitle(getString(R.string.didntget) + " " + what);
-    }
-
-    public void setHideSmallPreference() {
-        PreferenceListDialog preferenceListDialog = new PreferenceListDialog(this, getString(R.string.hog_hide_threshold));
-        preferenceListDialog.showDialog();
     }
 
     @SuppressLint("NewApi")
