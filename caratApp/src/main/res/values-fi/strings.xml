@@ -97,12 +97,12 @@
     <string name="menu_wifi_only">Käytä vain Wifiä</string>
     <string name="menu_wifi_desc">Älä käytä mobiilidataa</string>
     <string name="menu_disable_notifications">Älä näytä ilmoituksia</string>
-    <string name="menu_notifications_desc">Ilmoituksia ei näytetä</string>
+    <string name="menu_notifications_desc">Ota ilmoitukset pois käytöstä</string>
     <string name="menu_disable_questionnaires">Älä näytä kyselyitä</string>
     <string name="menu_questionnaires_desc">Piilota kyselyt ehdotuksista</string>
     <string name="menu_allow_background">Automaattiset päivitykset</string>
     <string name="menu_background_desc">Päivitä tietoja taustalla</string>
-    <string name="menu_hide_apps">Piilota sovelluksia vaikutuksen perusteella</string>
+    <string name="menu_hide_apps">Piilota sovelluksia</string>
     <string name="menu_feedback">Anna palautetta</string>
     <string name="menu_settings">Asetukset</string>
     <string name="menu_about">Tietoja</string>
