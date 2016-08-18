@@ -355,9 +355,10 @@ delete these from your file.
     <string name="chooseemail">Choose email application</string>
     <string name="feedbackfrom">Feedback from a</string>
     <string name="sharetitle">Improve your battery life with Carat!</string>
-    <string name="sharetext1">Carat is improving my battery life. My J-Score is</string>
-    <string name="sharetext2">! What\'s yours?\n\nFind out here: \nhttp://carat.cs.helsinki.fi/</string>
-    <string name="myjscoreis">My J-Score is</string>
+    <string name="sharetext1">Carat is improving my battery life</string>
+    <string name="sharetext2">What\'s yours? \n\nFind out here: \nhttp://carat.cs.helsinki.fi/</string>
+    <string name="myjscoreis">My J-Score is %1$d!</string>
+    <string name="findoutmore">Find out more: \nhttp://carat.cs.helsinki.fi/</string>
     <string name="appmanager">App Manager</string>
 
     <!-- Navigation drawer items (tabs) -->

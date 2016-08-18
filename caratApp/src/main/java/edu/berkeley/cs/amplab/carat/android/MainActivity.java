@@ -610,11 +610,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    public String getShareText(){
+        int jScore = getJScore();
+        String caratText = getString(R.string.sharetext1);
+        if(jScore <= 0){
+            caratText += "! \n\n" + getString(R.string.findoutmore);
+        } else {
+            caratText += ". " + getString(R.string.myjscoreis, jScore) + " " + getString(R.string.sharetext2);
+        }
+        return caratText;
+    }
+
     public void share() {
-        String caratText = getString(R.string.sharetext1) + " " + getJScore() + getString(R.string.sharetext2);
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, caratText);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, getShareText());
         startActivity(Intent.createChooser(shareIntent, getString(R.string.share)));
     }
 
@@ -628,18 +638,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void shareOnTwitter() {
-        String caratText = getString(R.string.sharetext1) + " " + getJScore() + getString(R.string.sharetext2);
         String tweetUrl = "https://twitter.com/intent/tweet?text="
-                + caratText;
+                + getShareText();
         Uri uri = Uri.parse(tweetUrl);
         startActivity(new Intent(Intent.ACTION_VIEW, uri));
     }
 
     public void shareViaEmail() {
-        String caratText = getString(R.string.sharetext1) + " " + getJScore() + getString(R.string.sharetext2);
-        Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "", null));
-        intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.sharetitle));
-        intent.putExtra(Intent.EXTRA_TEXT, caratText);
+        String subject = Uri.encode(getString(R.string.sharetitle));
+        String body = Uri.encode(getShareText());
+        Uri uri = Uri.parse("mailto:" + "?subject=" + subject + "&body=" + body);
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(uri);
         startActivity(Intent.createChooser(intent, "Send email"));
     }
 
