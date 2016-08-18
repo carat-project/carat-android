@@ -4,6 +4,7 @@ package edu.berkeley.cs.amplab.carat.android.fragments;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -19,6 +20,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.nineoldandroids.view.ViewHelper;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
@@ -50,6 +53,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     private ImageView twitterButton;
     private ImageView emailButton;
     private ImageView closeButton;
+    private ImageView shareIcon;
     private TextView bugAmountText;
     private TextView hogAmountText;
     private TextView actionsAmountText;
@@ -119,6 +123,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         twitterButton = (ImageView) ll.findViewById(R.id.twitter_icon);
         emailButton = (ImageView) ll.findViewById(R.id.email_icon);
         closeButton = (ImageView) ll.findViewById(R.id.hide_button);
+        shareIcon = (ImageView) ll.findViewById(R.id.share_icon);
     }
 
     private void initListeners() {
@@ -133,6 +138,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         emailButton.setOnClickListener(this);
         closeButton.setOnClickListener(this);
         cd.setOnClickListener(this);
+        shareIcon.setOnClickListener(this);
     }
 
     private void generateJScoreCircle() {
@@ -231,6 +237,9 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
             case R.id.hide_button:
                 shareBar.setVisibility(View.GONE);
                 shareButton.setVisibility(View.VISIBLE);
+                break;
+            case R.id.share_icon:
+                mainActivity.share();
                 break;
             case R.id.facebook_icon:
                 mainActivity.shareOnFacebook();

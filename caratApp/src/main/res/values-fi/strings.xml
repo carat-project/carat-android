@@ -316,7 +316,7 @@
     <string name="feedbackfrom">Palautetta laitteelta</string>
     <string name="sharetitle">Paranna akkukestoasi Caratilla!</string>
     <string name="sharetext1">Carat parantaa akkukestoani.\nJ-Scoreni on</string>
-    <string name="sharetext2">! Entä sinun?\n\nOta selvää täällä: \nhttp://carat.cs.berkeley.edu/</string>
+    <string name="sharetext2">! Entä sinun?\n\nOta selvää täällä: \nhttp://carat.cs.helsinki.fi/</string>
     <string name="myjscoreis">J-Scoreni on</string>
 
     <string name="appmanager">Sovellushallinta</string>

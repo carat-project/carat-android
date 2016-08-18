@@ -610,12 +610,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void shareOnFacebook() {
+    public void share() {
         String caratText = getString(R.string.sharetext1) + " " + getJScore() + getString(R.string.sharetext2);
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, caratText);
-        startActivity(Intent.createChooser(intent, "facebook"));
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, caratText);
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.share)));
+    }
+
+    public void shareOnFacebook() {
+        // Facebook doesn't allow prefilled text, but since custom URIs are allowed,
+        // we could instead have dynamic content.
+        long appId = 258193747569113L;
+        String website = "http://carat.cs.helsinki.fi/";
+        Uri uri = Uri.parse("https://www.facebook.com/dialog/share?app_id="+appId+ "&display=popup&href="+website);
+        startActivity(new Intent(Intent.ACTION_VIEW, uri));
     }
 
     public void shareOnTwitter() {
