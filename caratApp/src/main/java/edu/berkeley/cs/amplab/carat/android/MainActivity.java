@@ -313,6 +313,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }, choices);
                 break;
+            case R.id.action_share:
+                share();
+                break;
             case R.id.action_settings:
                 PreferenceFragmentCompat settings = new SettingsFragment();
                 replaceFragment(settings, Constants.FRAGMENT_SETTINGS_TAG);
