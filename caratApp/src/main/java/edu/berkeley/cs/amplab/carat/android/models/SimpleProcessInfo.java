@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.model_classes;
+package edu.berkeley.cs.amplab.carat.android.models;
 import android.graphics.drawable.Drawable;
 import java.io.Serializable;
 

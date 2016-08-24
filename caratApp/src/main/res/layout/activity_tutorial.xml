@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:weightSum="100"
-    tools:context="edu.berkeley.cs.amplab.carat.android.activities.TutorialActivity">
+    tools:context="edu.berkeley.cs.amplab.carat.android.TutorialActivity">
 
     <!-- TODO WEB VIEW WITH EULA -->
 

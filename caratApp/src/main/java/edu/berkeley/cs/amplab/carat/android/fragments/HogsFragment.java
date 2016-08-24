@@ -16,7 +16,7 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
-import edu.berkeley.cs.amplab.carat.android.views.adapters.HogBugExpandListAdapter;
+import edu.berkeley.cs.amplab.carat.android.adapters.HogBugExpandListAdapter;
 
 /**
  * Created by Valto on 30.9.2015.

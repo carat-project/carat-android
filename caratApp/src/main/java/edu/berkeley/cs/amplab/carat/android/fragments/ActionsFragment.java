@@ -1,11 +1,8 @@
 package edu.berkeley.cs.amplab.carat.android.fragments;
 
 import android.app.Activity;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NotificationManagerCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +21,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
-import edu.berkeley.cs.amplab.carat.android.views.adapters.ActionsExpandListAdapter;
+import edu.berkeley.cs.amplab.carat.android.adapters.ActionsExpandListAdapter;
 
 /**
  * Created by Valto on 30.9.2015.

@@ -15,8 +15,8 @@ import edu.berkeley.cs.amplab.carat.android.BuildConfig;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
-import edu.berkeley.cs.amplab.carat.android.model_classes.AboutItem;
-import edu.berkeley.cs.amplab.carat.android.views.adapters.AboutExpandListAdapter;
+import edu.berkeley.cs.amplab.carat.android.models.AboutItem;
+import edu.berkeley.cs.amplab.carat.android.adapters.AboutExpandListAdapter;
 
 public class AboutFragment extends Fragment {
     private MainActivity mainActivity;

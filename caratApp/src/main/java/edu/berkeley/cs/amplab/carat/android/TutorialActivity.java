@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.activities;
+package edu.berkeley.cs.amplab.carat.android;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,7 +9,6 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebView;
@@ -27,7 +26,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.BugsTutorialFragm
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.EulaTutorialFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.HogsTutorialFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.MainTutorialFragment;
-import edu.berkeley.cs.amplab.carat.android.views.adapters.TutorialPagerAdapter;
+import edu.berkeley.cs.amplab.carat.android.adapters.TutorialPagerAdapter;
 
 public class TutorialActivity extends ActionBarActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
 

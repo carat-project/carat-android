@@ -2,18 +2,14 @@ package edu.berkeley.cs.amplab.carat.android.fragments.tutorial;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.text.Html;
-import android.text.method.LinkMovementMethod;
-import android.text.method.MovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import edu.berkeley.cs.amplab.carat.android.R;
-import edu.berkeley.cs.amplab.carat.android.activities.TutorialActivity;
+import edu.berkeley.cs.amplab.carat.android.TutorialActivity;
 
 /**
  * Created by Valto on 26.10.2015.

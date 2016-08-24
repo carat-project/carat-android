@@ -5,7 +5,6 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
@@ -32,8 +31,8 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import edu.berkeley.cs.amplab.carat.android.model_classes.MyDeviceData;
-import edu.berkeley.cs.amplab.carat.android.model_classes.CustomAction;
+import edu.berkeley.cs.amplab.carat.android.models.MyDeviceData;
+import edu.berkeley.cs.amplab.carat.android.models.CustomAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.android.protocol.SampleSender;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
@@ -43,7 +42,7 @@ import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
-import static edu.berkeley.cs.amplab.carat.android.model_classes.CustomAction.ActionType;
+import static edu.berkeley.cs.amplab.carat.android.models.CustomAction.ActionType;
 
 /**
  * Application class for Carat Android App. Place App-global static constants

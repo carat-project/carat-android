@@ -18,7 +18,7 @@ public class InstallReceiver extends BroadcastReceiver {
      * 
      * @param context
      *            the context
-     * @param Intent
+     * @param intent
      *            the intent (ACTION_PACKAGE_ADDED, _REPLACED, or _REMOVED)
      */
     @Override

@@ -1,7 +1,6 @@
-package edu.berkeley.cs.amplab.carat.android.model_classes;
+package edu.berkeley.cs.amplab.carat.android.models;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
  * Created by Valto on 6.10.2015.

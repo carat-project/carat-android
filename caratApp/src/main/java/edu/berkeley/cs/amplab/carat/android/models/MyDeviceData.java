@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.model_classes;
+package edu.berkeley.cs.amplab.carat.android.models;
 
 public class MyDeviceData {
 	private long lastReportsTimeMillis;

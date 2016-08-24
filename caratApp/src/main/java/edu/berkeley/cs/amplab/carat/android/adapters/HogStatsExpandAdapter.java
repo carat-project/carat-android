@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.views.adapters;
+package edu.berkeley.cs.amplab.carat.android.adapters;
 
 import android.provider.ContactsContract;
 import android.util.Log;

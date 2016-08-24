@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.views.adapters;
+package edu.berkeley.cs.amplab.carat.android.adapters;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -18,8 +18,8 @@ import java.util.List;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
-import edu.berkeley.cs.amplab.carat.android.dialogs.BaseDialog;
-import edu.berkeley.cs.amplab.carat.android.model_classes.SimpleProcessInfo;
+import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
+import edu.berkeley.cs.amplab.carat.android.models.SimpleProcessInfo;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 

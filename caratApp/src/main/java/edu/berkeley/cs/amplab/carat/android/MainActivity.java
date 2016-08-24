@@ -46,11 +46,9 @@ import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.GlobalFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.SettingsFragment;
-import edu.berkeley.cs.amplab.carat.android.fragments.TabbedFragment;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefetchData;
-import edu.berkeley.cs.amplab.carat.android.activities.TutorialActivity;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragment;
@@ -385,38 +383,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setCpuValue();
         Log.d("debug", "*** Values set");
-    }
-
-    public void enableTabbedNavigation(final TabbedFragment fragment){
-        ActionBar actionBar = getSupportActionBar();
-        if(actionBar == null) return;
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-            @Override
-            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-                ViewPager pager = fragment.getViewPager();
-
-                if(pager == null) return;
-                pager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-            }
-
-            @Override
-            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-            }
-        };
-
-        if(shouldAddTabs){
-            actionBar.addTab(actionBar.newTab().setText("My device").setTabListener(tabListener));
-            actionBar.addTab(actionBar.newTab().setText("Global").setTabListener(tabListener));
-            shouldAddTabs = false;
-        }
-
     }
 
     public void setUpActionBar(int resId, boolean canGoBack) {

@@ -1,7 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.fragments;
 
 import android.app.Activity;
-import android.bluetooth.le.ScanRecord;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,7 +15,7 @@ import android.widget.ScrollView;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
-import edu.berkeley.cs.amplab.carat.android.views.adapters.HogBugExpandListAdapter;
+import edu.berkeley.cs.amplab.carat.android.adapters.HogBugExpandListAdapter;
 
 /**
  * Created by Valto on 30.9.2015.

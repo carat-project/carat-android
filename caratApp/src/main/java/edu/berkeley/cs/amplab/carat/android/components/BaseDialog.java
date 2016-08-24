@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.dialogs;
+package edu.berkeley.cs.amplab.carat.android.components;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

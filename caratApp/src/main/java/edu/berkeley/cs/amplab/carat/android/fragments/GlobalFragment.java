@@ -24,7 +24,7 @@ import java.util.HashMap;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
-import edu.berkeley.cs.amplab.carat.android.dialogs.BaseDialog;
+import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 
 /**
  * Created by Valto on 30.9.2015.

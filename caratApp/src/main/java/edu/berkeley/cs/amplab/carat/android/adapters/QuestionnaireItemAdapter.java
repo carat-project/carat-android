@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.views.adapters;
+package edu.berkeley.cs.amplab.carat.android.adapters;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;

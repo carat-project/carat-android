@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.model_classes;
+package edu.berkeley.cs.amplab.carat.android.models;
 
 /**
  * Created by Valto on 30.9.2015.

@@ -20,7 +20,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
-import edu.berkeley.cs.amplab.carat.android.views.adapters.QuestionnaireItemAdapter;
+import edu.berkeley.cs.amplab.carat.android.adapters.QuestionnaireItemAdapter;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireItem;
 

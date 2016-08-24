@@ -20,7 +20,7 @@
             android:background="@drawable/chart_background"
             android:orientation="horizontal">
 
-                <edu.berkeley.cs.amplab.carat.android.views.CircleDisplay
+                <edu.berkeley.cs.amplab.carat.android.components.CircleDisplay
                     android:id="@+id/jscore_progress_circle"
                     android:layout_width="120dp"
                     android:layout_centerInParent="true"

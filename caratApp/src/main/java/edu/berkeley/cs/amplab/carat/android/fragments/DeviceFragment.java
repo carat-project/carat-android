@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -22,9 +21,9 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
-import edu.berkeley.cs.amplab.carat.android.dialogs.BaseDialog;
+import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
-import edu.berkeley.cs.amplab.carat.android.views.CircleDisplay;
+import edu.berkeley.cs.amplab.carat.android.components.CircleDisplay;
 
 /**
  * Created by Valto on 30.9.2015.

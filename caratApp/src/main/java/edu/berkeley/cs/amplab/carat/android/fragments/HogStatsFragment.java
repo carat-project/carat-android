@@ -6,17 +6,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import java.util.Collections;
 import java.util.List;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
@@ -25,7 +22,7 @@ import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.HogStats;
-import edu.berkeley.cs.amplab.carat.android.views.adapters.HogStatsExpandAdapter;
+import edu.berkeley.cs.amplab.carat.android.adapters.HogStatsExpandAdapter;
 
 /**
  * Created by Jonatan Hamberg on 2.5.2016.

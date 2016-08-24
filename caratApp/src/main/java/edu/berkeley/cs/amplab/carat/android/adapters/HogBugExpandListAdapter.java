@@ -1,7 +1,5 @@
-package edu.berkeley.cs.amplab.carat.android.views.adapters;
+package edu.berkeley.cs.amplab.carat.android.adapters;
 
-import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,17 +10,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
-import edu.berkeley.cs.amplab.carat.android.dialogs.BaseDialog;
+import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
-import edu.berkeley.cs.amplab.carat.android.fragments.HogsFragment;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 
 /**

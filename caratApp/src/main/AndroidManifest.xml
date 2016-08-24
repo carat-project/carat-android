@@ -127,7 +127,7 @@
         </receiver>
 
         <activity
-            android:name=".activities.TutorialActivity"
+            android:name=".TutorialActivity"
             android:label="@string/title_activity_tutorial"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:screenOrientation="portrait">

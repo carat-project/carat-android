@@ -17,7 +17,7 @@ public class BootReceiver extends BroadcastReceiver {
      * at the moment to keep Carat simple.
      * 
      * @param context the context
-     * @param Intent the intent (should be ACTION_BOOT_COMPLETED)
+     * @param intent the intent (should be ACTION_BOOT_COMPLETED)
      */
     @Override
     public void onReceive(Context context, Intent intent) {

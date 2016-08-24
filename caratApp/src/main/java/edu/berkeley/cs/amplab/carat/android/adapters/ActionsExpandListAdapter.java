@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.views.adapters;
+package edu.berkeley.cs.amplab.carat.android.adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -23,10 +23,10 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
-import edu.berkeley.cs.amplab.carat.android.dialogs.BaseDialog;
+import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.CallbackWebViewFragment;
-import edu.berkeley.cs.amplab.carat.android.model_classes.CustomAction;
+import edu.berkeley.cs.amplab.carat.android.models.CustomAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.ClickTracking;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;

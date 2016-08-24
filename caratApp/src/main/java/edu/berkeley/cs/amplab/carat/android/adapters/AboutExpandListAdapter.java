@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.views.adapters;
+package edu.berkeley.cs.amplab.carat.android.adapters;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,7 +18,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.fragments.BugsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogsFragment;
-import edu.berkeley.cs.amplab.carat.android.model_classes.AboutItem;
+import edu.berkeley.cs.amplab.carat.android.models.AboutItem;
 
 /**
  * Created by Valto on 6.10.2015.
