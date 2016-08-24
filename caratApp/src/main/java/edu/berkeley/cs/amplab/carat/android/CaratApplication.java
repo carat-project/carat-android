@@ -746,8 +746,12 @@ public class CaratApplication extends Application {
         String blS;
         if(blh == 0 && blmin == 0){
             blS = getContext().getString(R.string.calibrating);
+        } else if(errorH > 0){
+            blS =  blh + "h " + blmin + "min \u00B1 " + errorH + "h";
+        } else if(errorMin > 0){
+            blS =  blh + "h " + blmin + "min \u00B1 " + errorMin + "min";
         } else {
-            blS =  blh + "h " + blmin + "m \u00B1 " + (errorH > 0 ? errorH + "h " : "") + errorMin + " m";
+            blS =  blh + "h " + blmin + "min";
         }
 
 		/*
