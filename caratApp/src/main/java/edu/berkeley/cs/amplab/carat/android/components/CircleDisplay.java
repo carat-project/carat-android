@@ -815,7 +815,7 @@ public class CircleDisplay extends View implements OnGestureListener, View.OnCli
          * @param val
          * @param maxval
          */
-        public void onSelectionUpdate(float val, float maxval);
+        void onSelectionUpdate(float val, float maxval);
 
         /**
          * called when the user releases his finger fromt he circle-display
@@ -823,7 +823,7 @@ public class CircleDisplay extends View implements OnGestureListener, View.OnCli
          * @param val
          * @param maxval
          */
-        public void onValueSelected(float val, float maxval);
+        void onValueSelected(float val, float maxval);
     }
 
     public static abstract class Utils {

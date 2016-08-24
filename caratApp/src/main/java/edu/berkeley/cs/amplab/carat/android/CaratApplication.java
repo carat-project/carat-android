@@ -371,7 +371,7 @@ public class CaratApplication extends Application {
         if(packages == null || packages.length == 0) return new ArrayList<>();
 
         ArrayList<SimpleHogBug> report = filterByVisibility(packages);
-;        HashMap<String, SimpleHogBug> running = new HashMap<>();
+        HashMap<String, SimpleHogBug> running = new HashMap<>();
         if(report == null) return new ArrayList<>();
         for(SimpleHogBug s : report){
             if(SamplingLibrary.isRunning(getContext(), s.getAppName())){
@@ -398,7 +398,7 @@ public class CaratApplication extends Application {
             if(!CaratApplication.isPackageInstalled(packageName)) continue;
             // Enable this when we can reliably detect killable apps
             //if(CaratApplication.isPackageSystemApp(packageName)) continue;
-            if(packageName.equalsIgnoreCase(Constants.CARAT_PACKAGE_NAME)) continue;;
+            if(packageName.equalsIgnoreCase(Constants.CARAT_PACKAGE_NAME)) continue;
             if(packageName.equalsIgnoreCase(Constants.CARAT_OLD)) continue;
             result.add(app);
         }
@@ -690,11 +690,7 @@ public class CaratApplication extends Application {
     public static boolean isInternetAvailable2() {
         try {
             InetAddress ipAddr = InetAddress.getByName("google.com"); //You can replace it with your name
-            if (ipAddr.equals("")) {
-                return false;
-            } else {
-                return true;
-            }
+            return !ipAddr.equals("");
 
         } catch (Exception e) {
             return false;

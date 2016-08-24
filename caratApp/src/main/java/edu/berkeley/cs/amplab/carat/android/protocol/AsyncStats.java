@@ -3,7 +3,6 @@ package edu.berkeley.cs.amplab.carat.android.protocol;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.apache.log4j.chainsaw.Main;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

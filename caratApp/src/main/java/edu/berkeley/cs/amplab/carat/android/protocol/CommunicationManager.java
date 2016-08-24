@@ -80,12 +80,9 @@ public class CommunicationManager {
 				String os = SamplingLibrary.getOsVersion();
 				String model = SamplingLibrary.getModel();
 
-				if (storedUuid == null || os == null || model == null || storedModel == null || storedOs == null
-						|| uuid == null || !(storedOs.equals(os) && storedModel.equals(model))) {
-					// need to re-reg
-					register = true;
-				} else
-					register = false;
+				// need to re-reg
+				register = storedUuid == null || os == null || model == null || storedModel == null || storedOs == null
+						|| uuid == null || !(storedOs.equals(os) && storedModel.equals(model));
 			}
 		}
 	}

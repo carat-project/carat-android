@@ -64,9 +64,9 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
         iosMap = new HashMap<>();
         try {
             if (CaratApplication.isInternetAvailable()) {
-                serverResponseJson = jsonParser
+                serverResponseJson = JsonParser
                         .getJSONFromUrl("http://carat.cs.helsinki.fi/statistics-data/stats.json");
-                serverResponseJsonDevices = jsonParser.getJSONFromUrl("http://carat.cs.helsinki.fi/statistics-data/shares.json");
+                serverResponseJsonDevices = JsonParser.getJSONFromUrl("http://carat.cs.helsinki.fi/statistics-data/shares.json");
             }
         } catch (Exception e) {
         }

@@ -90,7 +90,7 @@ public class Constants {
     public static final int COMMS_MAX_BATCHES = 50;
 
     // Used for bugs and hogs, and EnergyDetails sub-screen (previously known as drawing)
-    public static enum Type {
+    public enum Type {
         OS, MODEL, HOG, BUG, SIMILAR, JSCORE, OTHER, BRIGHTNESS, WIFI, MOBILEDATA
     }
 

@@ -2,12 +2,10 @@ package edu.berkeley.cs.amplab.carat.android.adapters;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IllegalFormatCodePointException;
 import java.util.List;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
@@ -18,7 +16,6 @@ import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.ChoiceFragme
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InformationFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InputFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.MultichoiceFragment;
-import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.QuestionnaireAnswer;
