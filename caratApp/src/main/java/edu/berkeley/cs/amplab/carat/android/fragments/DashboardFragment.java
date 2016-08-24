@@ -54,6 +54,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     private Thread reportsThread;
 
     private boolean schedulerRunning;
+    private String currentValue;
 
     @Override
     public void onAttach(Activity activity) {
@@ -157,36 +158,21 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         actionsAmountText.setText(mainActivity.getActionsAmount());
     }
 
-    // Allows status string to be changed when updating
-    public void setUpdatingValue(String what) {
-        if (isAdded()) {
-            // TODO: Status text system really needs refactoring..
-            if(what.equals(getString(R.string.finishing))){
-                updatedText.setText(getString(R.string.finishing));
-            } else {
-                updatedText.setText(getString(R.string.updating) + " " + what);
-            }
-        }
-    }
-
     public void setStatusText(String what) {
-        if(isAdded()){
+        if(isAdded() && what != null){
             updatedText.setText(what);
         }
     }
 
     // Refresh status string and progress indicator
-    public void refreshProgress() {
+    public void refreshStatusText() {
         // Make sure we don't overwrite an updating status
-        if(application.isSendingSamples()) {
+        if(application.isSendingSamples() || application.isUpdatingReports()) {
             mainActivity.setProgressCircle(true);
-            setUpdatingValue(mainActivity.getSampleValue());
-        } else if(application.isUpdatingReports()) {
-            mainActivity.setProgressCircle(true);
-            setUpdatingValue(mainActivity.getUpdatingValue());
+            mainActivity.restoreStatusText();
         } else {
             mainActivity.setProgressCircle(false);
-            updatedText.setText(mainActivity.getLastUpdated());
+            mainActivity.setStatusText(mainActivity.getLastUpdated());
         }
     }
 
@@ -294,7 +280,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         mainActivity.runOnUiThread(new Runnable() {
             public void run() {
                 // Prioritize status text
-                refreshProgress();
+                refreshStatusText();
                 View v = getView();
                 if (v != null) {
                     String batteryLife = CaratApplication.myDeviceData.getBatteryLife();

@@ -69,8 +69,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private float cpu;
     private int jScore;
     private long[] lastPoint = null;
-    private String lastUpdatingValue;
-    private String lastSampleValue;
     private boolean onBackground = false;
     private boolean schedulerRunning = false;
 
@@ -84,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private HashMap<String, Integer> androidDevices, iosDevices;
 
     private Tracker tracker;
+    private String statusText;
 
     public int appWellbehaved = Constants.VALUE_NOT_AVAILABLE,
             appHogs = Constants.VALUE_NOT_AVAILABLE,
@@ -160,7 +159,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // TODO: Add this as an accessible flag
         staticActionsAmount = CaratApplication.getStaticActions().size();
-        lastUpdatingValue = getString(R.string.dashboard_text_loading);
     }
 
     @Override
@@ -451,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onFragmentPop(){
         Fragment top = getSupportFragmentManager().findFragmentById(R.id.fragment_holder);
         if(top instanceof DashboardFragment){
-            ((DashboardFragment) top).refreshProgress();
+            ((DashboardFragment) top).refreshStatusText();
         }
     }
 
@@ -536,31 +534,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void setTitleUpdating(String what) {
-        lastUpdatingValue = what;
-        dashboardFragment.setUpdatingValue(what);
+    public void restoreStatusText(){
+        if(statusText != null){
+            setStatusText(statusText);
+        }
     }
 
     public void setStatusText(String what){
-        lastUpdatingValue = what;
-        dashboardFragment.setStatusText(what);
-    }
-
-    public void setSampleProgress(String what){
-        lastSampleValue = what;
-        dashboardFragment.setStatusText(what);
-    }
-
-    public String getSampleValue(){
-        return lastSampleValue;
-    }
-
-    public String getUpdatingValue(){
-        return lastUpdatingValue;
-    }
-
-    public void setTitleUpdatingFailed(String what) {
-        setTitle(getString(R.string.didntget) + " " + what);
+        Log.d(TAG, "Setting status to " + what);
+        statusText = what;
+        if(dashboardFragment != null){
+            dashboardFragment.setStatusText(what);
+        }
     }
 
     @SuppressLint("NewApi")

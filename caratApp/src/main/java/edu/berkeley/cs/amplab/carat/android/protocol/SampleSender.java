@@ -75,7 +75,7 @@ public class SampleSender {
                     if (map.size() > 0) {
                         int progress = (int) (successSum * 1.0 / samples * 100.0);
                         sendingSamples = true;
-                        CaratApplication.setSampleProgress(successSum + "/" + samples +" "+ app.getString(R.string.samplesreported));
+                        CaratApplication.setStatus(successSum + "/" + samples +" "+ app.getString(R.string.samplesreported));
                         if (app.commManager != null) {
                             int tries = 0;
                             while (tries < 2) {

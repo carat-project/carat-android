@@ -18,6 +18,7 @@ import org.apache.thrift.transport.TTransport;
 
 import com.flurry.android.FlurryAgent;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -266,15 +267,15 @@ public class CommunicationManager {
 		//
 		// Main reports
 		//
-		CaratApplication.setActionProgress(progress, titles[0], false);
+		CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[0]);
 		boolean mainSuccess = refreshMainReports(uuId, OS, model);
 		if (mainSuccess) {
 			progress += 20;
-			CaratApplication.setActionProgress(progress, titles[1], false);
+			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[1]);
 			if (Constants.DEBUG)
 			    Log.d(TAG, "Successfully got main report");
 		} else {
-			CaratApplication.setActionProgress(progress, titles[0], true);
+			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[0]);
 			if (Constants.DEBUG)
 			    Log.d(TAG, "Failed getting main report");
 		}
@@ -286,11 +287,11 @@ public class CommunicationManager {
 		
 		if (bugsSuccess) {
 			progress += 20;
-			CaratApplication.setActionProgress(progress, titles[2], false);
+			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[2]);
 			if (Constants.DEBUG)
 			    Log.d(TAG, "Successfully got bug report");
 		} else {
-			CaratApplication.setActionProgress(progress, titles[1], true);
+			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[1]);
 			if (Constants.DEBUG)
 			    Log.d(TAG, "Failed getting bug report");
 		}
@@ -306,12 +307,14 @@ public class CommunicationManager {
 
 		if (hogsSuccess) {
 			progress += 40; // changed to 40
-			CaratApplication.setActionProgress(progress,
-					blacklistShouldBeRefreshed ? a.getString(R.string.blacklist) : a.getString(R.string.finishing), false);
+			CaratApplication.setStatus(
+					blacklistShouldBeRefreshed ?
+							a.getString(R.string.updating) + " " + a.getString(R.string.blacklist)
+							: a.getString(R.string.finishing));
 			if (Constants.DEBUG)
 			    Log.d(TAG, "Successfully got hog report");
 		} else {
-			CaratApplication.setActionProgress(progress, titles[2], true);
+			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[2]);
 			if (Constants.DEBUG)
 			    Log.d(TAG, "Failed getting hog report");
 		}

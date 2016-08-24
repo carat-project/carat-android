@@ -562,40 +562,11 @@ public class CaratApplication extends Application {
         }
     }
 
-    public static void setActionProgress(final int progress, final String what, final boolean fail) {
+    public static void setStatus(final String what) {
         if (main != null) {
             main.runOnUiThread(new Runnable() {
                 public void run() {
-					if (fail)
-						main.setTitleUpdatingFailed(what);
-					else
-						main.setTitleUpdating(what);
-					//main.setProgress(progress * 100);
-                }
-            });
-        }
-    }
-
-    public static void setSampleProgress(final String what){
-        if (main != null) {
-            main.runOnUiThread(new Runnable() {
-                public void run() {
-                    main.setSampleProgress(what);
-                }
-            });
-        }
-    }
-
-    public static void setActionFinished() {
-        if(main != null){
-            main.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // Updating done
-                    //main.setTitleNormal();
-                    main.setProgress(100);
-                    main.setProgressBarVisibility(false);
-                    main.setProgressBarIndeterminateVisibility(false);
+                    main.setStatusText(what);
                 }
             });
         }
