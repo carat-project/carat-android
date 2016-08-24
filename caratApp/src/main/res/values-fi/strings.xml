@@ -60,18 +60,12 @@
     <string name ="tutorial_fragment_eula_link"><u>Lue EULA</u></string>
 
     <!-- MENU -->
-    <string name="action_settings">Asetukset</string>
 
     <!-- ACTIVITIES -->
-    <string name="title_activity_carat">CaratActivity</string>
     <string name="title_activity_tutorial">TutorialActivity</string>
-    <string name="title_activity_main">MainActivity</string>
     <string name="save_accept_eula">save_accept_eula</string>
 
     <!-- DASHBOARD -->
-    <string name="jscore_value">69</string>
-    <string name="jscore_title">J-score</string>
-    <string name="dashboard_updated_text">Päivitetty juuri nyt</string>
     <string name="dashboard_text_loading">tietoja</string>
 
     <string name="bugs_amount">7</string>
@@ -91,9 +85,6 @@
     <string name="my_device">LAITETIEDOT</string>
 
     <!-- MENU -->
-    <string name="menu_title">Asetukset</string>
-    <string name="menu_enabled">Päällä</string>
-    <string name="menu_disabled">Pois päältä</string>
     <string name="menu_wifi_only">Käytä vain Wifiä</string>
     <string name="menu_wifi_desc">Älä käytä mobiilidataa</string>
     <string name="menu_disable_notifications">Älä näytä ilmoituksia</string>
@@ -127,7 +118,6 @@
         Kun jokin sovellus alkaa käyttää huomattavasti enemmän energiaa tällä laitteella verrattuna muihin, se ilmestyy tähän.</string>
 
     <!-- MY DEVICE -->
-    <string name="your_jscore_title">YOUR J-SCORE</string>
     <string name="carat_id_title">Carat ID</string>
     <string name="os_version_title">OS Versio</string>
     <string name="device_model_title">Puhelimen malli</string>
@@ -208,7 +198,6 @@
     <!-- ACTIONS -->
     <string name="stop_app_title">PYSÄYTÄ</string>
     <string name="app_manager_title">HALLITSE</string>
-    <string name="app_category_title">Foreground App</string>
     <string name="actions_list_message">Ehdotukset-lista kertoo, kuinka saat akkusi kestämään kauemmin, ja millaisia parannuksia on luvassa.</string>
     <string name="actions_expanded_info">Pysäyttäminen sulkee sovelluksen, jotta se ei voi enää kuluttaa akkuasi.
         Jotkin sovellukset, kuten Facebook, saattavat käynnistyä automaattisesti uudestaan pysäyttämisen jälkeen.\n\nJos
@@ -236,15 +225,12 @@
     <string name="survey_title">KYSELY</string>
     <string name="survey_action_title">Kerro meille itsestäsi!</string>
     <string name="survey_action_subtitle">Osallistu Caratin kyselyyn</string>
-    <string name="action_questionnaire">Auta parantamaan Caratia!</string>
-    <string name="action_questionnaire_subtitle">Osallistu kyselyyn</string>
     <string name="submitted">Lähetetty</string>
     <string name="thank_you">Kiitos!</string>
 
     <string name="opening_manager">Avataan sovellustenhallintaa</string>
     <string name="opening_manager_failed">Sovellustenhallinnan avaaminen epäonnistui</string>
 
-    <string name="stopping">Pysäytetään sovellusta </string>
     <string name="stopping_failed">Pysäyttäminen epäonnistui</string>
     <string name="stopped">PYSÄYTETTY</string>
 
@@ -267,32 +253,8 @@
 
     <!-- These will be different -->
 
-    <string name="jscore">J-Scoresi:</string>
-    <string name="batterylife">Aktiivinen akunkesto:</string>
     <string name="calibrating">Kalibroidaan</string>
-    <string name="osver">KJ-versio:</string>
-    <string name="dev">Laitemalli:</string>
-    <string name="running_apps">Käynnissä:</string>
-    <string name="memused">Muistinkäyttö:</string>
-    <string name="memactive">Aktiivisena:</string>
-    <string name="cpu">CPU-käyttö:</string>
-    <string name="updated0">Päivitetty 0m 0s sitten</string>
 
-    <string name="viewprocess">Sovelluslista</string>
-
-    <string name="moreinfo">Lisätietoja</string>
-    <string name="appicon">Kuvake</string>
-    <string name="default_type">Pääsovellus</string>
-    <string name="emptySuggestion">Ei raportoitavaa vielä!</string>
-    <string name="checkback">Tarkistathan uudelleen myöhemmin.</string>
-    <string name="checkback2">Jos juuri aloit käyttää Caratia, tarvitsemme lisää aikaa tietojen keräämiseen laitteeltasi, joskus viikon tai enemmän. Tarkistathan uudelleen myöhemmin. Silläaikaa yritämme kovasti ottaa selvää mitä akunkestollesi tapahtuu&#8230;</string>
-    <string name="checkback3">Parhaiden tulosten saamiseksi avaa Carat kerran päivässä viikon ajan.</string>
-    <string name="emptyBugsOnly">Sinulla ei ole bugeja.</string>
-    <string name="checkbackEmptyBugs">Tarkista tilanne viikon päästä.</string>
-    <string name="checkbackEmptyBugs2">Jos sovelluksesi käyttäytyvät normaalisti, tämä välilehti on tyhjä.</string>
-    <string name="checkbackEmptyBugs3">Kun jokin sovellus alkaa käyttää huomattavasti enemmän energiaa tällä laitteella verrattuna muihin, se ilmestyy tähän.</string>
-
-    <string name="copied">Kopioitu:</string>
     <string name="helpcarat">Auta Caratia keräämään dataa</string>
     <string name="helpcarat_subtitle">Parempia Carat-tuloksia!</string>
     <string name="helpcarat_expanded_title">Kuinka autan Caratia keräämään dataa?</string>
@@ -304,23 +266,14 @@
     <string name="continueText">jatka</string>
     <string name="nextQuestion">Seuraava kysymys</string>
     <string name="backToApp">≪ TAKAISIN SOVELLUKSEEN</string>
-    <string name="acceptAndContinue">HYVÄKSY JA JATKA</string>
-    <string name="questionnaire">Auta meitä parantamaan Caratia</string>
-    <string name="questionnaire2">Vastaa kyselyyn (5&#8211;10 min)</string>
     <string name="participationThanks">Kysely lähetetty!</string>
     <string name="question">KYSYMYS</string>
-    <string name="feedback">Anna palautetta (email)</string>
     <string name="share">Jaa …</string>
-    <string name="sharewith">Jaa käyttäen:</string>
-    <string name="chooseemail">Valitse email-sovellus</string>
-    <string name="feedbackfrom">Palautetta laitteelta</string>
     <string name="sharetitle">Paranna akkukestoasi Caratilla!</string>
     <string name="sharetext1">Carat parantaa akkukestoani</string>
     <string name="sharetext2">Entä sinun? \n\nOta selvää täällä: \nhttp://carat.cs.helsinki.fi/</string>
     <string name="myjscoreis">J-Scoreni on %1$d!</string>
     <string name="findoutmore">Lue lisää täältä: \nhttp://carat.cs.helsinki.fi/</string>
-
-    <string name="appmanager">Sovellushallinta</string>
 
     <!-- Navigation drawer items (tabs) -->
     <string-array name="drawer_items">
@@ -339,7 +292,6 @@
     <string name="updated">Päivitetty </string>
     <string name="samplesreported">mittausta lähetetty</string>
     <string name="didntget">ei saatu</string>
-    <string name="updatingreports">Päivitetään raporttia</string>
     <string name="blacklist">Poistolistaa</string>
     <string name="finishing">Viimeistellään</string>
 
@@ -364,8 +316,6 @@
 
     <string name="impact">Vaikutus:</string>
     <string name="expected">Vaikutus akunkestoon:</string>
-    <string name="killappname">Tapa Sovellus</string>
-    <string name="appname">Sovelluksen nimi</string>
     <string name="priority">Prioriteetti:</string>
     <string name="priorityDefault">Ei käynnissä</string>
     <string name="prioritynotrunning">Ei käynnissä</string>
@@ -378,65 +328,21 @@
 
     <!-- Settings screen related -->
 
-    <string name="bluetoothsettings">Bluetooth-asetukset</string>
     <string name="wifisettings">Langattoman verkon asetukset</string>
-    <string name="screensettings">Näytön asetukset</string>
-    <string name="soundsettings">Ääniasetukset</string>
-    <string name="locationsettings">Paikannusasetukset</string>
-    <string name="syncsettings">Päivitysasetukset</string>
-    <string name="mobilenetworksettings">Puhelinverkon asetukset</string>
-    <string name="appsettings">Sovellusasetukset</string>
     <string name="opening">Avaa </string>
     <string name="notsupported">eivät ole saatavilla tällä laitteella.</string>
 
     <!-- Actions -->
 
-    <string name="kill">Lopeta </string>
-    <string name="killed">lopetettu</string>
-    <string name="restart">Uudelleenk. </string>
-    <string name="osupgrade">Päivitä käyttöjärjestelmä</string>
     <string name="information">tieto</string>
-    <string name="unknown">Tuntematon</string>
-    <string name="dimscreen">Tummenna näyttöä</string>
-    <string name="disablewifi">Sulje langaton verkko</string>
-    <string name="disablebluetooth">Sulje Bluetooth</string>
-    <string name="automaticbrightness">Käytä automaattista kirkkautta</string>
-    <string name="disablenetwork">Sulje mobiilidata</string>
-    <string name="disablehapticfeedback">Kytke kosketusvaste pois</string>
-    <string name="disablevibration">Kytke värinä pois</string>
-    <string name="disablegps">Sulje GPS</string>
-    <string name="disablelocation">Sulje paikannuspalvelut</string>
-
-    <string name="shortenscreentimeout">Lyhennä näytön viivettä</string>
-    <string name="disableautomaticsync">Kytke pois automaattinen päivitys</string>
 
     <!-- Detail view -->
 
-    <string name="runninghere">tällä laitteella</string>
-    <string name="runningelsewhere">muualla</string>
-    <string name="running">käynnissä</string>
-    <string name="notrunning">suljettuna</string>
-    <string name="onmodel">Laitteella</string>
-    <string name="onothermodels">Muilla laitteilla</string>
-    <string name="withos">Versiolla</string>
-    <string name="withotheroses">Muilla KJ:lla</string>
-    <string name="withsimilarapps">Sinun sovelluksillasi</string>
-    <string name="withdifferentapps">Eri sovelluksilla</string>
-    <string name="model">Malli</string>
-    <string name="os">KJ-Versio</string>
-    <string name="similarapps">Käyttämäsi sovellukset</string>
-    <string name="wifionly">Käytä vain WiFiä</string>
-    <string name="wifionlyused">Vain WiFi käytössä</string>
     <string name="samples">Mittauksia:</string>
     <string name="samplesWithout">Mittauksia ilman:</string>
     <string name="error">Mittausvirhe:</string>
-    <string name="significance">Merkittävyys:</string>
-    <string name="best">Jo paras</string>
 
     <!-- The pie chart -->
-    <string name="chart_wellbehaved">Hyvin käyttäytyvät</string>
-    <string name="chart_hogs">Hogit</string>
-    <string name="chart_bugs">Bugit</string>
 
     <!-- The dialog to enable Internet -->
     <string name="dialog_text">Carat käyttää Internet-yhteyttä raporttiesi päivittämiseen.</string>
@@ -444,47 +350,16 @@
     <string name="dialog_cancel">Ei kiitos</string>
 
     <!-- error messages -->
-    <string name="connection_error">Ei yhteyttä. Kytkeydy verkkoon.</string>
 
     <!-- Navigation Drawer -->
-    <string name="drawer_open">Näytä valikkopalkki</string>
-    <string name="drawer_close">Sulje valikkopalkki</string>
-
-    <string name="summary_unavailable_title">Ei vielä tuloksia</string>
-    <string name="summary_unavailable_text">Odotetaan tuloksia palvelimelta &#8230;</string>
-    <string name="summary_your_device_has">Sinun sovelluksesi</string>
-    <string name="summary_conjunction">ja</string>
-    <string name="summary_screen_title">Carat-tilastoja</string>
-    <string name="summary_chart_center_text">Muut-\nsovellukset</string>
-    <string name="morestatsat">Lisää: carat.cs.helsinki.fi/statistics</string>
 
     <!-- Carat settings screen -->
     <!-- switch backport strings -->
-    <string name="off">OFF</string>
-    <string name="on">ON</string>
-    <string name="summary_off">Wifi + Mobiilidata</string>
-    <string name="summary_on">Vain Wifi</string>
 
     <!-- New screen titles -->
-    <string name="memoryinfo">Tietoa muistista</string>
-    <string name="batterylifeinfo">Aktiivinen akunkesto</string>
-    <string name="jscoreinfo">Mikä on J-Score?</string>
-    <string name="collectdatainfo">Auta Caratia keräämään dataa</string>
-    <string name="upgradeosinfo">Käyttöjärjestelmän päivittäminen</string>
-    <string name="deviceinfo">Laitteen tilastotietoja</string>
-    <string name="osinfo">KJ-version tilastotietoja</string>
-    <string name="processlist">Käynnissä olevat sovellukset</string>
 
     <!-- Hog threshold values -->
-    <string-array name="hog_thresh_list">
-        <item>Näytä kaikki</item>
-        <item>vaikutus &lt; 5m</item>
-        <item>vaikutus &lt; 10m</item>
-        <item>vaikutus &lt; 20m</item>
-        <item>vaikutus &lt; 1h</item>
-    </string-array>
 
-    <string name="hog_thresh">Piilota sovellukset joiden vaikutus on pieni</string>
     <string name="neverupdated">Ei päivitetty</string>
     <string name="updatedjustnow">Päivitetty äsken</string>
 

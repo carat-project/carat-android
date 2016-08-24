@@ -1,9 +1,5 @@
 <resources>
 
-    <style name="materialPreferences">
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
-    </style>
-
     <!-- custom button style -->
     <style name="button" parent="@android:style/Widget.Button">
         <item name="android:gravity">center_vertical|center_horizontal</item>
@@ -93,12 +89,6 @@
         <item name="android:paddingLeft">15dp</item>
     </style>
 
-    <style name="GiganticBlackText">
-        <item name="android:textSize">60sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/black</item>
-    </style>
-
     <style name="MediumBlackText">
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/black</item>
@@ -139,11 +129,6 @@
 
     <style name="SmallWhiteText">
         <item name="android:textSize">15sp</item>
-        <item name="android:textColor">@color/white</item>
-    </style>
-
-    <style name="ButtonTextStyle">
-        <item name="android:textSize">28sp</item>
         <item name="android:textColor">@color/white</item>
     </style>
 
