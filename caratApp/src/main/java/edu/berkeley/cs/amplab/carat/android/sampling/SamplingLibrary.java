@@ -43,6 +43,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
@@ -2442,6 +2443,32 @@ public final class SamplingLibrary {
 			return mBatteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
 		}
 		return -1;
+	}
+
+	public static double getBatteryCapacity(Context context) {
+		try {
+			// Please note: Uses reflection, API not available on all devices
+			Class<?> powerProfile = Class.forName("com.android.internal.os.PowerProfile");
+			Object mPowerProfile = powerProfile.getConstructor(Context.class).newInstance(context);
+			Method getAveragePower = powerProfile.getMethod("getAveragePower", String.class);
+			getAveragePower.setAccessible(true);
+			return ((double) getAveragePower.invoke(mPowerProfile, "battery.capacity"));
+		} catch(Throwable th){
+			th.printStackTrace();
+			return -1;
+		}
+	}
+
+	public static double getBatteryVoltage(Context context) {
+		Intent receiver = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+		if(receiver == null){
+			return -1;
+		}
+		double voltage = receiver.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0);
+		if(voltage == -1){
+			return voltage;
+		}
+		return voltage / 1000; // Convert mv to V
 	}
 
 	/**

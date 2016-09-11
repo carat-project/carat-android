@@ -650,6 +650,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String memoryUsed = "Memory Used: " + (memoryUsedConverted * 100) + "%";
         String memoryActive = "Memory Active: " + (memoryActiveConverted * 100) + "%";
         String chargeCounter = "Battery charge counter: " + SamplingLibrary.getBatteryChargeCounter(this);
+        String batteryCapacity = "Battery capacity: " + SamplingLibrary.getBatteryCapacity(this) + " mAh";
+        String batteryVoltage = "Battery voltage: " + SamplingLibrary.getBatteryVoltage(this) + "V";
         String pleaseSpecify = "";
         if(which == 1 || which == 3) {
             pleaseSpecify = "\n\nPlease write your feedback here";
@@ -659,7 +661,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.putExtra(Intent.EXTRA_SUBJECT, title);
         intent.putExtra(Intent.EXTRA_TEXT, caratVersion + "\n" + feedback + "\n" + caratId + "\n" + jScore +
                 "\n" + osVersion + "\n" + deviceModel + "\n" + memoryUsed + "\n" + memoryActive +
-                "\n" + chargeCounter + pleaseSpecify);
+                "\n" + chargeCounter + "\n" + batteryCapacity + "\n" + batteryVoltage + pleaseSpecify);
 
         startActivity(Intent.createChooser(intent, "Send email"));
     }
