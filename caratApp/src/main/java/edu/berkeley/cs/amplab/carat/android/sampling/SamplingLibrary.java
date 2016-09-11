@@ -2436,6 +2436,14 @@ public final class SamplingLibrary {
 		return "Unknown";
 	}
 
+	public static int getBatteryChargeCounter(Context context ){
+		if(Build.VERSION.SDK_INT >= 21){
+			BatteryManager mBatteryManager = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
+			return mBatteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
+		}
+		return -1;
+	}
+
 	/**
 	 * Returns numeric mobile network code.
 	 * @param context Application context
