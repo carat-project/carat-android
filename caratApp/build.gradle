@@ -5,8 +5,8 @@ android {
     buildToolsVersion "24.0.1"
 
     defaultConfig {
-        versionCode 111
-        versionName "2.15d"
+        versionCode 112
+        versionName "2.16"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 10
         targetSdkVersion 22
