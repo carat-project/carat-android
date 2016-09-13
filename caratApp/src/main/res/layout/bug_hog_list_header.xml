@@ -23,7 +23,7 @@
             android:maxWidth="56dp"
             android:scaleType="fitCenter"
             android:paddingRight="10dp"
-            android:src="@drawable/ic_launcher" />
+            android:src="@drawable/carat_material_icon" />
 
         <TextView
             android:id="@+id/process_name"

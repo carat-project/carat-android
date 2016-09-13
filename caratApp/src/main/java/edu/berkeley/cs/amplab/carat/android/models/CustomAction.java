@@ -31,7 +31,7 @@ public class CustomAction {
         this.title = title;
         this.subtitle = subtitle;
         this.expandable = false;
-        this.icon = R.drawable.ic_launcher_transp;
+        this.icon = R.drawable.carat_material_icon;
         this.id = id;
     }
 

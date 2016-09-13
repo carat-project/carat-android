@@ -39,6 +39,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.thrift.DetailScreenReport;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
@@ -283,7 +284,7 @@ public class CaratApplication extends Application {
         }
         PendingIntent carat = PendingIntent.getActivity(context, 0, intent, 0);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.ic_notify)
+                .setSmallIcon(R.drawable.carat_notification_icon)
                 .setContentTitle(title)
                 .setContentText(text);
         mBuilder.setContentIntent(carat);
@@ -689,7 +690,6 @@ public class CaratApplication extends Application {
         }
         return haveConnectedWifi || haveConnectedMobile;
     }
-
 
     public static void setReportData() {
         final Reports r = getStorage().getReports();

@@ -23,7 +23,7 @@
             android:layout_gravity="center_vertical|left"
             android:layout_margin="5dp"
             android:paddingRight="10dp"
-            android:src="@drawable/ic_launcher" />
+            android:src="@drawable/carat_material_icon" />
 
         <TextView
             android:id="@+id/process_name"
