@@ -284,7 +284,7 @@ public class CaratApplication extends Application {
         }
         PendingIntent carat = PendingIntent.getActivity(context, 0, intent, 0);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.carat_notification_icon)
+                .setSmallIcon(R.drawable.carat_notif_icon)
                 .setContentTitle(title)
                 .setContentText(text);
         mBuilder.setContentIntent(carat);
