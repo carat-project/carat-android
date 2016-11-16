@@ -192,14 +192,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         FlurryAgent.onEndSession(getApplicationContext());
     }
 
-    @Override
-    protected void onResume() {
-        Log.d(TAG, "Application entered the foreground");
-        onBackground = false;
+    // This needs to be in a separate method so it can be called
+    // from Eula Activity without invoking super.onResume()
+    public void resumeTasksAndUpdate(){
+        this.onBackground = false;
         if ((!isStatsDataAvailable()) && CaratApplication.isInternetAvailable()) {
             getStatsFromServer();
         }
-
         // Refresh reports and upload samples every 15 minutes, but only
         // if user has accepted EULA.
         acceptedEula = p.getBoolean(getResources().getString(R.string.save_accept_eula), false);
@@ -208,9 +207,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 scheduleRefresh(Constants.FRESHNESS_TIMEOUT);
             }
         }
-
-        super.onResume();
         setValues();
+    }
+
+    @Override
+    protected void onResume() {
+        resumeTasksAndUpdate();
+        super.onResume();
     }
 
     public void scheduleRefresh(final long interval){

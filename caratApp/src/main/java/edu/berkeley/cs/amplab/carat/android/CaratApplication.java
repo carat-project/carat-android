@@ -305,7 +305,7 @@ public class CaratApplication extends Application {
         if(Constants.DEBUG){
             Log.d(TAG, "** Accepted EULA **");
         }
-        main.onResume();
+        main.resumeTasksAndUpdate();
     }
 
     public boolean isOnBackground(){
