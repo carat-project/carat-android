@@ -2,36 +2,31 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "24.0.3"
 
     defaultConfig {
         versionCode 113
         versionName "2.16"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 10
+        //noinspection OldTargetApi
         targetSdkVersion 22
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+
+        jackOptions {
+            enabled true
+        }
     }
 
-    // Create gradle.properties file to caratApp folder and define KEYSTORE_PASSWORD=xxx and
-    // KEY_PASSWORD=xxx there in order to generate signed APK for release.
-    // NEVER save gradle.properties to GIT or anywhere else, keep it local!
-    // Also create/move carat-release-key.keystore file to caratApp folder.
-    // Lastly uncomment everything below.
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8;
+        targetCompatibility JavaVersion.VERSION_1_8;
+    }
 
-    /*signingConfigs {
-        release {
-            try {
-                storeFile file("carat-release-key.keystore")
-                storePassword KEYSTORE_PASSWORD
-                keyAlias "carat"
-                keyPassword KEY_PASSWORD
-            }
-            catch (ex) {
-                throw new InvalidUserDataException("You should define KEYSTORE_PASSWORD and KEY_PASSWORD in gradle.properties")
-            }
-        }
-    } */
+    dexOptions {
+        maxProcessCount 4
+        javaMaxHeapSize "4g"
+    }
 
     buildTypes {
         debug {
@@ -39,7 +34,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
         release {
-            //signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
@@ -57,6 +51,7 @@ android {
         exclude 'META-INF/dependencies.txt'
         exclude 'META-INF/LGPL2.1'
         exclude 'META-INF/ASL2.0'
+        return void
     }
 }
 
@@ -65,15 +60,14 @@ repositories {
 }
 
 dependencies {
-    androidTestCompile 'com.android.support:support-annotations:24.2.0'
+    androidTestCompile 'com.android.support:support-annotations:24.2.1'
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test:rules:0.5'
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile files('libs/universal-image-loader-1.9.5.jar')
     compile 'org.bouncycastle:bcprov-jdk16:1.45'
-    compile 'com.android.support:support-v4:24.2.0'
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.android.support:gridlayout-v7:24.2.0'
-    compile 'com.android.support:preference-v7:24.2.0'
-    compile 'com.android.support:preference-v14:24.2.0'
+    compile 'com.android.support:support-v4:24.2.1'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:gridlayout-v7:24.2.1'
+    compile 'com.android.support:preference-v7:24.2.1'
+    compile 'com.android.support:preference-v14:24.2.1'
 }

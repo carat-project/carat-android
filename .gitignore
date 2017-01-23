@@ -3,4 +3,6 @@ build
 .idea
 *.iml
 local.properties
+gradle.properties
 protocol/gen*
+truststore.*
