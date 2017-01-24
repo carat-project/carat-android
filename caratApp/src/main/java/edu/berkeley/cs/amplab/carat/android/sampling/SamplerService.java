@@ -82,10 +82,11 @@ public class SamplerService extends IntentService {
 				stopRapidSampling(context);
 				break;
 			case Intent.ACTION_BATTERY_CHANGED:
-				int state = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-				if(state >= 0 && isCharging(state)){
+				int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+				int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+				if(plugged >= 0 && isCharging(plugged) && !isFull(status)){
 					startRapidSampling(context);
-				} else if(state >= 0){
+				} else if(plugged >= 0){
 					stopRapidSampling(context);
 				}
 				break;
@@ -96,8 +97,9 @@ public class SamplerService extends IntentService {
 				Intent precaution = context.registerReceiver(null,
 						new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 				if(precaution != null){;
-					state = precaution.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-					if(state >= 0 && !isCharging(state)){
+					plugged = precaution.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+					status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+					if((plugged >= 0 && !isCharging(plugged)) || isFull(status)){
 						stopRapidSampling(context);
 					} else {
 						this.sample(intent, context);
@@ -135,6 +137,10 @@ public class SamplerService extends IntentService {
 	private boolean isCharging(int plugged){
 		return plugged == BatteryManager.BATTERY_PLUGGED_AC
 				|| plugged == BatteryManager.BATTERY_PLUGGED_USB;
+	}
+
+	private boolean isFull(int status){
+		return status == BatteryManager.BATTERY_STATUS_FULL;
 	}
 
 	private void startRapidSampling(Context context){
