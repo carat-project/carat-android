@@ -1,7 +1,10 @@
 package edu.berkeley.cs.amplab.carat.android.sampling;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
+import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,7 +13,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.BatteryManager;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -23,13 +28,16 @@ import edu.berkeley.cs.amplab.carat.thrift.Sample;
 public class SamplerService extends IntentService {
     
     private static final String TAG = "SamplerService";
+	private AlarmManager alarmManager;
+	private Intent receiver;
     private double distance;
     
     public SamplerService() {
         super(TAG);
     }
     
-    @Override
+    @SuppressLint("CommitPrefEdits")
+	@Override
     protected void onHandleIntent(Intent intent) {
     	Sampler sampler = Sampler.getInstance();
 
@@ -44,54 +52,119 @@ public class SamplerService extends IntentService {
 		// (so the Intent gets re-delivered to perform the work again), it will
 		// at that point no longer be holding a wake lock since we are depending
 		// on SimpleWakefulReceiver to that for us. If this is a concern, you
-		// can
-		// acquire a separate wake lock here.
+		// can acquire a separate wake lock here.
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
 		wl.acquire();
 
 		Context context = getApplicationContext();
+		alarmManager =
+				(AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		receiver = new Intent(this, SamplerService.class);
+		receiver.setAction(Constants.ACTION_RAPID_SAMPLING);
 
-		String action = null;
-		if (intent != null)
-			action = intent.getStringExtra("OriginalAction");
-		// Log.d(TAG, "Original intent: " + action);
-		
-		if (action != null) {
-			if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-				// NOTE: This is disabled to simplify how Carat behaves.
+		String action = intent.getAction();
+		switch(action){
+			case Intent.ACTION_BOOT_COMPLETED:
 				SharedPreferences p = context.getSharedPreferences("SystemBootTime", Context.MODE_PRIVATE);
 				Editor editor = p.edit();
 				editor.putLong("bootTime", new Date().getTime());
 				editor.commit();
-				// onBoot(context);
-			}
-
-			if (action.equals(Constants.ACTION_CARAT_SAMPLE)) {
-				// set up sampling.
-				// Let sampling happen on battery change
+				break;
+			case Intent.ACTION_POWER_CONNECTED:
+				// TODO: FIX
+				System.out.println("Connected");
+				startRapidSampling(context);
+				break;
+			case Intent.ACTION_POWER_DISCONNECTED:
+				// TODO: FIX
+				System.out.println("Disconnected");
+				stopRapidSampling(context);
+				break;
+			case Intent.ACTION_BATTERY_CHANGED:
+				int state = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+				if(state >= 0 && isCharging(state)){
+					startRapidSampling(context);
+				} else if(state >= 0){
+					stopRapidSampling(context);
+				}
+				break;
+			case Constants.ACTION_RAPID_SAMPLING:
+				// Let's be extra cautious here and check every time
+				// that we're still charging since we might have lost
+				// other broadcasts.
+				Intent precaution = context.registerReceiver(null,
+						new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+				if(precaution != null){;
+					state = precaution.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+					if(state >= 0 && !isCharging(state)){
+						stopRapidSampling(context);
+					} else {
+						this.sample(intent, context);
+					}
+				}
+				break;
+			case Constants.ACTION_CARAT_SAMPLE:
 				IntentFilter intentFilter = new IntentFilter();
 				intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-				/*
-				 * intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-				 * intentFilter.addDataScheme("package"); // add addDataScheme
-				 */
+
 				// Unregister, since Carat may have been started multiple times
 				// since reboot
 				try {
 					unregisterReceiver(sampler);
 				} catch (IllegalArgumentException e) {
+					// Ignore
 				}
 				registerReceiver(sampler, intentFilter);
-			}
-        
+				break;
+			default:
+				// Just in case we don't support the action
+				action = null;
+				break;
+		}
+		if(action != null){
 			takeSampleIfBatteryLevelChanged(intent, context);
-        }
-        
+		}
+
         wl.release();
-        if (sampler != null && intent != null)
-        	Sampler.completeWakefulIntent(intent);
+        if (sampler != null){
+			Sampler.completeWakefulIntent(intent);
+		}
     }
+
+	private boolean isCharging(int plugged){
+		return plugged == BatteryManager.BATTERY_PLUGGED_AC
+				|| plugged == BatteryManager.BATTERY_PLUGGED_USB;
+	}
+
+	private void startRapidSampling(Context context){
+		if(!isRapidSampling(context)){
+			PendingIntent rapidSampling = PendingIntent.getService(context, 0, receiver, 0);
+			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),
+					TimeUnit.SECONDS.toMillis(60), rapidSampling);
+			Log.d(TAG, "Started rapid sampling!");
+		}
+	}
+
+	private void stopRapidSampling(Context context){
+		if(isRapidSampling(context)){
+			PendingIntent rapidSampling = PendingIntent.getService(this, 0, receiver, 0);
+			rapidSampling.cancel();
+			alarmManager.cancel(rapidSampling);
+			Log.d(TAG, "Stopped rapid sampling!");
+		}
+	}
+
+	private boolean isRapidSampling(Context context){
+		int PEEK_FLAG = PendingIntent.FLAG_NO_CREATE;
+		return PendingIntent.getService(this, 0, receiver, PEEK_FLAG) != null;
+	}
+
+	private void sample(Intent intent, Context context){
+		CaratSampleDB sampleDB = CaratSampleDB.getInstance(context);
+		Sample lastSample = sampleDB.getLastSample(context);
+		this.getSample(context, intent, lastSample, sampleDB);
+	}
 
     /**
      * Some phones receive the batteryChanged very very often. We are interested 

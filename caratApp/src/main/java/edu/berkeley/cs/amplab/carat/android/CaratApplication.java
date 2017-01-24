@@ -150,55 +150,25 @@ public class CaratApplication extends Application {
             private IntentFilter intentFilter;
 
             public void run() {
-                /*
-				 * Schedule recurring sampling event: (currently not used)
-				 */
-				/*
-				 * SharedPreferences p = PreferenceManager
-				 * 			.getDefaultSharedPreferences(CaratApplication.this); 
-				 * boolean firstRun = p.getBoolean(PREFERENCE_SAMPLE_FIRST_RUN, true);
-				 */
-                // do this always for now for debugging purposes:
-                // if (firstRun) {
-                // What to start when the event fires (this is unused at the
-                // moment)
-				/*
-				 * Intent intent = new Intent(getApplicationContext(), Sampler.class); 
-				 * intent.setAction(ACTION_CARAT_SAMPLE); 
-				 * // In reality, you would want to have a static variable for the 
-				 * // request code instead of 192837 
-				 * PendingIntent sender =
-				 * 			PendingIntent.getBroadcast( CaratApplication.this, 192837,
-				 * 							intent, PendingIntent.FLAG_UPDATE_CURRENT); 
-				 * // Cancel if this has been set up. 
-				 * // Do not use timer at all any more.
-				 *  sender.cancel();
-				 */
-
                 // Let sampling happen on battery change
                 intentFilter = new IntentFilter();
                 intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-				/*
-				 * intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-				 * intentFilter.addDataScheme("package"); // add addDataScheme
-				 */
+
+                // Let the sampler know if we plug / unplug the device
+                // so we can increase the sampling rate when charging
+                intentFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+                intentFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+                intentFilter.addAction(Constants.ACTION_RAPID_SAMPLING);
+
                 sampler = Sampler.getInstance();
                 // Unregister, since Carat may have been started multiple times
                 // since reboot
                 try {
                     unregisterReceiver(sampler);
                 } catch (IllegalArgumentException e) {
+                    // Ignore
                 }
                 registerReceiver(sampler, intentFilter);
-
-                // register for screen_on and screen-off as well
-
-                // for the debugging purpose, let's comment out these actions
-                // TODO: re-enable
-                // intentFilter.addAction(Intent.ACTION_SCREEN_ON);
-                // registerReceiver(sampler, intentFilter);
-                // intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
-                // registerReceiver(sampler, intentFilter);
             }
         }.start();
 

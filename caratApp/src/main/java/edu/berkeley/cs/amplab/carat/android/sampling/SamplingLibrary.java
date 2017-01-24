@@ -2322,13 +2322,12 @@ public final class SamplingLibrary {
 		// FIXED: Not used yet, Sample needs more fields
 		String batteryCharger = "unplugged";
 		switch (plugged) {
-
-		case BatteryManager.BATTERY_PLUGGED_AC:
-			batteryCharger = "ac";
-			break;
-		case BatteryManager.BATTERY_PLUGGED_USB:
-			batteryCharger = "usb";
-			break;
+			case BatteryManager.BATTERY_PLUGGED_AC:
+				batteryCharger = "ac";
+				break;
+			case BatteryManager.BATTERY_PLUGGED_USB:
+				batteryCharger = "usb";
+				break;
 		}
 
 		BatteryDetails bd = new BatteryDetails();

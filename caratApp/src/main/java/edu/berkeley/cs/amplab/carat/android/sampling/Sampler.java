@@ -30,16 +30,14 @@ public class Sampler extends WakefulBroadcastReceiver implements
     }
     
     private void requestLocationUpdates() {
-        LocationManager lm = (LocationManager) context
-                .getSystemService(Context.LOCATION_SERVICE);
-        lm.removeUpdates(this);
-        List<String> providers = SamplingLibrary
-                .getEnabledLocationProviders(context);
+        LocationManager locationManager =
+                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.removeUpdates(this);
+        List<String> providers = SamplingLibrary.getEnabledLocationProviders(context);
         if (providers != null) {
             for (String provider : providers) {
-                lm.requestLocationUpdates(provider,
+                locationManager.requestLocationUpdates(provider,
                         Constants.FRESHNESS_TIMEOUT, 0, this);
-                // Log.v(TAG, "Location updates requested for " + provider);
             }
         }
     }
@@ -79,8 +77,10 @@ public class Sampler extends WakefulBroadcastReceiver implements
                 lastKnownLocation = SamplingLibrary.getLastKnownLocation(context);
 
             Intent service = new Intent(context, SamplerService.class);
-            service.putExtra("OriginalAction", intent.getAction());
-            service.fillIn(intent, 0);
+            // Pass the action and extras to the service
+            System.out.println("action: " + intent.getAction());
+            service.putExtras(intent.getExtras());
+            service.setAction(intent.getAction());
             service.putExtra("distance", distance);
             startWakefulService(context, service);
         }
