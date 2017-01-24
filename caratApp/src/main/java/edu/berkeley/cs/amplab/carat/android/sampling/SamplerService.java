@@ -84,7 +84,7 @@ public class SamplerService extends IntentService {
 			case Intent.ACTION_BATTERY_CHANGED:
 				int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 				int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-				if(plugged >= 0 && isCharging(plugged) && !isFull(status)){
+				if(plugged >= 0 && isCharging(plugged) && !isFull(intent)){
 					startRapidSampling(context);
 				} else if(plugged >= 0){
 					stopRapidSampling(context);
@@ -99,7 +99,7 @@ public class SamplerService extends IntentService {
 				if(precaution != null){;
 					plugged = precaution.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 					status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-					if((plugged >= 0 && !isCharging(plugged)) || isFull(status)){
+					if((plugged >= 0 && !isCharging(plugged)) || isFull(intent)){
 						stopRapidSampling(context);
 					} else {
 						this.sample(intent, context);
@@ -139,8 +139,17 @@ public class SamplerService extends IntentService {
 				|| plugged == BatteryManager.BATTERY_PLUGGED_USB;
 	}
 
-	private boolean isFull(int status){
-		return status == BatteryManager.BATTERY_STATUS_FULL;
+	private boolean isFull(Intent intent){
+		int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+		int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
+		int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0);
+		if(scale == 0){
+			scale = 100;
+		}
+		if(level > 0 && scale > 0){
+			level = (level * 100) / scale;
+		}
+		return status == BatteryManager.BATTERY_STATUS_FULL || level >= 100;
 	}
 
 	private void startRapidSampling(Context context){
