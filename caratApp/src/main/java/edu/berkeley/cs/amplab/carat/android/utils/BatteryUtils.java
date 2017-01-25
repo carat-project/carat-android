@@ -1,6 +1,8 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.BatteryManager;
 
 /**
@@ -11,7 +13,13 @@ public class BatteryUtils {
     private static final int DEFAULT_SCALE = 100;
     private static final int DEFAULT_LEVEL = 0;
 
-    public static long getBatteryLevel(Intent intent){
+    public static double getBatteryLevel(Context context){
+        Intent intent =
+                context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        return getBatteryLevel(intent);
+    }
+
+    public static double getBatteryLevel(Intent intent){
         int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 

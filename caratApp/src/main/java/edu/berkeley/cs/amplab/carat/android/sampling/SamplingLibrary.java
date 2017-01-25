@@ -84,6 +84,7 @@ import com.flurry.android.FlurryAgent;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CallMonth;
 import edu.berkeley.cs.amplab.carat.thrift.CellInfo;
@@ -185,12 +186,12 @@ public final class SamplingLibrary {
 	public static double startLongitude = 0;
 	public static double distance = 0;
 
-	private static final String STAG = "getSample";
+	private static final String STAG = "sample";
 	// private static final String TAG="FeaturesPowerConsumption";
 
 	public static final int UUID_LENGTH = 16;
 
-	private static double lastBatteryLevel;
+	private static double lastSampledBatteryLevel;
 	private static double currentBatteryLevel;
 
 	// we might not be able to read the current battery level at the first run
@@ -223,15 +224,15 @@ public final class SamplingLibrary {
 	}
 
 	public static double readLastBatteryLevel() {
-		return lastBatteryLevel;
+		return lastSampledBatteryLevel;
 	}
 
-	public static void setLastBatteryLevel(double level) {
-		SamplingLibrary.lastBatteryLevel = level;
+	public static void setLastSampledBatteryLevel(double level) {
+		SamplingLibrary.lastSampledBatteryLevel = level;
 	}
 
-	public static double getLastBatteryLevel(Context context) {
-		return lastBatteryLevel;
+	public static double getLastSampledBatteryLevel(Context context) {
+		return lastSampledBatteryLevel;
 	}
 
 	public static double getCurrentBatteryLevel() {
@@ -1029,10 +1030,10 @@ public final class SamplingLibrary {
 	}
 
 	/**
-	 * Returns a List of ProcessInfo objects, helper for getSample.
+	 * Returns a List of ProcessInfo objects, helper for sample.
 	 * 
 	 * @param context the Context.
-	 * @return a List of ProcessInfo objects, helper for getSample.
+	 * @return a List of ProcessInfo objects, helper for sample.
 	 */
 	private static List<ProcessInfo> getRunningProcessInfoForSample(Context context) {
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
@@ -2125,12 +2126,11 @@ public final class SamplingLibrary {
 		return buf.toString();
 	}
 
-	public static Sample getSample(Context context, Intent intent, String lastBatteryState) {
-		final String TAG = "SamplingLibrary.getSample";
+	public static Sample sample(Context context, String action, String lastBatteryState) {
+		final String TAG = "SamplingLibrary.sample";
 		if (Constants.DEBUG)
-		    Log.d(TAG, "getSample() was invoked.");
+		    Log.d(TAG, "sample() was invoked.");
 
-		String action = intent.getAction();
 		if (Constants.DEBUG)
 		    Log.d(TAG, "action = " + action);
 
@@ -2232,94 +2232,67 @@ public final class SamplingLibrary {
 		String wifiApStatus = SamplingLibrary.getWifiHotspotState(context);
 		nd.setWifiApStatus(wifiApStatus);
 
-		// No easy way to check this as API keeps changing
-		// Possible by using reflection and checking build version
-		// NetworkStatistics ns = new NetworkStatistics();
-
-		// Add NetworkDetails substruct to Sample
 		mySample.setNetworkDetails(nd);
 
-		/* Calling Information */
-		// List<String> callInfo;
-		// callInfo=SamplingLibrary.getCallInfo(context);
-		/* Total call time */
-		// long totalCallTime=0;
-		// totalCallTime=SamplingLibrary.getTotalCallDur(context);
-
-		/*
-		 * long[] incomingOutgoingIdle = getCalltimesSinceBoot(context);
-		 * Log.d(STAG, "Call time since boot: Incoming=" +
-		 * incomingOutgoingIdle[0] + " Outgoing=" + incomingOutgoingIdle[1] +
-		 * " idle=" + incomingOutgoingIdle[2]);
-		 * 
-		 * // Summary Call info CallInfo ci = new CallInfo(); String callState =
-		 * SamplingLibrary.getCallState(context); ci.setCallStatus(callState);
-		 * ci.setIncomingCallTime(incomingOutgoingIdle[0]);
-		 * ci.setOutgoingCallTime(incomingOutgoingIdle[1]);
-		 * ci.setNonCallTime(incomingOutgoingIdle[2]);
-		 * 
-		 * mySample.setCallInfo(ci);
-		 */
-
-		// Bundle b = intent.getExtras();
-
 		// Battery details
+		Intent intent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+		if(intent == null){
+			return null;
+		}
+
 		int health = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0);
 		int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
-		// This is really an int.
-		// FIXED: Not used yet, Sample needs more fields
-
 		int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
-		String batteryTechnology = intent.getExtras().getString(BatteryManager.EXTRA_TECHNOLOGY);
+		int temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10;
+		double batteryLevel = BatteryUtils.getBatteryLevel(intent) / 100.0;
+		double voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000;
+		String batteryTechnology = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
 
 		// FIXED: Not used yet, Sample needs more fields
 		String batteryHealth = "Unknown";
-		String batteryStatus = "Unknown";
+		String batteryStatus;
 
 		switch (health) {
-
-		case BatteryManager.BATTERY_HEALTH_DEAD:
-			batteryHealth = "Dead";
-			break;
-		case BatteryManager.BATTERY_HEALTH_GOOD:
-			batteryHealth = "Good";
-			break;
-		case BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE:
-			batteryHealth = "Over voltage";
-			break;
-		case BatteryManager.BATTERY_HEALTH_OVERHEAT:
-			batteryHealth = "Overheat";
-			break;
-		case BatteryManager.BATTERY_HEALTH_UNKNOWN:
-			batteryHealth = "Unknown";
-			break;
-		case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE:
-			batteryHealth = "Unspecified failure";
-			break;
+			case BatteryManager.BATTERY_HEALTH_DEAD:
+				batteryHealth = "Dead";
+				break;
+			case BatteryManager.BATTERY_HEALTH_GOOD:
+				batteryHealth = "Good";
+				break;
+			case BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE:
+				batteryHealth = "Over voltage";
+				break;
+			case BatteryManager.BATTERY_HEALTH_OVERHEAT:
+				batteryHealth = "Overheat";
+				break;
+			case BatteryManager.BATTERY_HEALTH_UNKNOWN:
+				batteryHealth = "Unknown";
+				break;
+			case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE:
+				batteryHealth = "Unspecified failure";
+				break;
 		}
 
 		switch (status) {
-
-		case BatteryManager.BATTERY_STATUS_CHARGING:
-			batteryStatus = "Charging";
-			break;
-		case BatteryManager.BATTERY_STATUS_DISCHARGING:
-			batteryStatus = "Discharging";
-			break;
-		case BatteryManager.BATTERY_STATUS_FULL:
-			batteryStatus = "Full";
-			break;
-		case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
-			batteryStatus = "Not charging";
-			break;
-		case BatteryManager.BATTERY_STATUS_UNKNOWN:
-			batteryStatus = "Unknown";
-			break;
-		default:
-			batteryStatus = lastBatteryState != null ? lastBatteryState : "Unknown";
+			case BatteryManager.BATTERY_STATUS_CHARGING:
+				batteryStatus = "Charging";
+				break;
+			case BatteryManager.BATTERY_STATUS_DISCHARGING:
+				batteryStatus = "Discharging";
+				break;
+			case BatteryManager.BATTERY_STATUS_FULL:
+				batteryStatus = "Full";
+				break;
+			case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+				batteryStatus = "Not charging";
+				break;
+			case BatteryManager.BATTERY_STATUS_UNKNOWN:
+				batteryStatus = "Unknown";
+				break;
+			default:
+				batteryStatus = lastBatteryState != null ? lastBatteryState : "Unknown";
 		}
 
-		// FIXED: Not used yet, Sample needs more fields
 		String batteryCharger = "unplugged";
 		switch (plugged) {
 			case BatteryManager.BATTERY_PLUGGED_AC:
@@ -2330,7 +2303,7 @@ public final class SamplingLibrary {
 				break;
 		}
 
-		BatteryDetails bd = new BatteryDetails();
+		BatteryDetails battery = new BatteryDetails();
 		// otherInfo.setCPUIdleTime(totalIdleTime);
 
 		// IMPORTANT: All of the battery details fields were never set (=always
@@ -2341,20 +2314,18 @@ public final class SamplingLibrary {
 		// temperature value
 		// (returned by BatteryManager) is not Centigrade, it should be divided
 		// by 10)
-		int temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10;
-		bd.setBatteryTemperature(temperature);
+		battery.setBatteryTemperature(temperature);
 		// otherInfo.setBatteryTemperature(temperature);
 
 		// current battery voltage in VOLTS (the unit of the returned value by
 		// BatteryManager is millivolts)
-		double voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000;
-		bd.setBatteryVoltage(voltage);
+		battery.setBatteryVoltage(voltage);
 		// otherInfo.setBatteryVoltage(voltage);
-		bd.setBatteryTechnology(batteryTechnology);
-		bd.setBatteryCharger(batteryCharger);
-		bd.setBatteryHealth(batteryHealth);
-		mySample.setBatteryDetails(bd);
-		mySample.setBatteryLevel(currentBatteryLevel);
+		battery.setBatteryTechnology(batteryTechnology);
+		battery.setBatteryCharger(batteryCharger);
+		battery.setBatteryHealth(batteryHealth);
+		mySample.setBatteryDetails(battery);
+		mySample.setBatteryLevel(batteryLevel);
 		mySample.setBatteryState(batteryStatus);
 
 		// Memory statistics
@@ -2411,6 +2382,7 @@ public final class SamplingLibrary {
 			}
 		}
 
+		lastSampledBatteryLevel = batteryLevel;
 		return mySample;
 	}
 

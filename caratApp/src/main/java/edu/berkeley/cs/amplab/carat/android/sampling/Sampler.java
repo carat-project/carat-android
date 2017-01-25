@@ -11,6 +11,7 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 
 public class Sampler extends WakefulBroadcastReceiver implements LocationListener {
 
@@ -23,8 +24,9 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
     private long lastNotify;
 
     public static Sampler getInstance() {
-    	if (instance == null)
-    		Sampler.instance = new Sampler();
+    	if (instance == null){
+            Sampler.instance = new Sampler();
+        }
     	return instance;
     }
     
@@ -43,63 +45,47 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
 
     @Override
     public void onReceive(Context context, Intent intent) {
-    	/* Some phones receive the batteryChanged very very often. We are interested 
-         * only in changes of the battery level */
-    	int currentLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-        int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0);
-        
-		/*
-		 * IMPORTANT: Android doesn't necessarily broadcast battery level info
-		 * EVERY TIME a battery_changed action action happens. Sometimes these
-		 * info (EXTRA_LEVEL & EXTRA_SCALE) ARE broadcasted, sometimes NOT. So
-		 * it's important to make sure and check whether these extras are
-		 * broadcasted and thus our variables are non-zero. Also whenever
-		 * Android broadcasts these extras, it doens't necessarily mean
-		 * that a battery percentage/level change has happened. So we have to
-		 * check that too, to avoid overwriting our variables unnecessarily
-		 * (extra memory operation). Check SamplingLibrary.setCurrentBatteryLevel().
-		 */
-        
-        /* On some phones, scale is always 0. */
-        if (scale == 0)
-        	scale = 100;
-        if (currentLevel > 0) {
-        	SamplingLibrary.setCurrentBatteryLevel(currentLevel, scale);
-        	
-        	if (this.context == null) {
+    	double level = BatteryUtils.getBatteryLevel(intent);
+        if(level != 1){
+            // For some reason we use decimal levels
+            SamplingLibrary.setCurrentBatteryLevel(level/100);
+            if(this.context == null){
                 this.context = context;
-                requestLocationUpdates();
             }
 
-            // Update last known location...
-            if (lastKnownLocation == null)
+            // Only request location updates on level broadcasts
+            requestLocationUpdates();
+            if(lastKnownLocation == null){
                 lastKnownLocation = SamplingLibrary.getLastKnownLocation(context);
-
-            Intent service = new Intent(context, SamplerService.class);
-            // Pass the action and extras to the service
-            System.out.println("action: " + intent.getAction());
-            service.putExtras(intent.getExtras());
-            service.setAction(intent.getAction());
-            service.putExtra("distance", distance);
-
-            startWakefulService(context, service);
+            }
         }
+
+        startSamplerService(context, intent);
+    }
+
+    public void startSamplerService(Context context, Intent intent){
+        Intent service = new Intent(context, SamplerService.class);
+        // Pass the action and extras to the service
+
+        service.putExtras(intent.getExtras());
+        service.setAction(intent.getAction());
+        service.putExtra("distance", distance);
+
+        startWakefulService(context, service);
+    }
+
+    public double getDistanceSinceLastSample(){
+        double result = distance;
+
+        // Reset the distance here
+        distance = 0;
+        return result;
     }
 
     @Override
     public void onLocationChanged(Location location) {
         if (lastKnownLocation != null && location != null) {
-            distance = lastKnownLocation.distanceTo(location);
-            /*
-             * HashMap<String, Double> m = new HashMap<String, Double>();
-             * m.put("distanceTraveled", distance);
-             */
-            // FlurryAgent.logEvent("LocationChanged", m);
-            /*
-             * CharSequence text = "Location change with distance = " +
-             * distance; Toast.makeText(context, text,
-             * Toast.LENGTH_LONG).show();
-             */
+            distance += lastKnownLocation.distanceTo(location);
         }
         lastKnownLocation = location;
     }

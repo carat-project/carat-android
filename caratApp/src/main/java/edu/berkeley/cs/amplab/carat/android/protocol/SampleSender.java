@@ -97,7 +97,7 @@ public class SampleSender {
 									 * uploaded now, and should be deleted along the other 
 									 * uploaded samples). The "timestamp" is computed this way:
 									 * CurrentTimeMillis / 1000 
-									 * (see getSample() in SamplingLibrary)
+									 * (see sample() in SamplingLibrary)
 									 */ 
                                     long lastSampleTime = (long) last.getTimestamp() * 1000; // in currentTimeMillis
                                     SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");

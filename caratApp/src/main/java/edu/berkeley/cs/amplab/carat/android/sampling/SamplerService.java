@@ -1,6 +1,5 @@
 package edu.berkeley.cs.amplab.carat.android.sampling;
 
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import android.annotation.SuppressLint;
@@ -12,8 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.os.BatteryManager;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -75,7 +72,7 @@ public class SamplerService extends IntentService {
 					stopRapidSampling(context);
 				}
 
-				if (batteryLevelChanged(intent, context) || isRapidSampling(context)) {
+				if (batteryLevelChanged(intent, context) || isRapidSampling()) {
 					sample(intent, context);
 				}
 				break;
@@ -86,7 +83,7 @@ public class SamplerService extends IntentService {
 				if (BatteryUtils.isCharging(check) == Boolean3.NO || BatteryUtils.isFull(check)) {
 					stopRapidSampling(context);
 				} else {
-					this.sample(intent, context);
+					this.sample(check, context);
 				}
 				break;
 			default:
@@ -101,7 +98,7 @@ public class SamplerService extends IntentService {
     }
 
 	private void startRapidSampling(Context context){
-		if(!isRapidSampling(context)){
+		if(!isRapidSampling()){
 			PendingIntent rapidSampling = PendingIntent.getService(context, 0, receiver, 0);
 			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),
 					TimeUnit.SECONDS.toMillis(60), rapidSampling);
@@ -110,7 +107,7 @@ public class SamplerService extends IntentService {
 	}
 
 	private void stopRapidSampling(Context context){
-		if(isRapidSampling(context)){
+		if(isRapidSampling()){
 			PendingIntent rapidSampling = PendingIntent.getService(this, 0, receiver, 0);
 			rapidSampling.cancel();
 			alarmManager.cancel(rapidSampling);
@@ -118,7 +115,7 @@ public class SamplerService extends IntentService {
 		}
 	}
 
-	private boolean isRapidSampling(Context context){
+	private boolean isRapidSampling(){
 		int PEEK_FLAG = PendingIntent.FLAG_NO_CREATE;
 		return PendingIntent.getService(this, 0, receiver, PEEK_FLAG) != null;
 	}
@@ -126,112 +123,30 @@ public class SamplerService extends IntentService {
 	private void sample(Intent intent, Context context){
 		CaratSampleDB sampleDB = CaratSampleDB.getInstance(context);
 		Sample lastSample = sampleDB.getLastSample(context);
-		this.getSample(context, intent, lastSample, sampleDB);
+
+		String lastBatteryState = lastSample != null ? lastSample.getBatteryState() : "Unknown";
+		Sample s = SamplingLibrary.sample(context, intent.getAction(), lastBatteryState);
+		if(s == null){
+			Logger.d(TAG, "Sample was null!");
+			return;
+		}
+
+		long id = sampleDB.putSample(s);
+		notifyIfNeeded(context);
+		Log.i(TAG, "Took sample " + id + " for " + intent.getAction());
 	}
 
 	private boolean batteryLevelChanged(Intent intent, Context context){
 		double batteryLevel = BatteryUtils.getBatteryLevel(intent);
 		if(batteryLevel <= 0){
-			Logger.d(TAG, "Battery level was 0");
+			Logger.d(TAG, "Battery level was zero or negative");
 			return false;
 		}
-		double lastBatteryLevel = SamplingLibrary.getLastBatteryLevel(context);
+		double lastBatteryLevel = SamplingLibrary.getLastSampledBatteryLevel(context);
 		return batteryLevel != lastBatteryLevel;
 	}
-
-    /**
-     * Some phones receive the batteryChanged very very often. We are interested 
-     * only in changes of the battery level
-     * @param intent  The parent intent (the one passed from the Sampler)
-	 *				  (with one extra field set, called 'distance')
-	 *				  This intent should be the intent which is passed by the Android system to your 
-	 *                broadcast receiver (which is registered with the BATTERY_CHANGED action).
-	 *                In our case, this broadcast receiver is 'Sampler'.                 
-     * @param context
-     */
-	private void takeSampleIfBatteryLevelChanged(Intent intent, Context context) {
-		distance = intent.getDoubleExtra("distance", 0);
-		
-		// Make sure our new sample doesn't have a zero value as its current battery level
-		if (SamplingLibrary.getCurrentBatteryLevel() > 0) {
-			CaratSampleDB sampleDB = CaratSampleDB.getInstance(context);
-			Sample lastSample = sampleDB.getLastSample(context);	
-			
-			if (lastSample != null) {
-				SamplingLibrary.setLastBatteryLevel(lastSample.getBatteryLevel());
-			} else if (SamplingLibrary.getLastBatteryLevel(context) == 0) {
-				Log.i(TAG,
-						"The last sample is null (all samples have been uploaded and deleted "
-								+ "from the local DB) , and the last battery level is not set yet "
-								+ "(the first ever sample). About to take a new sample. "
-								+ "currentBatteryLevel=" + SamplingLibrary.getCurrentBatteryLevel());
-				// before taking the first sample in a batch, first record the battery level
-				SamplingLibrary.setLastBatteryLevel(SamplingLibrary.getCurrentBatteryLevel());
-				// take a sample and store it in the database
-				this.getSample(context, intent, lastSample, sampleDB);
-				notify(context);
-			}
-			
-			/*
-			 * Read the battery levels again, they are now changed. We just
-			 * changed the last battery level (in the previous block of code).
-			 * The current battery level might also have been changed while the
-			 * device has been taking a sample.
-			 */
-			boolean batteryLevelChanged = SamplingLibrary.getLastBatteryLevel(context) != SamplingLibrary.getCurrentBatteryLevel();
-			
-			if (batteryLevelChanged) {
-				/* among all occurrence of the event BATTERY_CHANGED, only take a sample 
-				 * whenever a battery PERCENTAGE CHANGE happens 
-				 * (BATTERY_CHANGED happens whenever the battery temperature or voltage of other parameters change)
-				 */
-				Log.i(TAG, "The battery percentage changed. About to take a new sample "
-						+ "(currentBatteryLevel=" + SamplingLibrary.getCurrentBatteryLevel() + ", lastBatteryLevel=" + SamplingLibrary.getLastBatteryLevel(context)+ ")");
-				// take a sample and store it in the database
-				this.getSample(context, intent, lastSample, sampleDB);
-				notify(context);
-			} else {
-			    if (Constants.DEBUG)
-			        Log.d(TAG, "NO battery percentage change. currentBatteryLevel=" + SamplingLibrary.getCurrentBatteryLevel());
-			}
-		} else {
-		    if (Constants.DEBUG)
-		        Log.d(TAG, "current battery level = 0");
-		}
-	}
-
-    /**
-     * Takes a Sample and stores it in the database. Does not store the first ever samples 
-     * that have no battery info.
-     * @param context from onReceive
-     * @param intent from onReceive
-     * @return the newly recorded Sample
-     */
-    private void getSample(Context context, Intent intent, Sample lastSample, CaratSampleDB sampleDB) {
-    	// String action = intent.getStringExtra("OriginalAction");
-    	// Log.i("SamplerService.getSample()", "Original intent: " +action);
-    	String lastBatteryState = lastSample != null ? lastSample.getBatteryState() : "Unknown";
-    	Sample s = SamplingLibrary.getSample(context, intent, lastBatteryState);
-        // Set distance to current distance value
-        if (s != null){
-            s.setDistanceTraveled(distance);
-            // FIX: Do not use same distance again.
-            distance = 0;
-        }
-
-        // Write to database
-        // But only after first real numbers
-        if (!s.getBatteryState().equals("Unknown") && s.getBatteryLevel() >= 0) {
-        	// store the sample into the database
-            long id = sampleDB.putSample(s);
-            Log.i(TAG, "Took sample " + id + " for " + intent.getAction());
-            //FlurryAgent.logEvent(intent.getAction());
-            //  Log.d(TAG, "current battery level (just before quitting getSample() ): " + SamplingLibrary.getCurrentBatteryLevel());
-        }
-        // return s;
-    }
     
-    private void notify(Context context){
+    private void notifyIfNeeded(Context context){
 		final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
 		final boolean disableNotifications = p.getBoolean("noNotifications", false);
 		if(disableNotifications){
@@ -257,7 +172,6 @@ public class SamplerService extends IntentService {
                 .setContentText("Please open Carat. Samples to send:")
                 .setNumber(samples);
         mBuilder.setContentIntent(launchCarat);
-        //mBuilder.setSound(null);
         mBuilder.setAutoCancel(true);
         NotificationManager mNotificationManager = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
