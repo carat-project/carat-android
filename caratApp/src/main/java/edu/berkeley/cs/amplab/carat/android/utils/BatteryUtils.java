@@ -25,11 +25,13 @@ public class BatteryUtils {
 
         // TODO: Remove logging while confirmed working. This floods the log.
         if(level < 0){
-            Logger.d(TAG, "Missing battery level information or negative");
+            Logger.d(TAG,
+                    "Missing battery level information or negative for " + intent.getAction());
             level = DEFAULT_LEVEL;
         }
         if(scale <= 0){
-            Logger.d(TAG, "Missing battery scale information or invalid value");
+            Logger.d(TAG,
+                    "Missing battery scale information or invalid value for " + intent.getAction());
             scale = DEFAULT_SCALE;
         }
 

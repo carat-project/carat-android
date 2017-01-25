@@ -93,7 +93,7 @@
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
 
                 <!-- Custom actions -->
-                <action android:name="edu.berkeley.cs.amplab.carat.android.ACTION_SCHEDULED_SAMPLE" />
+                <action android:name="edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING" />
 
                 <!-- TODO: What is this needed for in this receiver? -->
                 <data android:scheme="package" />

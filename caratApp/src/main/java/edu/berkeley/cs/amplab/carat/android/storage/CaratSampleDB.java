@@ -380,7 +380,7 @@ public class CaratSampleDB {
                 }
             }
         } catch (Throwable th) {
-            Log.e(TAG, "Failed to add a sample!", th);
+            Log.e(TAG, "Failed to add a sample! Have you accepted EULA?", th);
         }
         return id;
     }

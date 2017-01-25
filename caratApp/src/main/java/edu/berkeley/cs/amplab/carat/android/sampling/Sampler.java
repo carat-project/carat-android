@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 public class Sampler extends WakefulBroadcastReceiver implements LocationListener {
 
@@ -45,7 +46,7 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
 
     @Override
     public void onReceive(Context context, Intent intent) {
-    	double level = BatteryUtils.getBatteryLevel(intent);
+        double level = BatteryUtils.getBatteryLevel(intent);
         if(level != 1){
             // For some reason we use decimal levels
             SamplingLibrary.setCurrentBatteryLevel(level/100);
@@ -67,8 +68,13 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
         Intent service = new Intent(context, SamplerService.class);
         // Pass the action and extras to the service
 
-        service.putExtras(intent.getExtras());
-        service.setAction(intent.getAction());
+        if(intent != null){
+            Bundle extras = intent.getExtras();
+            if(extras != null){
+                service.putExtras(intent.getExtras());
+            }
+            service.setAction(intent.getAction());
+        }
         service.putExtra("distance", distance);
 
         startWakefulService(context, service);

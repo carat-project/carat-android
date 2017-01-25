@@ -29,7 +29,6 @@ public class SamplerService extends IntentService {
     private static final String TAG = "SamplerService";
 	private AlarmManager alarmManager;
 	private Intent receiver;
-    private double distance;
     
     public SamplerService() {
         super(TAG);
@@ -60,35 +59,38 @@ public class SamplerService extends IntentService {
 		alarmManager =
 				(AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		receiver = new Intent(this, SamplerService.class);
-		receiver.setAction(Constants.ACTION_SCHEDULED_SAMPLE);
+		receiver.setAction(Constants.RAPID_SAMPLING);
 
 		String action = intent.getAction();
 		switch (action) {
 			case Intent.ACTION_BATTERY_CHANGED:
 				Boolean3 charging = BatteryUtils.isCharging(intent);
-				if (charging == Boolean3.YES) {
+				if (charging == Boolean3.YES && !BatteryUtils.isFull(intent)) {
 					startRapidSampling(context);
 				} else if (charging == Boolean3.NO) {
 					stopRapidSampling(context);
 				}
 
-				if (batteryLevelChanged(intent, context) || isRapidSampling()) {
-					sample(intent, context);
+				if (batteryLevelChanged(intent, context)) {
+					sample(intent.getAction(), context);
+				} else if(isRapidSampling(context)){
+					sample(Constants.RAPID_SAMPLING, context);
 				}
 				break;
-			case Constants.ACTION_SCHEDULED_SAMPLE:
+			case Constants.RAPID_SAMPLING:
 				Intent check = context
 						.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 				if(check == null) break;
 				if (BatteryUtils.isCharging(check) == Boolean3.NO || BatteryUtils.isFull(check)) {
+					Logger.d(TAG, "User stopped charging or battery was full");
 					stopRapidSampling(context);
 				} else {
-					this.sample(check, context);
+					this.sample(Constants.RAPID_SAMPLING, context);
 				}
 				break;
 			default:
 				Log.d(TAG, "Creating sample after receiving " + action);
-				sample(intent, context);
+				sample(action, context);
 				break;
 		}
         wl.release();
@@ -98,7 +100,7 @@ public class SamplerService extends IntentService {
     }
 
 	private void startRapidSampling(Context context){
-		if(!isRapidSampling()){
+		if(!isRapidSampling(context)){
 			PendingIntent rapidSampling = PendingIntent.getService(context, 0, receiver, 0);
 			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),
 					TimeUnit.SECONDS.toMillis(60), rapidSampling);
@@ -107,25 +109,25 @@ public class SamplerService extends IntentService {
 	}
 
 	private void stopRapidSampling(Context context){
-		if(isRapidSampling()){
-			PendingIntent rapidSampling = PendingIntent.getService(this, 0, receiver, 0);
+		if(isRapidSampling(context)){
+			PendingIntent rapidSampling = PendingIntent.getService(context, 0, receiver, 0);
 			rapidSampling.cancel();
 			alarmManager.cancel(rapidSampling);
 			Log.d(TAG, "Stopped rapid sampling!");
 		}
 	}
 
-	private boolean isRapidSampling(){
-		int PEEK_FLAG = PendingIntent.FLAG_NO_CREATE;
-		return PendingIntent.getService(this, 0, receiver, PEEK_FLAG) != null;
+	private boolean isRapidSampling(Context context){
+		int peekFlag = PendingIntent.FLAG_NO_CREATE;
+		return PendingIntent.getService(context, 0, receiver, peekFlag) != null;
 	}
 
-	private void sample(Intent intent, Context context){
+	private void sample(String action, Context context){
 		CaratSampleDB sampleDB = CaratSampleDB.getInstance(context);
 		Sample lastSample = sampleDB.getLastSample(context);
 
 		String lastBatteryState = lastSample != null ? lastSample.getBatteryState() : "Unknown";
-		Sample s = SamplingLibrary.sample(context, intent.getAction(), lastBatteryState);
+		Sample s = SamplingLibrary.sample(context, action, lastBatteryState);
 		if(s == null){
 			Logger.d(TAG, "Sample was null!");
 			return;
@@ -133,11 +135,11 @@ public class SamplerService extends IntentService {
 
 		long id = sampleDB.putSample(s);
 		notifyIfNeeded(context);
-		Log.i(TAG, "Took sample " + id + " for " + intent.getAction());
+		Log.i(TAG, "Took sample " + id + " for " + action);
 	}
 
 	private boolean batteryLevelChanged(Intent intent, Context context){
-		double batteryLevel = BatteryUtils.getBatteryLevel(intent);
+		double batteryLevel = BatteryUtils.getBatteryLevel(intent)/100;
 		if(batteryLevel <= 0){
 			Logger.d(TAG, "Battery level was zero or negative");
 			return false;

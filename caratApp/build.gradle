@@ -39,6 +39,14 @@ android {
         }
     }
 
+    lintOptions {
+        abortOnError true
+        checkAllWarnings false
+        checkReleaseBuilds false
+        ignoreWarnings true
+        quiet false
+    }
+
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES.txt'
         exclude 'META-INF/LICENSE.txt'

@@ -15,7 +15,7 @@ public class SamplingStarter extends Thread {
     private Context context;
     private String[] actions = {Intent.ACTION_BATTERY_CHANGED, Intent.ACTION_POWER_CONNECTED,
             Intent.ACTION_POWER_DISCONNECTED, Intent.ACTION_TIMEZONE_CHANGED,
-            Constants.ACTION_SCHEDULED_SAMPLE};
+            Constants.RAPID_SAMPLING};
 
     private SamplingStarter(){
         // Not implemented
@@ -29,13 +29,12 @@ public class SamplingStarter extends Thread {
 
     @Override
     public void run() {
-        Logger.i(TAG, "Registering sampler with following actions: ");
-
         Sampler sampler = Sampler.getInstance();
         IntentFilter filter = new IntentFilter();
 
+        Logger.i(TAG, "Starting sampler which listens to following events: ");
         for(String action : actions){
-            Logger.i(TAG, action);
+            Logger.i(TAG, "\t" + action);
             filter.addAction(action);
         }
 
