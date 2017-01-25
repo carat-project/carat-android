@@ -39,7 +39,6 @@ import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
-import edu.berkeley.cs.amplab.carat.thrift.DetailScreenReport;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
@@ -156,9 +155,7 @@ public class CaratApplication extends Application {
 
                 // Let the sampler know if we plug / unplug the device
                 // so we can increase the sampling rate when charging
-                intentFilter.addAction(Intent.ACTION_POWER_CONNECTED);
-                intentFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-                intentFilter.addAction(Constants.ACTION_RAPID_SAMPLING);
+                intentFilter.addAction(Constants.ACTION_SCHEDULED_SAMPLING);
 
                 sampler = Sampler.getInstance();
                 // Unregister, since Carat may have been started multiple times

@@ -23,10 +23,14 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratSampleDB;
+import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.Boolean3;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 public class SamplerService extends IntentService {
-    
+
+	private static long lastSample = 0;
     private static final String TAG = "SamplerService";
 	private AlarmManager alarmManager;
 	private Intent receiver;
@@ -61,7 +65,7 @@ public class SamplerService extends IntentService {
 		alarmManager =
 				(AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		receiver = new Intent(this, SamplerService.class);
-		receiver.setAction(Constants.ACTION_RAPID_SAMPLING);
+		receiver.setAction(Constants.ACTION_SCHEDULED_SAMPLING);
 
 		String action = intent.getAction();
 		switch(action){
@@ -71,39 +75,32 @@ public class SamplerService extends IntentService {
 				editor.putLong("bootTime", new Date().getTime());
 				editor.commit();
 				break;
-			case Intent.ACTION_POWER_CONNECTED:
-				// TODO: FIX
-				System.out.println("Connected");
-				startRapidSampling(context);
-				break;
-			case Intent.ACTION_POWER_DISCONNECTED:
-				// TODO: FIX
-				System.out.println("Disconnected");
-				stopRapidSampling(context);
-				break;
 			case Intent.ACTION_BATTERY_CHANGED:
-				int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-				int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-				if(plugged >= 0 && isCharging(plugged) && !isFull(intent)){
+				Boolean3 charging = BatteryUtils.isCharging(intent);
+				if(charging == Boolean3.YES){
 					startRapidSampling(context);
-				} else if(plugged >= 0){
+				} else if(charging == Boolean3.NO){
 					stopRapidSampling(context);
 				}
+
+				if(batteryLevelChanged(intent, context) || isRapidSampling(context)){
+					sample(intent, context);
+				}
 				break;
-			case Constants.ACTION_RAPID_SAMPLING:
-				// Let's be extra cautious here and check every time
-				// that we're still charging since we might have lost
-				// other broadcasts.
-				Intent precaution = context.registerReceiver(null,
-						new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-				if(precaution != null){;
-					plugged = precaution.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-					status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-					if((plugged >= 0 && !isCharging(plugged)) || isFull(intent)){
-						stopRapidSampling(context);
-					} else {
-						this.sample(intent, context);
-					}
+			case Constants.ACTION_SCHEDULED_SAMPLING:
+				Intent check = context
+						.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+
+				// Not able to verify conditions so do nothing
+				if(check == null){
+					break;
+				}
+
+				// Make sure that we have not stopped charging or reached 100%
+				if(BatteryUtils.isCharging(check) == Boolean3.NO || BatteryUtils.isFull(check)){
+					stopRapidSampling(context);
+				} else {
+					this.sample(intent, context);
 				}
 				break;
 			case Constants.ACTION_CARAT_SAMPLE:
@@ -120,13 +117,11 @@ public class SamplerService extends IntentService {
 				registerReceiver(sampler, intentFilter);
 				break;
 			default:
-				// Just in case we don't support the action
-				action = null;
+				sample(intent, context);
 				break;
 		}
-		if(action != null){
-			takeSampleIfBatteryLevelChanged(intent, context);
-		}
+
+		takeSampleIfBatteryLevelChanged(intent, context);
 
         wl.release();
         if (sampler != null){
@@ -137,19 +132,6 @@ public class SamplerService extends IntentService {
 	private boolean isCharging(int plugged){
 		return plugged == BatteryManager.BATTERY_PLUGGED_AC
 				|| plugged == BatteryManager.BATTERY_PLUGGED_USB;
-	}
-
-	private boolean isFull(Intent intent){
-		int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-		int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-		int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0);
-		if(scale == 0){
-			scale = 100;
-		}
-		if(level > 0 && scale > 0){
-			level = (level * 100) / scale;
-		}
-		return status == BatteryManager.BATTERY_STATUS_FULL || level >= 100;
 	}
 
 	private void startRapidSampling(Context context){
@@ -179,6 +161,16 @@ public class SamplerService extends IntentService {
 		CaratSampleDB sampleDB = CaratSampleDB.getInstance(context);
 		Sample lastSample = sampleDB.getLastSample(context);
 		this.getSample(context, intent, lastSample, sampleDB);
+	}
+
+	private boolean batteryLevelChanged(Intent intent, Context context){
+		double batteryLevel = BatteryUtils.getBatteryLevel(intent);
+		if(batteryLevel <= 0){
+			Logger.d(TAG, "Battery level was 0");
+			return false;
+		}
+		double lastBatteryLevel = SamplingLibrary.getLastBatteryLevel(context);
+		return batteryLevel != lastBatteryLevel;
 	}
 
     /**
