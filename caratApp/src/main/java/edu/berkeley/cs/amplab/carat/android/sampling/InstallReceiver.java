@@ -1,5 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.sampling;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +22,7 @@ public class InstallReceiver extends BroadcastReceiver {
      * @param intent
      *            the intent (ACTION_PACKAGE_ADDED, _REPLACED, or _REMOVED)
      */
+    @SuppressLint("CommitPrefEdits")
     @Override
     public void onReceive(Context context, Intent intent) {
         String a = intent.getAction();
@@ -32,13 +34,13 @@ public class InstallReceiver extends BroadcastReceiver {
         Editor e = p.edit().remove(SamplingLibrary.SIG_SENT_256 + pkg).remove(SamplingLibrary.SIG_SENT + pkg);
 
         // Schedule sending of sig of installed and replaced pkgs.
-        if (a.equals(Intent.ACTION_PACKAGE_ADDED)) {
+        if (a != null && a.equals(Intent.ACTION_PACKAGE_ADDED)) {
             boolean replacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
             if (!replacing) {
                 Log.i(TAG, "INSTALLED: " + pkg);
                 e.putBoolean(SamplingLibrary.INSTALLED + pkg, true).commit();
             }
-        } else if (a.equals(Intent.ACTION_PACKAGE_REMOVED)) {
+        } else if (a != null && a.equals(Intent.ACTION_PACKAGE_REMOVED)) {
             boolean replacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
             /*
              * send the uninstallation flag in the next sample.
@@ -47,7 +49,7 @@ public class InstallReceiver extends BroadcastReceiver {
                 Log.i(TAG, "UNINSTALLED: " + pkg);
                 e.putBoolean(SamplingLibrary.UNINSTALLED + pkg, true).commit();
             }
-        } else if (a.equals(Intent.ACTION_PACKAGE_REPLACED)) {
+        } else if (a!= null && a.equals(Intent.ACTION_PACKAGE_REPLACED)) {
             Log.i(TAG, "REPLACED: " + pkg);
             e.putBoolean(SamplingLibrary.REPLACED + pkg, true).commit();
         }

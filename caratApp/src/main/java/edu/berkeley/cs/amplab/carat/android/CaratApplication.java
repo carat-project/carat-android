@@ -37,6 +37,7 @@ import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.android.protocol.SampleSender;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingStarter;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
@@ -145,29 +146,7 @@ public class CaratApplication extends Application {
         setStorage(new CaratDataStorage(this));
         setReportData(); // Show initial data asap
 
-        new Thread() {
-            private IntentFilter intentFilter;
-
-            public void run() {
-                // Let sampling happen on battery change
-                intentFilter = new IntentFilter();
-                intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-
-                // Let the sampler know if we plug / unplug the device
-                // so we can increase the sampling rate when charging
-                intentFilter.addAction(Constants.ACTION_SCHEDULED_SAMPLING);
-
-                sampler = Sampler.getInstance();
-                // Unregister, since Carat may have been started multiple times
-                // since reboot
-                try {
-                    unregisterReceiver(sampler);
-                } catch (IllegalArgumentException e) {
-                    // Ignore
-                }
-                registerReceiver(sampler, intentFilter);
-            }
-        }.start();
+        SamplingStarter.from(getApplicationContext()).run();
 
         new Thread() {
             public void run() {

@@ -13,4 +13,8 @@ public class Logger {
             Log.d(TAG, message);
         }
     }
+
+    public static void i(String TAG, String message){
+        Log.i(TAG, message);
+    }
 }

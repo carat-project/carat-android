@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.os.BatteryManager;
 
 /**
- * Created by Jonatan on 1/25/17.
+ * Created by Jonatan Hamberg on 1/25/17.
  */
 public class BatteryUtils {
     private static final String TAG = BatteryUtils.class.getSimpleName();

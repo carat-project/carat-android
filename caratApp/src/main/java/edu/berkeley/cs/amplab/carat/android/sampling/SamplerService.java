@@ -29,8 +29,6 @@ import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 public class SamplerService extends IntentService {
-
-	private static long lastSample = 0;
     private static final String TAG = "SamplerService";
 	private AlarmManager alarmManager;
 	private Intent receiver;
@@ -65,74 +63,42 @@ public class SamplerService extends IntentService {
 		alarmManager =
 				(AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		receiver = new Intent(this, SamplerService.class);
-		receiver.setAction(Constants.ACTION_SCHEDULED_SAMPLING);
+		receiver.setAction(Constants.ACTION_SCHEDULED_SAMPLE);
 
 		String action = intent.getAction();
-		switch(action){
-			case Intent.ACTION_BOOT_COMPLETED:
-				SharedPreferences p = context.getSharedPreferences("SystemBootTime", Context.MODE_PRIVATE);
-				Editor editor = p.edit();
-				editor.putLong("bootTime", new Date().getTime());
-				editor.commit();
-				break;
+		switch (action) {
 			case Intent.ACTION_BATTERY_CHANGED:
 				Boolean3 charging = BatteryUtils.isCharging(intent);
-				if(charging == Boolean3.YES){
+				if (charging == Boolean3.YES) {
 					startRapidSampling(context);
-				} else if(charging == Boolean3.NO){
+				} else if (charging == Boolean3.NO) {
 					stopRapidSampling(context);
 				}
 
-				if(batteryLevelChanged(intent, context) || isRapidSampling(context)){
+				if (batteryLevelChanged(intent, context) || isRapidSampling(context)) {
 					sample(intent, context);
 				}
 				break;
-			case Constants.ACTION_SCHEDULED_SAMPLING:
+			case Constants.ACTION_SCHEDULED_SAMPLE:
 				Intent check = context
 						.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-
-				// Not able to verify conditions so do nothing
-				if(check == null){
-					break;
-				}
-
-				// Make sure that we have not stopped charging or reached 100%
-				if(BatteryUtils.isCharging(check) == Boolean3.NO || BatteryUtils.isFull(check)){
+				if(check == null) break;
+				if (BatteryUtils.isCharging(check) == Boolean3.NO || BatteryUtils.isFull(check)) {
 					stopRapidSampling(context);
 				} else {
 					this.sample(intent, context);
 				}
 				break;
-			case Constants.ACTION_CARAT_SAMPLE:
-				IntentFilter intentFilter = new IntentFilter();
-				intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-
-				// Unregister, since Carat may have been started multiple times
-				// since reboot
-				try {
-					unregisterReceiver(sampler);
-				} catch (IllegalArgumentException e) {
-					// Ignore
-				}
-				registerReceiver(sampler, intentFilter);
-				break;
 			default:
+				Log.d(TAG, "Creating sample after receiving " + action);
 				sample(intent, context);
 				break;
 		}
-
-		takeSampleIfBatteryLevelChanged(intent, context);
-
         wl.release();
         if (sampler != null){
 			Sampler.completeWakefulIntent(intent);
 		}
     }
-
-	private boolean isCharging(int plugged){
-		return plugged == BatteryManager.BATTERY_PLUGGED_AC
-				|| plugged == BatteryManager.BATTERY_PLUGGED_USB;
-	}
 
 	private void startRapidSampling(Context context){
 		if(!isRapidSampling(context)){

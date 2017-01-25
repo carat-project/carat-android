@@ -12,8 +12,7 @@ import android.os.Bundle;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 
-public class Sampler extends WakefulBroadcastReceiver implements
-        LocationListener {
+public class Sampler extends WakefulBroadcastReceiver implements LocationListener {
 
     public static final int MAX_SAMPLES = 250;
 
@@ -82,6 +81,7 @@ public class Sampler extends WakefulBroadcastReceiver implements
             service.putExtras(intent.getExtras());
             service.setAction(intent.getAction());
             service.putExtra("distance", distance);
+
             startWakefulService(context, service);
         }
     }

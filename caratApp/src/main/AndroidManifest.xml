@@ -51,69 +51,28 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver
-            android:name=".sampling.BootReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:label="Start Carat on boot" >
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
         <receiver
             android:name=".sampling.Sampler"
             android:enabled="true"
             android:exported="true"
             android:label="Carat Sampler" >
             <intent-filter>
+                <!-- These are also dynamically registered in SamplingStarter -->
 
-                <!--
-                It is not possible to schedule TIME_TICK outside of the program.
-                Also, using AlarmManager with setRepeatingInexact saves battery if the interval
-                is 15 mins or more.
-                -->
-                <!-- <action android:name="android.intent.action.TIME_TICK" /> -->
-
-
-                <!-- This event cannot be registered to from the manifest either. -->
-                <!-- <action android:name="android.intent.action.BATTERY_CHANGED" /> -->
-
-
-                <!-- Also these -->
-                <!--
-                There are certain events that Android does not want to start up new processes for, 
-				so the device does not get too slow from all sorts of stuff all having to run at once. 
-				ACTION_SCREEN_ON is one of those.
-                -->
-                <!--
-                <action android:name="android.intent.action.SCREEN_OFF" />
-                <action android:name="android.intent.action.SCREEN_ON" />
-                -->
-
-                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
-
-                <!--
-                This already goes through InstallReceiver
-                <action android:name="android.intent.action.PACKAGE_REMOVED" />
-                -->
-
-                <data android:scheme="package" />
-                <!-- BATTERY_CHANGED seems to activate in all these conditions: -->
-                <!--
-                <action android:name="android.intent.action.BATTERY_LOW" />
-                <action android:name="android.intent.action.BATTERY_OKAY" />
-                -->
-
-
+                <!-- System actions -->
+                <action android:name="android.intent.action.BATTERY_CHANGED" />
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
 
-                <!-- Sample on timer if nothing else happens for 15 mins -->
-                <action android:name="edu.berkeley.cs.amplab.carat.android.ACTION_SAMPLE" />
+                <!-- Custom actions -->
+                <action android:name="edu.berkeley.cs.amplab.carat.android.ACTION_SCHEDULED_SAMPLE" />
+
+                <!-- TODO: What is this for? -->
+                <data android:scheme="package" />
             </intent-filter>
         </receiver>
 
