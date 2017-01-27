@@ -2,6 +2,9 @@ package edu.berkeley.cs.amplab.carat.android.components;
 
 import com.github.mikephil.charting.charts.LineChart;
 
+import java.util.List;
+
+import edu.berkeley.cs.amplab.carat.android.models.Peak;
 import edu.berkeley.cs.amplab.carat.android.utils.Range;
 
 /**
@@ -25,7 +28,7 @@ public class ChargingChart {
         // To be done
     }
 
-    public static void update(double point, Range<Integer> peak){
+    public static void update(double point, List<Peak> peaks){
         // To be done
     }
 }
