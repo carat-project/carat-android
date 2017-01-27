@@ -43,19 +43,19 @@ public class JsonParser {
             inputStream = httpEntity.getContent();
         } catch (UnknownHostException e0) {
             if (Constants.DEBUG)
-                Log.d("JsonParser", "Unable to connect to the statstics server (no Internet on the device! is Wifi or mobile data on?), " + e0.toString());
+                Logger.d("JsonParser", "Unable to connect to the statstics server (no Internet on the device! is Wifi or mobile data on?), " + e0.toString());
         	return "";
         } catch (UnsupportedEncodingException e1) {
-            Log.e("UnsupportedEncodingException", e1.toString());
+            Logger.e("UnsupportedEncodingException", e1.toString());
             return "";
         } catch (ClientProtocolException e2) {
-            Log.e("ClientProtocolException", e2.toString());
+            Logger.e("ClientProtocolException", e2.toString());
             return "";
         } catch (IllegalStateException e3) {
-            Log.e("IllegalStateException", e3.toString());
+            Logger.e("IllegalStateException", e3.toString());
             return "";
         } catch (IOException e4) {
-            Log.e("IOException", e4.toString());
+            Logger.e("IOException", e4.toString());
             return "";
         }
         // Convert response to string using String Builder
@@ -72,7 +72,7 @@ public class JsonParser {
             result = sBuilder.toString();
 
         } catch (Exception e) {
-            Log.e("StringBuilding & BufferedReader", "Error converting result " + e.toString());
+            Logger.e("StringBuilding & BufferedReader", "Error converting result " + e.toString());
         }
         
         return result;

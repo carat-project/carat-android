@@ -9,6 +9,7 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
  */
 @SuppressWarnings("PointlessBooleanExpression")
 public class Logger {
+    // Disable all logging by setting this to false
     private static final boolean ENABLED = true;
 
     private static final boolean DEBUG = ENABLED && Constants.DEBUG;
@@ -21,15 +22,33 @@ public class Logger {
         }
     }
 
+    public static void d(String TAG, String message, Throwable th){
+        if(DEBUG){
+            Log.d(TAG, message, th);
+        }
+    }
+
     public static void i(String TAG, String message){
         if(INFO){
             Log.i(TAG, message);
         }
     }
 
+    public static void i(String TAG, String message, Throwable th){
+        if(INFO){
+            Log.i(TAG, message, th);
+        }
+    }
+
     public static void e(String TAG, String message){
         if(ERROR){
             Log.e(TAG, message);
+        }
+    }
+
+    public static void e(String TAG, String message, Throwable th){
+        if(ERROR){
+            Log.e(TAG, message, th);
         }
     }
 }

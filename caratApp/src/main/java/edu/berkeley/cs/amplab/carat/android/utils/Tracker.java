@@ -57,7 +57,7 @@ public class Tracker {
 
 	public void trackUser(String whatIsGettingDone, CharSequence title) {
 	    if (Constants.DEBUG)
-	        Log.d("Tracker.trackUser", whatIsGettingDone);
+	        Logger.d("Tracker.trackUser", whatIsGettingDone);
 		HashMap<String, String> options = new HashMap<String, String>();
 		track(whatIsGettingDone, title.toString(), options);
 	}

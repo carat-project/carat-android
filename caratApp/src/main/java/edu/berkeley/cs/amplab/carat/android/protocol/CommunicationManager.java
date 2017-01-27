@@ -27,6 +27,7 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -90,7 +91,7 @@ public class CommunicationManager {
 
 	private void registerMe(CaratService.Client instance, String uuId, String os, String model, String countryCode) throws TException {
 		if (uuId == null || os == null || model == null) {
-			Log.e("registerMe", "Null uuId, os, or model given to registerMe!");
+			Logger.e("registerMe", "Null uuId, os, or model given to registerMe!");
 			System.exit(1);
 			return;
 		}
@@ -118,7 +119,7 @@ public class CommunicationManager {
 				try {
 					success = instance.uploadSample(s);
 				} catch (Throwable th) {
-					Log.e(TAG, "Error uploading sample.", th);
+					Logger.e(TAG, "Error uploading sample.", th);
 				}
 				if (success)
 					succeeded++;
@@ -128,7 +129,7 @@ public class CommunicationManager {
 
 			safeClose(instance);
 		} catch (Throwable th) {
-			Log.e(TAG, "Error refreshing main reports.", th);
+			Logger.e(TAG, "Error refreshing main reports.", th);
 			safeClose(instance);
 		}
 		// Do not try again. It can cause a massive sample attack on the server.
@@ -148,7 +149,7 @@ public class CommunicationManager {
 					// Time-based ID scheme
 					uuId = SamplingLibrary.getTimeBasedUuid(a);
 					if (Constants.DEBUG)
-					    Log.d("CommunicationManager", "Generated a new time-based UUID: " + uuId);
+					    Logger.d("CommunicationManager", "Generated a new time-based UUID: " + uuId);
 					// This needs to be saved now, so that if server
 					// communication
 					// fails we have a stable UUID.
@@ -174,7 +175,7 @@ public class CommunicationManager {
 				if (uuId == null)
 					uuId = SamplingLibrary.getTimeBasedUuid(a);
 				if (Constants.DEBUG)
-				    Log.d("CommunicationManager", "Generated a new time-based UUID: " + uuId);
+				    Logger.d("CommunicationManager", "Generated a new time-based UUID: " + uuId);
 				// This needs to be saved now, so that if server communication
 				// fails we have a stable UUID.
 				p.edit().putString(CaratApplication.getRegisteredUuid(), uuId).commit();
@@ -185,7 +186,7 @@ public class CommunicationManager {
 			String model = SamplingLibrary.getModel();
 			String countryCode = SamplingLibrary.getCountryCode(a.getApplicationContext());
 			if (Constants.DEBUG)
-			    Log.d("CommunicationManager", "First run, registering this device: " + uuId + ", " + os + ", " + model);
+			    Logger.d("CommunicationManager", "First run, registering this device: " + uuId + ", " + os + ", " + model);
 			try {
 				registerMe(instance, uuId, os, model, countryCode);
 				p.edit().putBoolean(Constants.PREFERENCE_FIRST_RUN, false).commit();
@@ -195,7 +196,7 @@ public class CommunicationManager {
 				p.edit().putString(Constants.REGISTERED_OS, os).commit();
 				p.edit().putString(Constants.REGISTERED_MODEL, model).commit();
 			} catch (TException e) {
-				Log.e("CommunicationManager", "Registration failed, will try again next time: " + e);
+				Logger.e("CommunicationManager", "Registration failed, will try again next time: " + e);
 				e.printStackTrace();
 			}
 		}
@@ -221,7 +222,7 @@ public class CommunicationManager {
 			return false;
 		} else {
 			if(Constants.DEBUG){
-				Log.d(TAG, "Enough time passed, time to check for new reports.");
+				Logger.d(TAG, "Enough time passed, time to check for new reports.");
 			}
 		}
 		// Establish connection
@@ -232,7 +233,7 @@ public class CommunicationManager {
 				registerOnFirstRun(instance);
 				safeClose(instance);
 			} catch (Throwable th) {
-				Log.e(TAG, "Error refreshing main reports.", th);
+				Logger.e(TAG, "Error refreshing main reports.", th);
 				safeClose(instance);
 			}
 		}
@@ -249,7 +250,7 @@ public class CommunicationManager {
 			OS = "4.0.4";
 		}
 		if (Constants.DEBUG){
-			Log.d(TAG, "Getting reports for " + uuId + " model=" + model + " os=" + OS);
+			Logger.d(TAG, "Getting reports for " + uuId + " model=" + model + " os=" + OS);
 		}
 		FlurryAgent.logEvent("Getting reports for " + uuId + "," + model + "," + OS);
 
@@ -273,11 +274,11 @@ public class CommunicationManager {
 			progress += 20;
 			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[1]);
 			if (Constants.DEBUG)
-			    Log.d(TAG, "Successfully got main report");
+			    Logger.d(TAG, "Successfully got main report");
 		} else {
 			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[0]);
 			if (Constants.DEBUG)
-			    Log.d(TAG, "Failed getting main report");
+			    Logger.d(TAG, "Failed getting main report");
 		}
 
 		//
@@ -289,11 +290,11 @@ public class CommunicationManager {
 			progress += 20;
 			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[2]);
 			if (Constants.DEBUG)
-			    Log.d(TAG, "Successfully got bug report");
+			    Logger.d(TAG, "Successfully got bug report");
 		} else {
 			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[1]);
 			if (Constants.DEBUG)
-			    Log.d(TAG, "Failed getting bug report");
+			    Logger.d(TAG, "Failed getting bug report");
 		}
 
 		//
@@ -312,11 +313,11 @@ public class CommunicationManager {
 							a.getString(R.string.updating) + " " + a.getString(R.string.blacklist)
 							: a.getString(R.string.finishing));
 			if (Constants.DEBUG)
-			    Log.d(TAG, "Successfully got hog report");
+			    Logger.d(TAG, "Successfully got hog report");
 		} else {
 			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[2]);
 			if (Constants.DEBUG)
-			    Log.d(TAG, "Failed getting hog report");
+			    Logger.d(TAG, "Failed getting hog report");
 		}
 		
 		// NOTE: Check for having a J-Score, and in case there is none, send the
@@ -328,9 +329,9 @@ public class CommunicationManager {
             quickHogsSuccess = getQuickHogsAndMaybeRegister(uuId, OS, model, countryCode);
             if (Constants.DEBUG) {
                 if (quickHogsSuccess)
-                    Log.d(TAG, "Got quickHogs.");
+                    Logger.d(TAG, "Got quickHogs.");
                 else
-                    Log.d(TAG, "Failed getting GuickHogs.");
+                    Logger.d(TAG, "Failed getting GuickHogs.");
             }
 		}
 
@@ -354,7 +355,7 @@ public class CommunicationManager {
 		// Only write freshness if we managed to get something
 		if(mainSuccess || hogsSuccess || bugsSuccess || quickHogsSuccess){
 			CaratApplication.getStorage().writeFreshness();
-			if (Constants.DEBUG) Log.d(TAG, "Wrote freshness");
+			if (Constants.DEBUG) Logger.d(TAG, "Wrote freshness");
 			return true;
 		}
 		return false;
@@ -370,13 +371,13 @@ public class CommunicationManager {
 			// Assume multiple invocations, do not close
 			// ProtocolClient.close();
 			if (r != null) {
-			    if (Constants.DEBUG) Log.d("CommunicationManager.refreshMainReports()",
+			    if (Constants.DEBUG) Logger.d("CommunicationManager.refreshMainReports()",
 						"got the main report (action list)" + ", model=" + r.getModel()
 						+ ", jscore=" + r.getJScore() + ". Storing the report in the databse");
 				CaratApplication.getStorage().writeReports(r);
 			} else {
 			    if (Constants.DEBUG)
-			        Log.d("CommunicationManager.refreshMainReports()",
+			        Logger.d("CommunicationManager.refreshMainReports()",
 						"the fetched MAIN report is null");
 			}
 			// Assume freshness written by caller.
@@ -384,7 +385,7 @@ public class CommunicationManager {
 			safeClose(instance);
 			return true;
 		} catch (Throwable th) {
-			Log.e(TAG, "Error refreshing main reports.", th);
+			Logger.e(TAG, "Error refreshing main reports.", th);
 			safeClose(instance);
 		}
 		return false;
@@ -404,17 +405,17 @@ public class CommunicationManager {
 			if (r != null && !r.getHbList().isEmpty()) {
 				CaratApplication.getStorage().writeBugReport(r);
 				if (Constants.DEBUG)
-				    Log.d("CommunicationManager.refreshBugReports()", 
+				    Logger.d("CommunicationManager.refreshBugReports()",
 						"got the bug list: " + r.getHbList().toString());
 			} else {
 			    if (Constants.DEBUG)
-			        Log.d("CommunicationManager.refreshBugReports()", 
+			        Logger.d("CommunicationManager.refreshBugReports()",
 						"the fetched bug report is null");
 			}
 			safeClose(instance);
 			return true;
 		} catch (Throwable th) {
-			Log.e(TAG, "Error refreshing bug reports.", th);
+			Logger.e(TAG, "Error refreshing bug reports.", th);
 			safeClose(instance);
 		}
 		return false;
@@ -435,11 +436,11 @@ public class CommunicationManager {
 			if (r != null && !r.getHbList().isEmpty()) {
 				CaratApplication.getStorage().writeHogReport(r);
 				if (Constants.DEBUG)
-				    Log.d("CommunicationManager.refreshHogReports()", 
+				    Logger.d("CommunicationManager.refreshHogReports()",
 						"got the hog list: " + r.getHbList().toString());
 			} else {
 			    if (Constants.DEBUG)
-			        Log.d("CommunicationManager.refreshHogReports()", 
+			        Logger.d("CommunicationManager.refreshHogReports()",
 						"the fetched hog report is null");
 			}
 			// Assume freshness written by caller.
@@ -447,7 +448,7 @@ public class CommunicationManager {
 			safeClose(instance);
 			return true;
 		} catch (Throwable th) {
-			Log.e(TAG, "Error refreshing hog reports.", th);
+			Logger.e(TAG, "Error refreshing hog reports.", th);
 			safeClose(instance);
 		}
 		return false;
@@ -463,10 +464,10 @@ public class CommunicationManager {
 //
 //			if (r != null) {
 //				CaratApplication.storage.writeSettingsReport(r);
-//				Log.d("CommunicationManager.refreshSettingsReports()", 
+//				Logger.d("CommunicationManager.refreshSettingsReports()",
 //						"got the settings list: " + r.getHbList().toString());
 //			} else {
-//				Log.d("CommunicationManager.refreshSettingsReports()", 
+//				Logger.d("CommunicationManager.refreshSettingsReports()",
 //						"the fetched settings report is null");
 //			}
 //			// Assume freshness written by caller.
@@ -474,7 +475,7 @@ public class CommunicationManager {
 //			safeClose(instance);
 //			return true;
 //		} catch (Throwable th) {
-//			Log.e(TAG, "Error refreshing settings reports.", th);
+//			Logger.e(TAG, "Error refreshing settings reports.", th);
 //			safeClose(instance);
 //		}
 //		return false;
@@ -513,7 +514,7 @@ public class CommunicationManager {
 
 					}
 				} catch (Throwable th) {
-					Log.e(TAG, "Could not retrieve blacklist!", th);
+					Logger.e(TAG, "Could not retrieve blacklist!", th);
 				}
 				// So we don't try again too often.
 				CaratApplication.getStorage().writeBlacklistFreshness();
@@ -540,7 +541,7 @@ public class CommunicationManager {
 							CaratApplication.getStorage().writeQuestionnaireUrl(" ");
 					}
 				} catch (Throwable th) {
-					Log.e(TAG, "Could not retrieve blacklist!", th);
+					Logger.e(TAG, "Could not retrieve blacklist!", th);
 				}
 			}
 		}.start();
@@ -551,12 +552,12 @@ public class CommunicationManager {
 		if(System.currentTimeMillis() - freshness < Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE) {
 			if(Constants.DEBUG){
 				long waitFor = (long)(Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE - (System.currentTimeMillis() - freshness));
-				Log.d(TAG, "Still need to wait "+ TimeUnit.MILLISECONDS.toSeconds(waitFor) +"s for next questionnaire check.");
+				Logger.d(TAG, "Still need to wait "+ TimeUnit.MILLISECONDS.toSeconds(waitFor) +"s for next questionnaire check.");
 			}
 			return false;
 		}
 		if(Constants.DEBUG){
-			Log.d(TAG, "Enough time passed, checking for questionnaires.");
+			Logger.d(TAG, "Enough time passed, checking for questionnaires.");
 		}
 		CaratService.Client instance = null;
 		try {
@@ -565,7 +566,7 @@ public class CommunicationManager {
 			List<Questionnaire> questionnaires = instance.getQuestionnaires(uuid);
 			if(questionnaires == null) return false;
 			if(Constants.DEBUG){
-				Log.d(TAG, "Downloaded questionnaires " + questionnaires);
+				Logger.d(TAG, "Downloaded questionnaires " + questionnaires);
 			}
 			questionnaires = filterQuestionnaires(questionnaires);
 			checkAndNotify(questionnaires); // Post notification if new
@@ -653,7 +654,7 @@ public class CommunicationManager {
 		}
 
 		if(Constants.DEBUG){
-			Log.d(TAG, "Uploaded " + successCount + "/" + answerList.size() + " answers");
+			Logger.d(TAG, "Uploaded " + successCount + "/" + answerList.size() + " answers");
 		}
 
 		// Reset freshness here so we can immediately check if new
@@ -669,7 +670,7 @@ public class CommunicationManager {
 
 	private boolean uploadAnswers(Answers answers){
 		if(Constants.DEBUG){
-			Log.d(TAG, "Uploading anwers: " + answers);
+			Logger.d(TAG, "Uploading anwers: " + answers);
 		}
 		CaratService.Client instance = null;
 		try {
@@ -711,7 +712,7 @@ public class CommunicationManager {
 			safeClose(instance);
 			return true;
 		} catch (Throwable th) {
-			Log.e(TAG, "Error refreshing main reports.", th);
+			Logger.e(TAG, "Error refreshing main reports.", th);
 			safeClose(instance);
 		}
 		return false;
@@ -737,7 +738,7 @@ public class CommunicationManager {
 	private List<Feature> getFeatures(String key1, String val1, String key2, String val2) {
 		List<Feature> features = new ArrayList<Feature>();
 		if (key1 == null || val1 == null || key2 == null || val2 == null) {
-			Log.e("getFeatures", "Null key or value given to getFeatures!");
+			Logger.e("getFeatures", "Null key or value given to getFeatures!");
 			System.exit(1);
 			return features;
 		}

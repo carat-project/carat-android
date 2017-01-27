@@ -19,6 +19,7 @@ import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.fragments.BugsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogsFragment;
 import edu.berkeley.cs.amplab.carat.android.models.AboutItem;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
  * Created by Valto on 6.10.2015.
@@ -143,7 +144,7 @@ public class AboutExpandListAdapter extends BaseExpandableListAdapter implements
         holder.aboutTitle.setText(item.getAboutTitle());
         holder.aboutMessage.setText(item.getAboutMessage());
 
-        Log.d("debug", "*** TAGS: " + item.getAboutTitle());
+        Logger.d("debug", "*** TAGS: " + item.getAboutTitle());
 
         if (item.getAboutTitle().equals(mainActivity.getResources().getString(R.string.bugs_camel))) {
             holder.aboutMessage.setTag("see_bugs");

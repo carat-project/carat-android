@@ -22,6 +22,8 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 
 import java.text.DecimalFormat;
 
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+
 @SuppressLint("NewApi")
 public class CircleDisplay extends View implements OnGestureListener, View.OnClickListener {
 
@@ -225,7 +227,7 @@ public class CircleDisplay extends View implements OnGestureListener, View.OnCli
             c.drawText(mCustomText[index], getWidth() / 2,
                     getHeight() / 2 + mTextPaint.descent(), mTextPaint);
         } else {
-            Log.e(LOG_TAG, "Custom text array not long enough.");
+            Logger.e(LOG_TAG, "Custom text array not long enough.");
         }
     }
 
@@ -266,7 +268,7 @@ public class CircleDisplay extends View implements OnGestureListener, View.OnCli
 
         c.drawArc(mCircleBox, mStartAngle, angle, true, mArcPaint);
 
-        // Log.i(LOG_TAG, "CircleBox bounds: " + mCircleBox.toString() +
+        // Logger.i(LOG_TAG, "CircleBox bounds: " + mCircleBox.toString() +
         // ", Angle: " + angle + ", StartAngle: " + mStartAngle);
     }
 

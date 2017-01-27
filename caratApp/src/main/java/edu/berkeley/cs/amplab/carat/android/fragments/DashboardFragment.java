@@ -23,6 +23,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.components.CircleDisplay;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
  * Created by Valto on 30.9.2015.
@@ -265,13 +266,13 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
                     refresh();
                     timer.postDelayed(this, interval);
                 } else if(Constants.DEBUG){
-                    Log.d(TAG, "Stopped refreshing dashboard");
+                    Logger.d(TAG, "Stopped refreshing dashboard");
                 }
             }
         }, interval-offset); // Sync
         schedulerRunning = true;
         if(Constants.DEBUG){
-            Log.d(TAG, "Started refreshing the dashboard every "+ interval/1000 + " seconds");
+            Logger.d(TAG, "Started refreshing the dashboard every "+ interval/1000 + " seconds");
         }
     }
 

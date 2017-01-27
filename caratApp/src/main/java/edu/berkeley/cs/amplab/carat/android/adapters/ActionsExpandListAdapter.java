@@ -30,6 +30,7 @@ import edu.berkeley.cs.amplab.carat.android.models.CustomAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.ClickTracking;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
@@ -343,7 +344,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         }
 
         if (SamplingLibrary.killApp(mainActivity, raw, label)) {
-            Log.d("debug", "disabling "+((label != null) ? label : "null"));
+            Logger.d("debug", "disabling "+((label != null) ? label : "null"));
             holder.killAppButton.setEnabled(false);
             holder.killAppButton.setBackgroundResource(R.drawable.button_rounded_gray);
             holder.killAppButton.setText(caratApplication.getString(R.string.stopped));

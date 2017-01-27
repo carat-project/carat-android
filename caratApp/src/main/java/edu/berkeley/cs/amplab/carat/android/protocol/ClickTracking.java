@@ -16,6 +16,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -57,7 +59,7 @@ public class ClickTracking {
             ObjectMapper mapper = new ObjectMapper();
             json = mapper.writeValueAsString(action);
             if (Constants.DEBUG)
-                Log.d(TAG, "JSON=\n" + json);
+                Logger.d(TAG, "JSON=\n" + json);
             // 5. set json to StringEntity
             StringEntity se = new StringEntity(json, HTTP.UTF_8);
 
@@ -83,7 +85,7 @@ public class ClickTracking {
         } catch (Exception e) {
             String msg = e.getLocalizedMessage();
             if (msg != null)
-                Log.e(TAG, msg);
+                Logger.e(TAG, msg);
         }
 
         // 11. return result
@@ -125,7 +127,7 @@ public class ClickTracking {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            //Log.e("InputStream", result);
+            //Logger.e("InputStream", result);
         }
     }
 

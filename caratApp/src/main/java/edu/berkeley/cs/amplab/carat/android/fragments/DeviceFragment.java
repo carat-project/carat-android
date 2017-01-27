@@ -24,6 +24,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.components.CircleDisplay;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
  * Created by Valto on 30.9.2015.
@@ -60,27 +61,27 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         this.mainActivity = (MainActivity) activity;
-        Log.d("debug", "*** : " + "ONATTACH");
+        Logger.d("debug", "*** : " + "ONATTACH");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mainFrame = (RelativeLayout) inflater.inflate(R.layout.fragment_device, container, false);
-        Log.d("debug", "*** : " + "ONCREATEVIEW");
+        Logger.d("debug", "*** : " + "ONCREATEVIEW");
         return mainFrame;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d("debug", "*** : " + "ONACTIVITYCREATED");
+        Logger.d("debug", "*** : " + "ONACTIVITYCREATED");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Log.d("debug", "*** : " + "ONRESUME");
+        Logger.d("debug", "*** : " + "ONRESUME");
         mainActivity.setUpActionBar(R.string.my_device, true);
         locker = true;
         initViewRefs();

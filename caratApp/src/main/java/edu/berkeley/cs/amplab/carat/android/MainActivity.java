@@ -47,6 +47,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.SettingsFragment;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefetchData;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
@@ -173,12 +174,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 properties.load(raw);
                 if (properties.containsKey("secretkey"))
                     secretKey = properties.getProperty("secretkey", "secretkey");
-                // Log.d(TAG, "Set Flurry secret key.");
+                // Logger.d(TAG, "Set Flurry secret key.");
             } else {
-                // Log.e(TAG, "Could not open Flurry key file!");
+                // Logger.e(TAG, "Could not open Flurry key file!");
             }
         } catch (IOException e) {
-            // Log.e(TAG, "Could not open Flurry key file: " + e.toString());
+            // Logger.e(TAG, "Could not open Flurry key file: " + e.toString());
         }
         if (secretKey != null) {
             FlurryAgent.onStartSession(getApplicationContext(), secretKey);
@@ -241,19 +242,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     refresh();
                     timer.postDelayed(this, interval);
                 } else if(Constants.DEBUG){
-                    Log.d(TAG, "** Data refresh timer stopped ** ");
+                    Logger.d(TAG, "** Data refresh timer stopped ** ");
                 }
             }
         }, interval);
         schedulerRunning = true;
         if(Constants.DEBUG){
-            Log.d(TAG, "** Data refresh timer started **");
+            Logger.d(TAG, "** Data refresh timer started **");
         }
     }
 
     public void refresh(){
         if(Constants.DEBUG){
-            Log.d(TAG, "** Started refreshing data **");
+            Logger.d(TAG, "** Started refreshing data **");
         }
         new Thread(new Runnable() {
             @Override
@@ -270,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     });
                 }
                 if(Constants.DEBUG){
-                    Log.d(TAG, "** Stopped refreshing data **");
+                    Logger.d(TAG, "** Stopped refreshing data **");
                 }
             }
         }).start();
@@ -340,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "Application exited to the background");
+        Logger.d(TAG, "Application exited to the background");
         onBackground = true;
         SamplingLibrary.resetRunningProcessInfo();
     }
@@ -382,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setActionsAmount(actionsAmount);
 
         setCpuValue();
-        Log.d("debug", "*** Values set");
+        Logger.d("debug", "*** Values set");
     }
 
     public void setUpActionBar(int resId, boolean canGoBack) {
@@ -544,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void setStatusText(String what){
-        Log.d(TAG, "Setting status to " + what);
+        Logger.d(TAG, "Setting status to " + what);
         statusText = what;
         if(dashboardFragment != null){
             dashboardFragment.setStatusText(what);

@@ -10,6 +10,8 @@ import java.util.List;
 import org.apache.thrift.meta_data.FieldMetaData;
 
 import android.util.Log;
+
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -199,7 +201,7 @@ public class SampleReader {
 						try {
 							s.setFieldValue(sf, Integer.parseInt(cleaned));
 						} catch (NumberFormatException e) {
-							Log.e(TAG, "Could not read " + md.fieldName
+							Logger.e(TAG, "Could not read " + md.fieldName
 									+ ": \"" + cleaned + "\" as an int");
 						}
 						break;
@@ -207,7 +209,7 @@ public class SampleReader {
 						try {
 							s.setFieldValue(sf, Double.parseDouble(cleaned));
 						} catch (NumberFormatException e) {
-							Log.e(TAG, "Could not read " + md.fieldName
+							Logger.e(TAG, "Could not read " + md.fieldName
 									+ ": \"" + cleaned + "\" as a double");
 						}
                         break;
@@ -276,14 +278,14 @@ public class SampleReader {
                                     	try{
                                         pi.setFieldValue(pif, Integer.parseInt(cleaned));
                                     	}catch (NumberFormatException e){
-                                    		Log.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as an int");
+                                    		Logger.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as an int");
                                     	}
                                         break;
                                     case org.apache.thrift.protocol.TType.DOUBLE:
                                     	try{
                                         pi.setFieldValue(pif, Double.parseDouble(cleaned));
                                     	}catch (NumberFormatException e){
-                                    		Log.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as a double");
+                                    		Logger.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as a double");
                                     	}
                                         break;
                                     case org.apache.thrift.protocol.TType.BOOL:
@@ -291,7 +293,7 @@ public class SampleReader {
                                             if(cleaned == null || "".equals(cleaned.trim())) break;
                                             pi.setFieldValue(pif, Boolean.parseBoolean(cleaned));
                                     	}catch (NumberFormatException e){
-                                    		Log.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as a bool");
+                                    		Logger.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as a bool");
                                     	}
                                         break;
                                     case org.apache.thrift.protocol.TType.LIST:
@@ -332,14 +334,14 @@ public class SampleReader {
             	try{
                 cs.setFieldValue(pif, Integer.parseInt(cleaned));
             }catch (NumberFormatException e){
-        		Log.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as an int");
+        		Logger.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as an int");
         	}
                 break;
             case org.apache.thrift.protocol.TType.DOUBLE:
             	try{
                 cs.setFieldValue(pif, Double.parseDouble(cleaned));
             }catch (NumberFormatException e){
-        		Log.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as a double");
+        		Logger.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as a double");
         	}
                 break;
             case org.apache.thrift.protocol.TType.BOOL:
@@ -347,7 +349,7 @@ public class SampleReader {
                     if(cleaned == null || "".equals(cleaned.trim())) break;
                     cs.setFieldValue(pif, Boolean.parseBoolean(cleaned));
             	}catch (NumberFormatException e){
-            		Log.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as a bool");
+            		Logger.e(TAG, "Could not read "+md.fieldName+": \""+cleaned+"\" as a bool");
             	}
                 break;
             case org.apache.thrift.protocol.TType.LIST:
@@ -377,14 +379,14 @@ public class SampleReader {
 				try {
 					bd.setFieldValue(pif, Integer.parseInt(cleaned));
 				} catch (NumberFormatException e) {
-					Log.e(TAG, "Could not read "+md.fieldName+": \"" + cleaned + "\" as an int");
+					Logger.e(TAG, "Could not read "+md.fieldName+": \"" + cleaned + "\" as an int");
 				}
 				break;
 			case org.apache.thrift.protocol.TType.DOUBLE:
 				try {
 					bd.setFieldValue(pif, Double.parseDouble(cleaned));
 				} catch (NumberFormatException e) {
-					Log.e(TAG, "Could not read "+md.fieldName+": \"" + cleaned + "\" as a double");
+					Logger.e(TAG, "Could not read "+md.fieldName+": \"" + cleaned + "\" as a double");
 				}
 				break;
 			case org.apache.thrift.protocol.TType.BOOL:
@@ -392,7 +394,7 @@ public class SampleReader {
                     if(cleaned == null || "".equals(cleaned.trim())) break;
 					bd.setFieldValue(pif, Boolean.parseBoolean(cleaned));
 				} catch (NumberFormatException e) {
-					Log.e(TAG, "Could not read "+md.fieldName+": \"" + cleaned + "\" as a bool");
+					Logger.e(TAG, "Could not read "+md.fieldName+": \"" + cleaned + "\" as a bool");
 				}
 				break;
 			case org.apache.thrift.protocol.TType.LIST:
@@ -422,7 +424,7 @@ public class SampleReader {
 				try {
 					nd.setFieldValue(pif, Integer.parseInt(cleaned));
 				} catch (NumberFormatException e) {
-					Log.e(TAG, "Could not read " + md.fieldName + ": \""
+					Logger.e(TAG, "Could not read " + md.fieldName + ": \""
 							+ cleaned + "\" as an int");
 				}
 				break;
@@ -430,7 +432,7 @@ public class SampleReader {
 				try {
 					nd.setFieldValue(pif, Double.parseDouble(cleaned));
 				} catch (NumberFormatException e) {
-					Log.e(TAG, "Could not read " + md.fieldName + ": \""
+					Logger.e(TAG, "Could not read " + md.fieldName + ": \""
 							+ cleaned + "\" as a double");
 				}
 				break;
@@ -439,7 +441,7 @@ public class SampleReader {
                     if(cleaned == null || "".equals(cleaned.trim())) break;
 					nd.setFieldValue(pif, Boolean.parseBoolean(cleaned));
 				} catch (NumberFormatException e) {
-					Log.e(TAG, "Could not read " + md.fieldName + ": \""
+					Logger.e(TAG, "Could not read " + md.fieldName + ": \""
 							+ cleaned + "\" as a bool");
 				}
 				break;
@@ -470,7 +472,7 @@ public class SampleReader {
                 try {
                     sd.setFieldValue(pif, Integer.parseInt(cleaned));
                 } catch (NumberFormatException e) {
-                    Log.e(TAG, "Could not read " + md.fieldName + ": \""
+                    Logger.e(TAG, "Could not read " + md.fieldName + ": \""
                             + cleaned + "\" as an int");
                 }
                 break;
@@ -478,7 +480,7 @@ public class SampleReader {
                 try {
                     sd.setFieldValue(pif, Double.parseDouble(cleaned));
                 } catch (NumberFormatException e) {
-                    Log.e(TAG, "Could not read " + md.fieldName + ": \""
+                    Logger.e(TAG, "Could not read " + md.fieldName + ": \""
                             + cleaned + "\" as a double");
                 }
                 break;
@@ -487,7 +489,7 @@ public class SampleReader {
                     if(cleaned == null || "".equals(cleaned.trim())) break;
                     sd.setFieldValue(pif, Boolean.parseBoolean(cleaned));
                 } catch (NumberFormatException e) {
-                    Log.e(TAG, "Could not read " + md.fieldName + ": \""
+                    Logger.e(TAG, "Could not read " + md.fieldName + ": \""
                             + cleaned + "\" as a bool");
                 }
                 break;
@@ -518,7 +520,7 @@ public class SampleReader {
                     try {
                         s.setFieldValue(pif, Integer.parseInt(cleaned));
                     } catch (NumberFormatException e) {
-                        Log.e(TAG, "Could not read " + md.fieldName + ": \""
+                        Logger.e(TAG, "Could not read " + md.fieldName + ": \""
                                 + cleaned + "\" as an int");
                     }
                     break;
@@ -526,7 +528,7 @@ public class SampleReader {
                     try {
                         s.setFieldValue(pif, Double.parseDouble(cleaned));
                     } catch (NumberFormatException e) {
-                        Log.e(TAG, "Could not read " + md.fieldName + ": \""
+                        Logger.e(TAG, "Could not read " + md.fieldName + ": \""
                                 + cleaned + "\" as a double");
                     }
                     break;
@@ -535,7 +537,7 @@ public class SampleReader {
                         if(cleaned == null || "".equals(cleaned.trim())) break;
                         s.setFieldValue(pif, Boolean.parseBoolean(cleaned));
                     } catch (NumberFormatException e) {
-                        Log.e(TAG, "Could not read " + md.fieldName + ": \""
+                        Logger.e(TAG, "Could not read " + md.fieldName + ": \""
                                 + cleaned + "\" as a bool");
                     }
                     break;
@@ -556,7 +558,7 @@ public class SampleReader {
         try {
             return URLDecoder.decode(clean, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, "UTF-8 unsupported when decoding: "+clean);
+            Logger.e(TAG, "UTF-8 unsupported when decoding: "+clean);
         } 
         return URLDecoder.decode(clean);
     }
@@ -572,7 +574,7 @@ public class SampleReader {
 	    try {
             return URLEncoder.encode(d, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, "UTF-8 unsupported when encoding: "+d);
+            Logger.e(TAG, "UTF-8 unsupported when encoding: "+d);
         }
 	    return URLEncoder.encode(d).replace('\n', ' ').replace(';', ',');
 	}

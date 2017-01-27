@@ -15,6 +15,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.HogStats;
 import edu.berkeley.cs.amplab.carat.android.utils.JsonParser;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
  * Created by Jonatan Hamberg on 28.4.2016.
@@ -61,10 +62,10 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
                     didDataUpdate = true;
                 }
             } else {
-                Log.d("debug", "Update not needed or possible");
+                Logger.d("debug", "Update not needed or possible");
             }
         } else {
-            Log.d("debug", "Stored statistics are fresh enough, skipping update");
+            Logger.d("debug", "Stored statistics are fresh enough, skipping update");
         }
         return null;
     }
@@ -81,12 +82,12 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
             JSONArray days = platform.getJSONArray("days");
             if(days != null && days.length() > 0){
                 String latest = days.getString(days.length()-1);
-                Log.d("debug", "Successfully read stats date from data.json: "+latest);
+                Logger.d("debug", "Successfully read stats date from data.json: "+latest);
                 return latest;
             }
         }
         catch (Exception e){
-            Log.d("debug", "Failed reading latest stats date from data.json");
+            Logger.d("debug", "Failed reading latest stats date from data.json");
         }
         return null;
     }
@@ -140,7 +141,7 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
             }
         } catch(Exception e){
             if(e.getLocalizedMessage() != null){
-                Log.d("debug", "Error when checking data.json", e);
+                Logger.d("debug", "Error when checking data.json", e);
             }
         }
         return null;
@@ -154,7 +155,7 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
         try {
             JSONArray dataArray = new JSONArray(jsonData);
             if(dataArray.length() == 0) return null;
-            Log.d("debug", "Successfully downloaded hog statistics from server");
+            Logger.d("debug", "Successfully downloaded hog statistics from server");
             for(int i=0; i<dataArray.length(); i++){
                 JSONObject app = dataArray.getJSONObject(i);
                 if(app == null || app.length() == 0) continue;
@@ -165,7 +166,7 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
             }
         } catch(Exception e){
             if(e.getLocalizedMessage() != null){
-                Log.d("debug", "Error checking hog statistics", e);
+                Logger.d("debug", "Error checking hog statistics", e);
             }
         }
         result = sortAndAssignIndexes(result);
@@ -185,7 +186,7 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
             return new HogStats(name, killBenefit, users, samples, packageName);
         } catch(Exception e){
             if(e.getLocalizedMessage() != null){
-                Log.d("debug", "Skipping an app with invalid json format", e);
+                Logger.d("debug", "Skipping an app with invalid json format", e);
             }
         }
         return null;

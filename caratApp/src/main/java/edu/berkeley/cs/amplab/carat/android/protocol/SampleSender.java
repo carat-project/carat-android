@@ -16,6 +16,7 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratSampleDB;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 /**
@@ -48,7 +49,7 @@ public class SampleSender {
             final SharedPreferences p = PreferenceManager
                     .getDefaultSharedPreferences(c);
             final boolean useWifiOnly = p.getBoolean(c.getString(R.string.wifi_only_key), false);
-            //Log.i("SampleSender", String.valueOf(useWifiOnly));
+            //Logger.i("SampleSender", String.valueOf(useWifiOnly));
     
             boolean connected = (!useWifiOnly && networkStatus == SamplingLibrary.NETWORKSTATUS_CONNECTED)
                     || networkType.equals("WIFI");
@@ -85,7 +86,7 @@ public class SampleSender {
                                     tries = 2;
                                     // FlurryAgent.logEvent("UploadSamples");
                                     if (Constants.DEBUG)
-                                        Log.d(TAG, "Uploaded " + success
+                                        Logger.d(TAG, "Uploaded " + success
                                             + " samples out of " + map.size());
                                     if (success > 0)
                                         CaratApplication.getStorage().samplesReported(success);
@@ -103,13 +104,13 @@ public class SampleSender {
                                     SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");
                                     Date resultdate = new Date(lastSampleTime);
                                     if (Constants.DEBUG)
-                                        Log.d(TAG,
+                                        Logger.d(TAG,
                                             "Deleting " + success
                                                     + " samples older than "
                                                     + sdf.format(resultdate));
                                     /*
-                                     * Log.i(TAG, "Sent samples:"); for (Sample k:
-                                     * map.values()){ Log.i(TAG, k.getTimestamp() +
+                                     * Logger.i(TAG, "Sent samples:"); for (Sample k:
+                                     * map.values()){ Logger.i(TAG, k.getTimestamp() +
                                      * " " + k.getBatteryLevel()); }
                                      */
                                     SortedSet<Long> uploaded = new TreeSet<Long>();
@@ -121,7 +122,7 @@ public class SampleSender {
                                     }
                                     int deleted = CaratSampleDB.getInstance(c)
                                             .deleteSamples(uploaded);
-                                    // Log.d(TAG, "Deleted " + deleted + " samples.");
+                                    // Logger.d(TAG, "Deleted " + deleted + " samples.");
                                     successSum += success;
                                 } catch (Throwable th) {
                                     // Any sort of malformed response, too short

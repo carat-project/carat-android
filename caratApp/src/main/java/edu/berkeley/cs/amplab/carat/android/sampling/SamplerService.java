@@ -93,7 +93,7 @@ public class SamplerService extends IntentService {
 				}
 				break;
 			default:
-				Log.d(TAG, "Creating sample after receiving " + action);
+				Logger.d(TAG, "Creating sample after receiving " + action);
 				sample(action, context);
 				break;
 		}
@@ -108,7 +108,7 @@ public class SamplerService extends IntentService {
 			PendingIntent rapidSampling = PendingIntent.getService(context, 0, receiver, 0);
 			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),
 					TimeUnit.SECONDS.toMillis(60), rapidSampling);
-			Log.d(TAG, "Started rapid sampling!");
+			Logger.d(TAG, "Started rapid sampling!");
 		}
 	}
 
@@ -117,7 +117,7 @@ public class SamplerService extends IntentService {
 			PendingIntent rapidSampling = PendingIntent.getService(context, 0, receiver, 0);
 			rapidSampling.cancel();
 			alarmManager.cancel(rapidSampling);
-			Log.d(TAG, "Stopped rapid sampling!");
+			Logger.d(TAG, "Stopped rapid sampling!");
 		}
 	}
 

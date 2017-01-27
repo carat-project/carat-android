@@ -40,6 +40,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingStarter;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
@@ -168,7 +169,7 @@ public class CaratApplication extends Application {
     public static String importanceString(int importance) {
         String s = importanceToString.get(importance);
         if (s == null || s.length() == 0) {
-            Log.e("Importance not found:", "" + importance);
+            Logger.e("Importance not found:", "" + importance);
             s = "Unknown";
         }
         return s;
@@ -249,7 +250,7 @@ public class CaratApplication extends Application {
 
     public void acceptEula(){
         if(Constants.DEBUG){
-            Log.d(TAG, "** Accepted EULA **");
+            Logger.d(TAG, "** Accepted EULA **");
         }
         main.resumeTasksAndUpdate();
     }
@@ -284,7 +285,7 @@ public class CaratApplication extends Application {
                 date = pm.getPackageInfo(packageName, 0).firstInstallTime;
             } catch(Throwable th){
                 if(Constants.DEBUG){
-                    Log.d(TAG, "Failed getting application installation date from package");
+                    Logger.d(TAG, "Failed getting application installation date from package");
                     th.printStackTrace();
                 }
             }
@@ -640,7 +641,7 @@ public class CaratApplication extends Application {
     public static void setReportData() {
         final Reports r = getStorage().getReports();
         if (Constants.DEBUG)
-            Log.d(TAG, "Got reports.");
+            Logger.d(TAG, "Got reports.");
         long freshness = CaratApplication.getStorage().getFreshness();
         long l = System.currentTimeMillis() - freshness;
         final long h = l / 3600000;
@@ -650,10 +651,10 @@ public class CaratApplication extends Application {
 
         if (r != null) {
             if (Constants.DEBUG)
-                Log.d(TAG, "r (reports) not null.");
+                Logger.d(TAG, "r (reports) not null.");
             // Try exact battery life
             if (r.jScoreWith != null) {
-                // Log.d(TAG, "jscoreWith not null.");
+                // Logger.d(TAG, "jscoreWith not null.");
                 double exp = r.jScoreWith.expectedValue;
                 if (exp > 0.0) {
                     bl = 100 / exp;
@@ -661,7 +662,7 @@ public class CaratApplication extends Application {
                 } else if (r.getModel() != null) {
                     exp = r.getModel().expectedValue;
                     if (Constants.DEBUG)
-                        Log.d(TAG, "Model expected value: " + exp);
+                        Logger.d(TAG, "Model expected value: " + exp);
                     if (exp > 0.0) {
                         bl = 100 / exp;
                         error = 100 / (exp + r.getModel().error);

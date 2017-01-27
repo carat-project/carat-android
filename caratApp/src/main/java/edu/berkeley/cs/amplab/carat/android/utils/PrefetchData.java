@@ -58,7 +58,7 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... arg0) {
-        // Log.d(TAG, "started doInBackground() method of the asyncTask");
+        // Logger.d(TAG, "started doInBackground() method of the asyncTask");
         JsonParser jsonParser = new JsonParser();
         androidMap = new HashMap<>();
         iosMap = new HashMap<>();
@@ -90,15 +90,15 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
                 if (CaratApplication.mPrefs != null) {
                     saveStatsToPref();
                 } else {
-                    // Log.e(TAG, "The shared preference is null (not loaded yet. "
+                    // Logger.e(TAG, "The shared preference is null (not loaded yet. "
                     //		+ "Check CaratApplication's new thread for loading the sharedPref)");
                 }
 
             } catch (JSONException e) {
-                // Log.e(TAG, e.getStackTrace().toString());
+                // Logger.e(TAG, e.getStackTrace().toString());
             }
         } else {
-            // Log.d(TAG, "server response JSON is null.");
+            // Logger.d(TAG, "server response JSON is null.");
         }
         return null;
     }
@@ -166,9 +166,9 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
                     break;
             }
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "IllegalArgumentException in setFieldsFromJson()");
+            Logger.e(TAG, "IllegalArgumentException in setFieldsFromJson()");
         } catch (IllegalAccessException e) {
-            Log.e(TAG, "IllegalAccessException in setFieldsFromJson()");
+            Logger.e(TAG, "IllegalAccessException in setFieldsFromJson()");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -206,11 +206,11 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void result) {
-        // Log.d(TAG, "started the onPostExecute() of the asyncTask");
+        // Logger.d(TAG, "started the onPostExecute() of the asyncTask");
         super.onPostExecute(result);
         // SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
         // sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-        // Log.d(TAG, "asyncTask.onPstExecute(). mWellbehaved=" + mWellbehaved);
+        // Logger.d(TAG, "asyncTask.onPstExecute(). mWellbehaved=" + mWellbehaved);
         // TODO REFRESH SUMMARY FRAGMENT
         a.refreshCurrentFragment();
     }
@@ -233,7 +233,7 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
             // For private fields, use another method: getDeclaredField(fieldName)
             field = a.getClass().getField(fieldName);
         } catch (NoSuchFieldException e) {
-            // Log.e(TAG, "NoSuchFieldException when trying to get a reference to the field: " + fieldName);
+            // Logger.e(TAG, "NoSuchFieldException when trying to get a reference to the field: " + fieldName);
         }
 
         if (field != null) {
@@ -244,7 +244,7 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
                     res = Integer.parseInt(jsonObject.getString("value"));
                     field.set(a, res);
                 } else {
-                    // Log.e(TAG, "json object (server response) is null: jsonArray(" + objIdx + ")=null (or ='')");
+                    // Logger.e(TAG, "json object (server response) is null: jsonArray(" + objIdx + ")=null (or ='')");
                 }
             }
         }

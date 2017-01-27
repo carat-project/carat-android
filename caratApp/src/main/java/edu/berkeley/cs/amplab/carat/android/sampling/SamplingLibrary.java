@@ -85,6 +85,7 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CallMonth;
 import edu.berkeley.cs.amplab.carat.thrift.CellInfo;
@@ -263,7 +264,7 @@ public final class SamplingLibrary {
 		 */
 		if (level != getCurrentBatteryLevel()) {
 			setCurrentBatteryLevel(level);
-			// Log.d("SamplingLibrary.setCurrentBatteryLevel()", "currentBatteryLevel="
+			// Logger.d("SamplingLibrary.setCurrentBatteryLevel()", "currentBatteryLevel="
 			//		+ getCurrentBatteryLevel());
 		}
 	}
@@ -302,7 +303,7 @@ public final class SamplingLibrary {
 			concat += timestamp;
 		}
 
-		// Log.d(STAG,
+		// Logger.d(STAG,
 		// "AID="+aID+" wifiMac="+wifiMac+" devid="+devid+" rawUUID=" +concat );
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
@@ -397,7 +398,7 @@ public final class SamplingLibrary {
 			String k = (String) keys.nextElement();
 			String v = list.getProperty(k);
 			if (Constants.DEBUG)
-			    Log.d("PROPS", k + "=" + v);
+			    Logger.d("PROPS", k + "=" + v);
 		}
 	}
 
@@ -424,28 +425,28 @@ public final class SamplingLibrary {
 		// performance.
 
 		/*
-		 * Log.d("SetModel", "board:" + android.os.Build.BOARD);
-		 * Log.d("SetModel", "bootloader:" + android.os.Build.BOOTLOADER);
-		 * Log.d("SetModel", "brand:" + android.os.Build.BRAND);
-		 * Log.d("SetModel", "CPU_ABI 1 and 2:" + android.os.Build.CPU_ABI +
-		 * ", " + android.os.Build.CPU_ABI2); Log.d("SetModel", "dev:" +
-		 * android.os.Build.DEVICE); Log.d("SetModel", "disp:" +
-		 * android.os.Build.DISPLAY); Log.d("SetModel", "FP:" +
-		 * android.os.Build.FINGERPRINT); Log.d("SetModel", "HW:" +
-		 * android.os.Build.HARDWARE); Log.d("SetModel", "host:" +
-		 * android.os.Build.HOST); Log.d("SetModel", "ID:" +
-		 * android.os.Build.ID); Log.d("SetModel", "manufacturer:" +
-		 * android.os.Build.MANUFACTURER); Log.d("SetModel", "prod:" +
-		 * android.os.Build.PRODUCT); Log.d("SetModel", "radio:" +
+		 * Logger.d("SetModel", "board:" + android.os.Build.BOARD);
+		 * Logger.d("SetModel", "bootloader:" + android.os.Build.BOOTLOADER);
+		 * Logger.d("SetModel", "brand:" + android.os.Build.BRAND);
+		 * Logger.d("SetModel", "CPU_ABI 1 and 2:" + android.os.Build.CPU_ABI +
+		 * ", " + android.os.Build.CPU_ABI2); Logger.d("SetModel", "dev:" +
+		 * android.os.Build.DEVICE); Logger.d("SetModel", "disp:" +
+		 * android.os.Build.DISPLAY); Logger.d("SetModel", "FP:" +
+		 * android.os.Build.FINGERPRINT); Logger.d("SetModel", "HW:" +
+		 * android.os.Build.HARDWARE); Logger.d("SetModel", "host:" +
+		 * android.os.Build.HOST); Logger.d("SetModel", "ID:" +
+		 * android.os.Build.ID); Logger.d("SetModel", "manufacturer:" +
+		 * android.os.Build.MANUFACTURER); Logger.d("SetModel", "prod:" +
+		 * android.os.Build.PRODUCT); Logger.d("SetModel", "radio:" +
 		 * android.os.Build.RADIO); // FIXME: SERIAL not available on 2.2 //
-		 * Log.d("SetModel", "ser:" + android.os.Build.SERIAL);
-		 * Log.d("SetModel", "tags:" + android.os.Build.TAGS); Log.d("SetModel",
-		 * "time:" + android.os.Build.TIME); Log.d("SetModel", "type:" +
-		 * android.os.Build.TYPE); Log.d("SetModel", "unknown:" +
-		 * android.os.Build.UNKNOWN); Log.d("SetModel", "user:" +
-		 * android.os.Build.USER); Log.d("SetModel", "model:" +
-		 * android.os.Build.MODEL); Log.d("SetModel", "codename:" +
-		 * android.os.Build.VERSION.CODENAME); Log.d("SetModel", "release:" +
+		 * Logger.d("SetModel", "ser:" + android.os.Build.SERIAL);
+		 * Logger.d("SetModel", "tags:" + android.os.Build.TAGS); Logger.d("SetModel",
+		 * "time:" + android.os.Build.TIME); Logger.d("SetModel", "type:" +
+		 * android.os.Build.TYPE); Logger.d("SetModel", "unknown:" +
+		 * android.os.Build.UNKNOWN); Logger.d("SetModel", "user:" +
+		 * android.os.Build.USER); Logger.d("SetModel", "model:" +
+		 * android.os.Build.MODEL); Logger.d("SetModel", "codename:" +
+		 * android.os.Build.VERSION.CODENAME); Logger.d("SetModel", "release:" +
 		 * android.os.Build.VERSION.RELEASE);
 		 */
 
@@ -699,14 +700,14 @@ public final class SamplingLibrary {
 	public static boolean isRunning(Context context, String appName) {
 		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(context);
 		for (RunningAppProcessInfo i : runningProcs) {
-		   // Log.d(TAG, "Matching process: "+i.processName +" with app: "+ appName);
+		   // Logger.d(TAG, "Matching process: "+i.processName +" with app: "+ appName);
 			if (i.processName.equals(appName) && i.importance != RunningAppProcessInfo.IMPORTANCE_EMPTY)
 				return true;
 		}
 		
 		List<RunningServiceInfo> services = getRunningServiceInfo(context);
 		for (RunningServiceInfo service: services){
-		  //  Log.d(TAG, "Matching service: "+service.process +" with app: "+ appName + " service pkg: " + service.clientPackage + " label: " + service.clientLabel);
+		  //  Logger.d(TAG, "Matching service: "+service.process +" with app: "+ appName + " service pkg: " + service.clientPackage + " label: " + service.clientLabel);
 		    String pname = service.process;
 		    int idx = pname.indexOf(":");
 		    if (idx > 0)
@@ -842,14 +843,14 @@ public final class SamplingLibrary {
              */
             if (disabled) {
                 if (Constants.DEBUG)
-                    Log.i(STAG, "DISABLED: " + processName);
+                    Logger.i(STAG, "DISABLED: " + processName);
                 Editor e = PreferenceManager.getDefaultSharedPreferences(c.getApplicationContext()).edit();
                 e.putBoolean(SamplingLibrary.DISABLED + processName, true).commit();
             }
             return disabled;
         } catch (NameNotFoundException e) {
             if (Constants.DEBUG)
-                Log.d(STAG, "Could not find app info for: "+processName);
+                Logger.d(STAG, "Could not find app info for: "+processName);
         }
 	    return false;
 	}
@@ -1100,7 +1101,7 @@ public final class SamplingLibrary {
 					// pname);
 					installationSource = pm.getInstallerPackageName(pname);
 				} catch (IllegalArgumentException iae) {
-					Log.e(STAG, "Could not get installer for " + pname);
+					Logger.e(STAG, "Could not get installer for " + pname);
 				}
 			}
 			if (installationSource == null)
@@ -1133,7 +1134,7 @@ public final class SamplingLibrary {
 				String pname = pref.substring(INSTALLED.length());
 				boolean installed = p.getBoolean(pref, false);
 				if (installed) {
-					Log.i(STAG, "Installed:" + pname);
+					Logger.i(STAG, "Installed:" + pname);
 					ProcessInfo i = getInstalledPackage(context, pname);
 					if (i != null) {
 						i.setImportance(Constants.IMPORTANCE_INSTALLED);
@@ -1146,7 +1147,7 @@ public final class SamplingLibrary {
 				String pname = pref.substring(REPLACED.length());
 				boolean replaced = p.getBoolean(pref, false);
 				if (replaced) {
-					Log.i(STAG, "Replaced:" + pname);
+					Logger.i(STAG, "Replaced:" + pname);
 					ProcessInfo i = getInstalledPackage(context, pname);
 					if (i != null) {
 						i.setImportance(Constants.IMPORTANCE_REPLACED);
@@ -1159,7 +1160,7 @@ public final class SamplingLibrary {
 				String pname = pref.substring(UNINSTALLED.length());
 				boolean uninstalled = p.getBoolean(pref, false);
 				if (uninstalled) {
-					Log.i(STAG, "Uninstalled:" + pname);
+					Logger.i(STAG, "Uninstalled:" + pname);
 					result.add(uninstalledItem(pname, pref, e));
 					edited = true;
 				}
@@ -1167,7 +1168,7 @@ public final class SamplingLibrary {
                 String pname = pref.substring(DISABLED.length());
                 boolean disabled = p.getBoolean(pref, false);
                 if (disabled) {
-                    Log.i(STAG, "Disabled app:" + pname);
+                    Logger.i(STAG, "Disabled app:" + pname);
                     result.add(disabledItem(pname, pref, e));
                     edited = true;
                 }
@@ -1641,7 +1642,7 @@ public final class SamplingLibrary {
 				return String.valueOf(latitude)+","+String.valueOf(longitude);
 			} catch (Throwable th){
 				if(Constants.DEBUG){
-					Log.d("SamplingLibrary", "Failed getting coarse location!");
+					Logger.d("SamplingLibrary", "Failed getting coarse location!");
 					th.printStackTrace();
 				}
 			}
@@ -2030,7 +2031,7 @@ public final class SamplingLibrary {
 			} catch (Throwable th) {
 				Toast.makeText(context,  context.getResources().getString(R.string.stopping_failed),
 						Toast.LENGTH_SHORT).show();
-				Log.e(STAG, "Could not kill process: " + packageName, th);
+				Logger.e(STAG, "Could not kill process: " + packageName, th);
 			}
 		}
 		return false;
@@ -2129,10 +2130,10 @@ public final class SamplingLibrary {
 	public static Sample sample(Context context, String action, String lastBatteryState) {
 		final String TAG = "SamplingLibrary.sample";
 		if (Constants.DEBUG)
-		    Log.d(TAG, "sample() was invoked.");
+		    Logger.d(TAG, "sample() was invoked.");
 
 		if (Constants.DEBUG)
-		    Log.d(TAG, "action = " + action);
+		    Logger.d(TAG, "action = " + action);
 
 		// Construct sample and return it in the end
 		Sample mySample = new Sample();
@@ -2159,14 +2160,14 @@ public final class SamplingLibrary {
 
 		// if (action.equals(Intent.ACTION_SCREEN_ON) ||
 		// action.equals(Intent.ACTION_SCREEN_OFF)) {
-		// Log.d(TAG,
+		// Logger.d(TAG,
 		// "the action has been Intent.ACTION_SCREEN_ON or SCREEN_OFF. Taking sample of ALL INSTALLED packages (rather than running processes)");
 		// Map<String, ProcessInfo> installedPackages =
 		// getInstalledPackages(context, false);
 		// List<ProcessInfo> processes = new ArrayList<ProcessInfo>();
 		// processes.addAll(installedPackages.values());
 		// } else {
-		// Log.d(TAG,
+		// Logger.d(TAG,
 		// "the action has NOT been Intent.ACTION_SCREEN_ON or SCREEN_OFF. Taking sample of running processes.");
 		List<ProcessInfo> processes = getRunningProcessInfoForSample(context);
 		mySample.setPiList(processes);
@@ -2199,7 +2200,7 @@ public final class SamplingLibrary {
 			mySample.setNetworkStatus(network);
 
 		// String ns = mySample.getNetworkStatus();
-		// Log.d(STAG, "Set networkStatus="+ns);
+		// Logger.d(STAG, "Set networkStatus="+ns);
 
 		// Network details
 		NetworkDetails nd = new NetworkDetails();
@@ -2371,14 +2372,14 @@ public final class SamplingLibrary {
 
 		if(Constants.DEBUG){
 			// Need to split since output is over 1000 characters
-			Log.d("debug", "Created the following sample:");
+			Logger.d("debug", "Created the following sample:");
 			String sampleString = mySample.toString();
 			int limit = 1000;
 			for(int i = 0; i <= sampleString.length() / limit; i++) {
 				int start = i * limit;
 				int end = (i+1) * limit;
 				end = (end > sampleString.length()) ? sampleString.length() : end;
-				Log.d("debug", sampleString.substring(start, end));
+				Logger.d("debug", sampleString.substring(start, end));
 			}
 		}
 
@@ -2774,7 +2775,7 @@ public final class SamplingLibrary {
 			return ((String) getName.invoke(context, subId));
 		} catch (Exception e) {
 			if(Constants.DEBUG && e != null && e.getLocalizedMessage() != null){
-				Log.d(STAG, "Failed getting sim operator with subid: " + e.getLocalizedMessage());
+				Logger.d(STAG, "Failed getting sim operator with subid: " + e.getLocalizedMessage());
 			}
 		}
 		return null;
@@ -2796,7 +2797,7 @@ public final class SamplingLibrary {
             }
         } catch(Exception e){
             if(Constants.DEBUG && e != null && e.getLocalizedMessage() != null){
-                Log.d(STAG, "Failed getting network location: " + e.getLocalizedMessage());
+                Logger.d(STAG, "Failed getting network location: " + e.getLocalizedMessage());
             }
         }
         return null;
@@ -2817,7 +2818,7 @@ public final class SamplingLibrary {
 			}
 		} catch (Exception e){
 			if(Constants.DEBUG && e != null && e.getLocalizedMessage() != null){
-				Log.d(STAG, "Failed getting service provider: " + e.getLocalizedMessage());
+				Logger.d(STAG, "Failed getting service provider: " + e.getLocalizedMessage());
 			}
 		}
 		return null;
@@ -2968,7 +2969,7 @@ public final class SamplingLibrary {
 					// Add SHA-256 of public key (DSA)
 					sigList.add(convertToHex(dig));
 				} else {
-					Log.e("SamplingLibrary", "Weird algorithm: " + al + " for " + pak.packageName);
+					Logger.e("SamplingLibrary", "Weird algorithm: " + al + " for " + pak.packageName);
 				}
 			} catch (NoSuchAlgorithmException e) {
 				// Do nothing
@@ -2985,7 +2986,7 @@ public final class SamplingLibrary {
 			return null;
 		if (permList.size() == 0)
 			populatePermList();
-		// Log.i(STAG, "PermList Size: " + permList.size());
+		// Logger.i(STAG, "PermList Size: " + permList.size());
 		byte[] bytes = new byte[permList.size() / 8 + 1];
 		for (String p : perms) {
 			int idx = permList.indexOf(p);

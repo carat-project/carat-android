@@ -18,6 +18,7 @@ import android.util.Log;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.AssetUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 
 /**
@@ -93,7 +94,7 @@ public class ProtocolClient {
             TRUSTSTORE_PASS = properties.getProperty("storePass");
             return TRUSTSTORE_NAME != null && TRUSTSTORE_PASS != null;
         } catch(Throwable th){
-            Log.e(TAG, "Could not open truststore property file!");
+            Logger.e(TAG, "Could not open truststore property file!");
             th.printStackTrace();
         }
         return false;
@@ -112,22 +113,22 @@ public class ProtocolClient {
                 SERVER_ADDRESS_EU = properties.getProperty("ADDRESS_EU", "caratserver-eu.cs.helsinki.fi");
 
                 if(Constants.DEBUG){
-                    Log.d(TAG, "Set global address=" + SERVER_ADDRESS_GLOBAL + " port=" + SERVER_PORT_GLOBAL);
-                    Log.d(TAG, "Set eu address=" + SERVER_ADDRESS_EU + " port=" + SERVER_PORT_EU);
+                    Logger.d(TAG, "Set global address=" + SERVER_ADDRESS_GLOBAL + " port=" + SERVER_PORT_GLOBAL);
+                    Logger.d(TAG, "Set eu address=" + SERVER_ADDRESS_EU + " port=" + SERVER_PORT_EU);
                 }
                 return true;
             } else {
-                Log.e(TAG, "Could not open server property file!");
+                Logger.e(TAG, "Could not open server property file!");
             }
         } catch (IOException e) {
-            Log.e(TAG, "Could not open server property file: " + e.toString());
+            Logger.e(TAG, "Could not open server property file: " + e.toString());
         }
         return false;
     }
     
     public static CaratService.Client open(Context c, ServerLocation location) throws NumberFormatException, TTransportException {
         if (Constants.DEBUG)
-            Log.d("ProtocolClient", "trying to get an instance of CaratProtocol.");
+            Logger.d("ProtocolClient", "trying to get an instance of CaratProtocol.");
         return getInstance(c, location);
     }
 }

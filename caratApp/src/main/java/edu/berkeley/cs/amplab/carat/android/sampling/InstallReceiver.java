@@ -9,6 +9,8 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+
 public class InstallReceiver extends BroadcastReceiver {
 
     private static final String TAG = "InstallReceiver";
@@ -37,7 +39,7 @@ public class InstallReceiver extends BroadcastReceiver {
         if (a != null && a.equals(Intent.ACTION_PACKAGE_ADDED)) {
             boolean replacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
             if (!replacing) {
-                Log.i(TAG, "INSTALLED: " + pkg);
+                Logger.i(TAG, "INSTALLED: " + pkg);
                 e.putBoolean(SamplingLibrary.INSTALLED + pkg, true).commit();
             }
         } else if (a != null && a.equals(Intent.ACTION_PACKAGE_REMOVED)) {
@@ -46,11 +48,11 @@ public class InstallReceiver extends BroadcastReceiver {
              * send the uninstallation flag in the next sample.
              */
             if (!replacing) {
-                Log.i(TAG, "UNINSTALLED: " + pkg);
+                Logger.i(TAG, "UNINSTALLED: " + pkg);
                 e.putBoolean(SamplingLibrary.UNINSTALLED + pkg, true).commit();
             }
         } else if (a!= null && a.equals(Intent.ACTION_PACKAGE_REPLACED)) {
-            Log.i(TAG, "REPLACED: " + pkg);
+            Logger.i(TAG, "REPLACED: " + pkg);
             e.putBoolean(SamplingLibrary.REPLACED + pkg, true).commit();
         }
     }
