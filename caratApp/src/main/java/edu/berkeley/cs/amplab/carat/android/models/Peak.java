@@ -3,7 +3,7 @@ package edu.berkeley.cs.amplab.carat.android.models;
 import edu.berkeley.cs.amplab.carat.android.utils.Range;
 
 /**
- * Created by Jonatan Hamberg on 27.02.2016.
+ * Created by Jonatan Hamberg on 27.01.2016.
  */
 public class Peak {
     private Range<Double> range;

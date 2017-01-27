@@ -12,7 +12,10 @@ import android.os.Bundle;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.ExpiringList;
+import edu.berkeley.cs.amplab.carat.android.utils.ExpiringMap;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 public class Sampler extends WakefulBroadcastReceiver implements LocationListener {
 
@@ -22,6 +25,8 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
     private Context context = null;
     private Location lastKnownLocation = null;
     private double distance = 0.0;
+
+    private Sample lastSample = null;
     private long lastNotify;
 
     public static Sampler getInstance() {
@@ -109,6 +114,14 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
         requestLocationUpdates();
+    }
+
+    public void setLastSample(Sample sample){
+        lastSample = sample;
+    }
+
+    public Sample getLastSample(){
+        return lastSample;
     }
 
     public long getLastNotify() {

@@ -22,11 +22,15 @@ import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratSampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Boolean3;
+import edu.berkeley.cs.amplab.carat.android.utils.ExpiringList;
+import edu.berkeley.cs.amplab.carat.android.utils.ExpiringMap;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 public class SamplerService extends IntentService {
     private static final String TAG = "SamplerService";
+	private static final long DUPLICATE_INTERVAL = 1000;
 	private AlarmManager alarmManager;
 	private Intent receiver;
     
@@ -123,19 +127,48 @@ public class SamplerService extends IntentService {
 	}
 
 	private void sample(String action, Context context){
+		Logger.d(TAG, "New sample candidate for " + action + "!");
+
 		CaratSampleDB sampleDB = CaratSampleDB.getInstance(context);
 		Sample lastSample = sampleDB.getLastSample(context);
 
 		String lastBatteryState = lastSample != null ? lastSample.getBatteryState() : "Unknown";
-		Sample s = SamplingLibrary.sample(context, action, lastBatteryState);
-		if(s == null){
-			Logger.d(TAG, "Sample was null!");
+		Sample sample = SamplingLibrary.sample(context, action, lastBatteryState);
+		if(sample == null || nothingChanged(sample)){
+			Logger.d(TAG, "Sample was null or a duplicate, skipping.");
 			return;
 		}
-
-		long id = sampleDB.putSample(s);
+		sample.setDistanceTraveled(Sampler.getInstance().getDistanceSinceLastSample());
+		Sampler.getInstance().setLastSample(sample);
+		long id = sampleDB.putSample(sample);
 		notifyIfNeeded(context);
-		Log.i(TAG, "Took sample " + id + " for " + action);
+		Logger.i(TAG, "Took sample " + id + " for " + action);
+	}
+
+	private boolean nothingChanged(Sample s1){
+		Sample s2 = Sampler.getInstance().getLastSample();
+		if(s2.getTriggeredBy().equals(s1.getTriggeredBy())){
+			if(s2.getTimestamp() - s1.getTimestamp() < 1000){
+				Logger.d(TAG, "Sample was triggered within 1 second by the same event " +
+						"as last one, checking if it's essentially a duplicate..");
+				BatteryDetails bd1 = s1.getBatteryDetails();
+				BatteryDetails bd2 = s2.getBatteryDetails();
+				boolean isDuplicate =
+							s1.getBatteryLevel() == s2.getBatteryLevel()
+						&& 	s1.getBatteryState().equals(s2.getBatteryState())
+						&& 	s1.getTimeZone().equals(s2.getTimeZone())
+						&& 	bd1.getBatteryTemperature() == bd2.getBatteryTemperature()
+						&& 	bd1.getBatteryCapacity() == bd2.getBatteryCapacity()
+						&& 	bd1.getBatteryVoltage() == bd2.getBatteryVoltage()
+						&& 	bd1.getBatteryTechnology().equals(bd2.getBatteryTechnology())
+						&& 	bd1.getBatteryCharger().equals(bd2.getBatteryCharger())
+						&& 	bd1.getBatteryHealth().equals(bd2.getBatteryHealth());
+				Logger.d(TAG, isDuplicate ? "Discarding as a duplicate" :
+											"Not a duplicate, proceeding");
+				return isDuplicate;
+			}
+		}
+		return false;
 	}
 
 	private boolean batteryLevelChanged(Intent intent, Context context){
