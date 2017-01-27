@@ -135,22 +135,23 @@ public class SamplerService extends IntentService {
 		String lastBatteryState = lastSample != null ? lastSample.getBatteryState() : "Unknown";
 		Sample sample = SamplingLibrary.sample(context, action, lastBatteryState);
 		if(sample == null || nothingChanged(sample)){
-			Logger.d(TAG, "Sample was null or a duplicate, skipping.");
+			Logger.d(TAG, "Skipped a duplicate or null sample!");
 			return;
 		}
 		sample.setDistanceTraveled(Sampler.getInstance().getDistanceSinceLastSample());
 		Sampler.getInstance().setLastSample(sample);
 		long id = sampleDB.putSample(sample);
 		notifyIfNeeded(context);
-		Logger.i(TAG, "Took sample " + id + " for " + action);
+		Logger.i(TAG, "Took sample " + id + " for " + action + ".");
 	}
 
 	private boolean nothingChanged(Sample s1){
 		Sample s2 = Sampler.getInstance().getLastSample();
-		if(s2.getTriggeredBy().equals(s1.getTriggeredBy())){
-			if(s2.getTimestamp() - s1.getTimestamp() < 1000){
-				Logger.d(TAG, "Sample was triggered within 1 second by the same event " +
-						"as last one, checking if it's essentially a duplicate..");
+		if(s2 != null && s2.getTriggeredBy().equals(s1.getTriggeredBy())){
+			if(s1.getTimestamp() - s2.getTimestamp() < 1){
+				Logger.d(TAG, "Sample was triggered within 1 second (diff: " +
+						(s1.getTimestamp() - s2.getTimestamp()) + " s) of the last one " +
+						"and by the same event. Checking if it's a duplicate..");
 				BatteryDetails bd1 = s1.getBatteryDetails();
 				BatteryDetails bd2 = s2.getBatteryDetails();
 				boolean isDuplicate =
@@ -163,8 +164,8 @@ public class SamplerService extends IntentService {
 						&& 	bd1.getBatteryTechnology().equals(bd2.getBatteryTechnology())
 						&& 	bd1.getBatteryCharger().equals(bd2.getBatteryCharger())
 						&& 	bd1.getBatteryHealth().equals(bd2.getBatteryHealth());
-				Logger.d(TAG, isDuplicate ? "Discarding as a duplicate" :
-											"Not a duplicate, proceeding");
+				Logger.d(TAG, isDuplicate ? "Discarding as a duplicate.." :
+											"Not a duplicate, proceeding..");
 				return isDuplicate;
 			}
 		}
