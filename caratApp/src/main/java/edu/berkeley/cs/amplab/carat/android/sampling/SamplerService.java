@@ -15,15 +15,13 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
+
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
-import edu.berkeley.cs.amplab.carat.android.storage.CaratSampleDB;
+import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Boolean3;
-import edu.berkeley.cs.amplab.carat.android.utils.ExpiringList;
-import edu.berkeley.cs.amplab.carat.android.utils.ExpiringMap;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
@@ -129,7 +127,7 @@ public class SamplerService extends IntentService {
 	private void sample(String action, Context context){
 		Logger.d(TAG, "New sample candidate for " + action + "!");
 
-		CaratSampleDB sampleDB = CaratSampleDB.getInstance(context);
+		SampleDB sampleDB = SampleDB.getInstance(context);
 		Sample lastSample = sampleDB.getLastSample(context);
 
 		String lastBatteryState = lastSample != null ? lastSample.getBatteryState() : "Unknown";
@@ -196,7 +194,7 @@ public class SamplerService extends IntentService {
         if (lastNotify + Constants.FRESHNESS_TIMEOUT_QUICKHOGS > now)
             return;
         
-        int samples = CaratSampleDB.getInstance(context).countSamples();
+        int samples = SampleDB.getInstance(context).countSamples();
         if (samples >= Sampler.MAX_SAMPLES){
             Sampler.getInstance().setLastNotify(now);
         PendingIntent launchCarat = PendingIntent.getActivity(context, 0,

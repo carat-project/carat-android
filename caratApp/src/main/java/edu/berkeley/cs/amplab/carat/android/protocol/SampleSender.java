@@ -15,7 +15,7 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
-import edu.berkeley.cs.amplab.carat.android.storage.CaratSampleDB;
+import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
@@ -55,7 +55,7 @@ public class SampleSender {
                     || networkType.equals("WIFI");
             
             if (connected) {
-                CaratSampleDB db = CaratSampleDB.getInstance(c);
+                SampleDB db = SampleDB.getInstance(c);
                 int samples = db.countSamples();
                 
                 /* Click Tracking: Track sample sending. */
@@ -70,7 +70,7 @@ public class SampleSender {
                 for (int batches = 0; batches < Constants.COMMS_MAX_BATCHES
                         && batches < samples
                                 / Constants.COMMS_MAX_UPLOAD_BATCH + 1; batches++) {
-                    SortedMap<Long, Sample> map = CaratSampleDB.getInstance(c)
+                    SortedMap<Long, Sample> map = SampleDB.getInstance(c)
                             .queryOldestSamples(
                                     Constants.COMMS_MAX_UPLOAD_BATCH);
                     if (map.size() > 0) {
@@ -120,7 +120,7 @@ public class SampleSender {
                                             uploaded.add(s);
                                         i += 1;
                                     }
-                                    int deleted = CaratSampleDB.getInstance(c)
+                                    int deleted = SampleDB.getInstance(c)
                                             .deleteSamples(uploaded);
                                     // Logger.d(TAG, "Deleted " + deleted + " samples.");
                                     successSum += success;
