@@ -6,11 +6,15 @@ import android.content.res.Resources;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.DisplayMetrics;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.models.ChargingPoint;
+import edu.berkeley.cs.amplab.carat.android.utils.PeakUtils;
 
 //
 //  Created by Jonatan C Hamberg on 8.5.2016.
@@ -72,5 +76,20 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         assertEquals(activity.getTimeString(TimeUnit.DAYS.toMillis(14)), "Updated 2 weeks ago");
         assertEquals(activity.getTimeString(TimeUnit.DAYS.toMillis(100*7)), "Updated 100 weeks ago");
         assertEquals(activity.getTimeString(TimeUnit.DAYS.toMillis(10000*7)), "Updated 10000 weeks ago");
+    }
+
+    public void testChargingPointIntersections(){
+        TreeMap<Integer, ChargingPoint> map = new TreeMap<>();
+        map.put(1,  new ChargingPoint(2.0, 2.0, 2.0));
+        map.put(2, new ChargingPoint(3.0, 2.0, 4.0));
+        map.put(3, new ChargingPoint(4.0, 2.0, 6.0));
+        map.put(4, new ChargingPoint(5.0, 2.0, 3.0));
+        map.put(5, new ChargingPoint(6.0, 2.0, 3.0));
+        map.put(6, new ChargingPoint(5.0, 2.0, 5.0));
+        map.put(7, new ChargingPoint(5.0, 2.0, 5.0));
+        map.put(8, new ChargingPoint(5.0, 2.0, 5.0));
+        map.put(9, new ChargingPoint(4.0, 2.0, 6.0));
+        List<Double> intersections = PeakUtils.getIntersections(map);
+        assertEquals(intersections.contains(3.5), intersections.contains(6.0));
     }
 }
