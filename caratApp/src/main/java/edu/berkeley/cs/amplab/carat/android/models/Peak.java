@@ -1,6 +1,7 @@
 package edu.berkeley.cs.amplab.carat.android.models;
 
 import java.io.Serializable;
+import java.util.List;
 
 import edu.berkeley.cs.amplab.carat.android.utils.Range;
 
@@ -11,7 +12,7 @@ public class Peak implements Serializable {
     private static final long serialVersionUID = -7911168046749271687L;
 
     private Range<Double> range;
-    private Double values[];
+    private List<Double> values;
     private Double auc;
     private Double inten1;
     private Double inten2;
@@ -34,11 +35,11 @@ public class Peak implements Serializable {
         return this;
     }
 
-    public Double[] getValues() {
+    public List<Double> getValues() {
         return values;
     }
 
-    public Peak setValues(Double[] values) {
+    public Peak setValues(List<Double> values) {
         this.values = values;
         return this;
     }
@@ -71,12 +72,7 @@ public class Peak implements Serializable {
     }
 
     public Double getLength() {
-        return length;
-    }
-
-    public Peak setLength(Double length) {
-        this.length = length;
-        return this;
+        return range.getMax() - range.getMin();
     }
 
     public Double getSkewness() {
@@ -113,5 +109,21 @@ public class Peak implements Serializable {
     public Peak setVariance(Double variance) {
         this.variance = variance;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Peak{" +
+                "range=" + range +
+                ", values=" + values +
+                ", auc=" + auc +
+                ", inten1=" + inten1 +
+                ", inten2=" + inten2 +
+                ", length=" + length +
+                ", skewness=" + skewness +
+                ", kurtosis=" + kurtosis +
+                ", mean=" + mean +
+                ", variance=" + variance +
+                '}';
     }
 }
