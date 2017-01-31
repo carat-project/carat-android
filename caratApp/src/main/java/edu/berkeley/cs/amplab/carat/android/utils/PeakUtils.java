@@ -30,6 +30,7 @@ public class PeakUtils {
         }
 
         TreeSet<Double> xi = getIntersections(points);
+        Logger.d(TAG, "Intersections are: " + xi.toString());
         List<Double> times = new ArrayList<>();
         List<Double> averages = new ArrayList<>();
         for(ChargingPoint point : points.values()){
@@ -42,13 +43,16 @@ public class PeakUtils {
 
         int i = 1;
         for(Integer level : points.keySet()){
+            Logger.d(TAG, "Going through level " + level);
             ChargingPoint point = points.get(level);
             double time = point.getTime();
             double avg = point.getAverage();
             double ss = point.getSquareSum();
-            if(isPeak(time, avg, ss, i)){
+            if(isPeak(time, avg, ss, i+1)){
+                Logger.d(TAG, "Found a peak!");
                 Double lower = xi.lower((double)level);
                 Double higher = xi.higher((double)level);
+                Logger.d(TAG, "Lower: " + lower + " Higher: " + higher);
                 if(lower != null && higher != null){
                     Skewness skewness = new Skewness();
                     Kurtosis kurtosis = new Kurtosis();
@@ -119,9 +123,9 @@ public class PeakUtils {
     }
 
     private static boolean isPeak(double time, double avg, double ss, double t){
-        double va = ss/(t+1);
+        double va = ss/t;
         double dev = Math.sqrt(va);
-        TDistribution distribution = new TDistribution(t);
+        TDistribution distribution = new TDistribution(t-1);
         double th1 = distribution.inverseCumulativeProbability(0.995);
         double th2 = distribution.inverseCumulativeProbability(1-0.995);
         double z = (time - avg) / dev;
@@ -141,14 +145,14 @@ public class PeakUtils {
         // double d = Math.min(n+1, window);
         // return (x + (d-1) * prev)/d;
         // It is, however, less precise and therefore not used here.
-        double alpha = Math.max(1/(double)(n+1), 1/window);
+        double alpha = Math.max(1/(double)(n+2), 1/window);
         return prev + alpha*(x-prev);
     }
 
     // Square sum
     public static double ss(double x, double prev, int n, double cma){
-        double beta = n/(double)(n-1);
-        return prev + beta * Math.pow((x - cma), 2);
+        double beta = n/(double)(n+1);
+        return prev + beta * Math.pow(x - cma, 2);
     }
 
     /**
