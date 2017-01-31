@@ -21,6 +21,7 @@ import edu.berkeley.cs.amplab.carat.android.models.Peak;
  * Created by Jonatan Hamberg on 30.1.2017.
  */
 public class PeakUtils {
+    private static final String TAG = PeakUtils.class.getSimpleName();
 
     public static List<Peak> getPeaks(TreeMap<Integer, ChargingPoint> points){
         List<Peak> peaks = new ArrayList<>();
@@ -64,6 +65,7 @@ public class PeakUtils {
                             .setKurtosis(kurtosis.evaluate(timesArr))
                             .setVariance(variance.evaluate(timesArr))
                             .setMean(mean.evaluate(timesArr));
+                    System.out.println("Constructed peak: " + peak);
                     peaks.add(peak);
                 }
             }
@@ -81,7 +83,7 @@ public class PeakUtils {
     }
 
     public static TreeSet<Double> getIntersections(TreeMap<Integer, ChargingPoint> points){
-        TreeSet<Double> intersections = new ArrayList<>();
+        TreeSet<Double> intersections = new TreeSet<>();
         Double prevDist = 0.0;
         Integer prevLevel = null;
         Double prevTime = null;

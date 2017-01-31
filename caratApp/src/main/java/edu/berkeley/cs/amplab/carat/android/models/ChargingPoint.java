@@ -10,7 +10,7 @@ public class ChargingPoint implements Serializable{
     private Double squareSum;
     private Double average;
 
-    public ChargingPoint(Double time, Double squareSum, Double average){
+    public ChargingPoint(Double time, Double average, Double squareSum){
         this.time = time;
         this.squareSum = squareSum;
         this.average = average;

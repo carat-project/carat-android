@@ -6,12 +6,14 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.TreeMap;
 
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.PeakUtils;
 
 /**
  * Created by Jonatan Hamberg on 30.1.2017.
  */
 public class ChargingSession implements Serializable {
+    private static final String TAG = ChargingSession.class.getSimpleName();
     private static final long serialVersionUID = 9099497442195235697L;
 
     private List<Peak> peaks;
@@ -25,7 +27,7 @@ public class ChargingSession implements Serializable {
         this.timestamp = System.currentTimeMillis();
     }
 
-    public ChargingSession create(){
+    public static ChargingSession create(){
         return new ChargingSession();
     }
     public ChargingSession setReplaceOnZigZag(Boolean replaceOnZigZag) {
@@ -49,8 +51,8 @@ public class ChargingSession implements Serializable {
     public void addPoint(Integer level, Double time) {
 
         // Calculate moving average and square sum
-        Double cma = getMovingAverage(level);
-        Double ss = getSquareSum(level, cma);
+        Double cma = getMovingAverage(level, time);
+        Double ss = getSquareSum(level, time, cma);
 
         if(points.containsKey(level) && !replaceOnZigZag){
             time += points.get(level).getTime();
@@ -62,17 +64,23 @@ public class ChargingSession implements Serializable {
         peaks = PeakUtils.getPeaks(points);
     }
 
-    private Double getMovingAverage(int level){
-        Integer prevKey = points.lowerKey(level);
-        Double prevAvg = prevKey == null ? 0 : points.get(prevKey).getAverage();
+    private Double getMovingAverage(int level, double value){
+        Integer prevKey = points.lowerKey(level);;
+        if(prevKey == null) {
+            return value;
+        }
+        Double prevAvg = points.get(prevKey).getAverage();
         int n = points.size();
-        return PeakUtils.cma(level, prevAvg, n, 40);
+        return PeakUtils.cma(value, prevAvg, n, 40);
     }
 
-    private Double getSquareSum(int level, double cma){
+    private Double getSquareSum(int level, double value, double cma){
         Integer prevKey = points.lowerKey(level);
-        Double prevSs = prevKey == null ? 0 : points.get(prevKey).getSquareSum();
+        if(prevKey == null){
+            return 0.0;
+        }
+        Double prevSs = points.get(prevKey).getSquareSum();
         int n = points.size();
-        return PeakUtils.ss(level, prevSs, n, cma);
+        return PeakUtils.ss(value, prevSs, n, cma);
     }
 }

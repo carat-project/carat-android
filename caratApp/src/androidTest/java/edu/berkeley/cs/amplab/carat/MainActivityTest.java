@@ -77,19 +77,4 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         assertEquals(activity.getTimeString(TimeUnit.DAYS.toMillis(100*7)), "Updated 100 weeks ago");
         assertEquals(activity.getTimeString(TimeUnit.DAYS.toMillis(10000*7)), "Updated 10000 weeks ago");
     }
-
-    public void testChargingPointIntersections(){
-        TreeMap<Integer, ChargingPoint> map = new TreeMap<>();
-        map.put(1,  new ChargingPoint(2.0, 2.0, 2.0));
-        map.put(2, new ChargingPoint(3.0, 2.0, 4.0));
-        map.put(3, new ChargingPoint(4.0, 2.0, 6.0));
-        map.put(4, new ChargingPoint(5.0, 2.0, 3.0));
-        map.put(5, new ChargingPoint(6.0, 2.0, 3.0));
-        map.put(6, new ChargingPoint(5.0, 2.0, 5.0));
-        map.put(7, new ChargingPoint(5.0, 2.0, 5.0));
-        map.put(8, new ChargingPoint(5.0, 2.0, 5.0));
-        map.put(9, new ChargingPoint(4.0, 2.0, 6.0));
-        List<Double> intersections = PeakUtils.getIntersections(map);
-        assertEquals(intersections.contains(3.5), intersections.contains(6.0));
-    }
 }
