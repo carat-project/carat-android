@@ -30,9 +30,9 @@ import edu.berkeley.cs.amplab.carat.thrift.Sample;
  * @author Eemil Lagerspetz
  * 
  */
-public class CaratSampleDB {
+public class SampleDB {
 
-    private static final String TAG = "CaratSampleDB";
+    private static final String TAG = "SampleDB";
 
     public static final String COLUMN_TIMESTAMP = "timestamp";
     public static final String COLUMN_SAMPLE = "sample";
@@ -50,19 +50,19 @@ public class CaratSampleDB {
 
     private SampleDbOpenHelper helper = null;
 
-    private static CaratSampleDB instance = null;
+    private static SampleDB instance = null;
 
     private static Object dbLock = new Object();
 
-    public static CaratSampleDB getInstance(Context c) {
+    public static SampleDB getInstance(Context c) {
         if (instance == null) {
-            instance = new CaratSampleDB(c);
-//            Logger.d("CaratSampleDB", "new instance created and returned");
+            instance = new SampleDB(c);
+//            Logger.d("SampleDB", "new instance created and returned");
         }
         return instance;
     }
 
-    private CaratSampleDB(Context context) {
+    private SampleDB(Context context) {
         synchronized (dbLock) {
             helper = new SampleDbOpenHelper(context);
         }
@@ -188,11 +188,11 @@ public class CaratSampleDB {
                         COLUMN_TIMESTAMP + " ASC LIMIT " + howmany);
 
                 if (cursor == null) {
-                	// Logger.d("CaratSampleDB", "query returned null");
+                	// Logger.d("SampleDB", "query returned null");
                     // There are no results
                     return results;
                 } else {
-                	// Logger.d("CaratSampleDB", "query is successfull!");
+                	// Logger.d("SampleDB", "query is successfull!");
                     cursor.moveToFirst();
                     while (!cursor.isAfterLast()) {
                         Sample s = fillSample(cursor);
@@ -236,7 +236,7 @@ public class CaratSampleDB {
                 }
                 sb.append(")");
                 if (Constants.DEBUG)
-                    Logger.d("CaratSampleDB",
+                    Logger.d("SampleDB",
                         "Deleting where rowid in " + sb.toString());
                 ret = delete("rowid in " + sb.toString(), null);
 
@@ -281,7 +281,7 @@ public class CaratSampleDB {
         Sample s = null;
 
         byte[] sampleB = cursor.getBlob(cursor
-                .getColumnIndex(CaratSampleDB.COLUMN_SAMPLE));
+                .getColumnIndex(SampleDB.COLUMN_SAMPLE));
         if (sampleB != null) {
             ObjectInputStream oi;
             try {
@@ -333,7 +333,7 @@ public class CaratSampleDB {
                     db = helper.getWritableDatabase();
                 }
                 if (Constants.DEBUG)
-                    Logger.d(TAG, "CaratSampleDB.putSample(). About to save a sample to the DB. "
+                    Logger.d(TAG, "SampleDB.putSample(). About to save a sample to the DB. "
                 		+ "uuid=" + s.uuId
                 		+ ", timestamp=" + s.timestamp
                 		+ ", timezone=" + s.timeZone
@@ -393,7 +393,7 @@ public class CaratSampleDB {
      */
     private long addSample(Sample s) {
         if (Constants.DEBUG)
-            Logger.d("CaratSampleDB.addSample()", "The sample's battery level=" + s.getBatteryLevel());
+            Logger.d("SampleDB.addSample()", "The sample's battery level=" + s.getBatteryLevel());
     	
         ContentValues initialValues = new ContentValues();
         initialValues.put(COLUMN_TIMESTAMP, s.timestamp);
