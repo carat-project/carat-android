@@ -11,6 +11,7 @@ import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -41,30 +42,37 @@ public class PeakUtils {
         UnivariateFunction timesFunction = getFunction(times);
         UnivariateFunction averagesFunction = getFunction(averages);
 
-        int i = 1;
+        int i = 1; // First point cannot be measured
         for(Integer level : points.keySet()){
-            Logger.d(TAG, "Going through level " + level);
             ChargingPoint point = points.get(level);
             double time = point.getTime();
             double avg = point.getAverage();
             double ss = point.getSquareSum();
             if(isPeak(time, avg, ss, i+1)){
-                Logger.d(TAG, "Found a peak!");
                 Double lower = xi.lower((double)level);
                 Double higher = xi.higher((double)level);
-                Logger.d(TAG, "Lower: " + lower + " Higher: " + higher);
                 if(lower != null && higher != null){
                     Skewness skewness = new Skewness();
                     Kurtosis kurtosis = new Kurtosis();
                     Variance variance = new Variance();
                     Mean mean = new Mean();
-                    double[] timesArr = toArray(times);
+
+                    int lowerKey = (int)Math.floor(lower);
+                    int higherKey = (int)Math.ceil(higher);
+                    SortedMap<Integer, ChargingPoint> peakPoints = points.subMap(lowerKey, higherKey+1);
+                    List<Double> values = new ArrayList<>();
+                    for(ChargingPoint value : peakPoints.values()){
+                        values.add(value.getTime());
+                    }
+
+                    int startingLevel = points.firstKey();
+                    double[] timesArr = toArray(values);
                     Peak peak = new Peak()
-                            .setValues(times)
+                            .setValues(values)
                             .setRange(new Range<>(lower, higher))
-                            .setAuc(auc(lower, higher, timesFunction, averagesFunction))
-                            .setInten1(Collections.max(times) - averagesFunction.value(lower))
-                            .setInten2(Collections.min(times) - averagesFunction.value(lower))
+                            .setAuc(auc(lower-startingLevel, higher-startingLevel, timesFunction, averagesFunction))
+                            .setInten1(Collections.max(values) - points.get(lowerKey).getAverage())
+                            .setInten2(Collections.min(values) - points.get(lowerKey).getAverage())
                             .setSkewness(skewness.evaluate(timesArr))
                             .setKurtosis(kurtosis.evaluate(timesArr))
                             .setVariance(variance.evaluate(timesArr))
@@ -125,7 +133,7 @@ public class PeakUtils {
     private static boolean isPeak(double time, double avg, double ss, double t){
         double va = ss/t;
         double dev = Math.sqrt(va);
-        TDistribution distribution = new TDistribution(t-1);
+        TDistribution distribution = new TDistribution(t);
         double th1 = distribution.inverseCumulativeProbability(0.995);
         double th2 = distribution.inverseCumulativeProbability(1-0.995);
         double z = (time - avg) / dev;
@@ -181,6 +189,7 @@ public class PeakUtils {
         return ((x1*y2 - y1*x2)*(x3 - x4) - (x1-x2)*(x3*y4-y3*x4))/
                 ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4));
     }
+
 
     public static UnivariateFunction getFunction(List<Double> arr){
         return x -> {
