@@ -74,7 +74,7 @@ public class PeakUtils {
         List<Double> peakTimes = getValues(points, lowerKey, higherKey);
 
         int offset = points.firstKey();
-        double[] timeArray = toArray(peakTimes);
+        double[] timeArray = Util.toArray(peakTimes);
 
         return new Peak()
                 .setValues(peakTimes)
@@ -143,11 +143,4 @@ public class PeakUtils {
         return values;
     }
 
-    private static double[] toArray(List<Double> list){
-        double[] result = new double[list.size()];
-        for(int i=0; i<result.length; i++){
-            result[i] = list.get(i);
-        }
-        return result;
-    }
 }

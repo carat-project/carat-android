@@ -1,7 +1,5 @@
 package edu.berkeley.cs.amplab.carat.android.models;
 
-
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.TreeMap;
@@ -24,7 +22,7 @@ public class ChargingSession implements Serializable {
 
     private ChargingSession(){
         points = new TreeMap<>();
-        this.timestamp = System.currentTimeMillis();
+        timestamp = System.currentTimeMillis();
     }
 
     public static ChargingSession create(){
@@ -43,12 +41,16 @@ public class ChargingSession implements Serializable {
         return points;
     }
 
+    public Integer getLastLevel(){
+        return points.firstKey();
+    }
 
     public Long getTimestamp() {
         return timestamp;
     }
 
     public void addPoint(Integer level, Double time) {
+        // TODO: Interpolate if we skip a level.
 
         // Calculate moving average and square sum
         Double cma = getMovingAverage(level, time);

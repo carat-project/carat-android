@@ -11,9 +11,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -29,6 +32,7 @@ import org.apache.thrift.transport.TFileTransport;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InformationFragment;
+import edu.berkeley.cs.amplab.carat.android.models.ChargingSession;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
@@ -38,7 +42,7 @@ import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
 public class CaratDataStorage {
-    public static final String TAG = "CaratDataStorage";
+    public static final String TAG = CaratDataStorage.class.getSimpleName();
 
     public static final String FILENAME = "carat-reports.dat";
     public static final String BLACKLIST_FILE = "carat-blacklist.dat";
@@ -56,6 +60,7 @@ public class CaratDataStorage {
     public static final String HOGSTATS_DATE = "carat-hogstats-date.dat";
     public static final String HOGSTATS_FILE = "carat-hogstats.dat";
     public static final String SAMPLES_LASTUPLOAD = "carat-lastupload.dat";
+    public static final String CHARGING_FILE = "carat-charging-sessions.dat";
 
     public static final String SAMPLES_REPORTED = "carat-samples-reported.dat";
 
@@ -80,6 +85,7 @@ public class CaratDataStorage {
     private WeakReference<List<String>> blacklistedGlobs = null;
     private WeakReference<HashMap<Integer, Questionnaire>> questionnaires = null;
     private WeakReference<HashMap<Integer, Answers>> answers = null;
+    private WeakReference<SortedMap<Long, ChargingSession>> sessions = null;
 
     public CaratDataStorage(Context a) {
         this.a = a;
@@ -134,6 +140,14 @@ public class CaratDataStorage {
     public void writeHogStatsDate(String date){
         hogStatsDate = date;
         writeText(date, HOGSTATS_DATE);
+    }
+
+    public void writeChargingSessions(SortedMap<Long, ChargingSession> map){
+        if(map == null){
+            return;
+        }
+        sessions = new WeakReference<>(map);
+        writeObject(map, CHARGING_FILE);
     }
 
     public void writeObject(Object o, String fname) {
@@ -244,7 +258,7 @@ public class CaratDataStorage {
     public long readFreshness() {
         String s = readText(FRESHNESS);
         if (Constants.DEBUG)
-            Logger.d("CaratDataStorage", "Read freshness: " + s);
+            Logger.d(TAG, "Read freshness: " + s);
         if (s != null)
             return Long.parseLong(s);
         else
@@ -254,7 +268,7 @@ public class CaratDataStorage {
     public Reports readReports() {
         Object o = readObject(FILENAME);
         if (Constants.DEBUG)
-            Logger.d("CaratDataStorage", "Read Reports: " + o);
+            Logger.d(TAG, "Read Reports: " + o);
         if (o != null) {
             caratData = new WeakReference<Reports>((Reports) o);
             return (Reports) o;
@@ -266,7 +280,7 @@ public class CaratDataStorage {
     public List<HogStats> readHogStats(){
         Object o = readObject(HOGSTATS_FILE);
         if (Constants.DEBUG)
-            Logger.d("CaratDataStorage", "Read Hog stats: " + o);
+            Logger.d(TAG, "Read Hog stats: " + o);
         if(o != null){
             hogStatsData = new WeakReference<>((List<HogStats>) o);
             return (List<HogStats>) o;
@@ -277,7 +291,7 @@ public class CaratDataStorage {
     public long readHogStatsFreshness(){
         String s = readText(HOGSTATS_FRESHNESS);
         if (Constants.DEBUG)
-            Logger.d("CaratDataStorage", "Read Hog stats freshness: " + s);
+            Logger.d(TAG, "Read Hog stats freshness: " + s);
         if(s != null){
             return Long.parseLong(s);
         } else return -1;
@@ -286,8 +300,29 @@ public class CaratDataStorage {
     public String readHogStatsDate(){
         String s = readText(HOGSTATS_DATE);
         if (Constants.DEBUG)
-            Logger.d("CaratDataStorage", "Read Hog stats date: " + s);
+            Logger.d(TAG, "Read Hog stats date: " + s);
         return s;
+    }
+
+    public SortedMap<Long, ChargingSession> getChargingSessions(){
+        if(sessions != null && sessions.get() != null) {
+            SortedMap<Long, ChargingSession> map = sessions.get();
+            if (map != null) {
+                return map;
+            }
+        }
+        return readChargingSessions();
+    }
+
+    @SuppressWarnings("unchecked")
+    public SortedMap<Long, ChargingSession> readChargingSessions(){
+        Object o = readObject(CHARGING_FILE);
+        Logger.d(TAG, "Read charging sessions: " + o);
+        if(o != null){
+            sessions = new WeakReference<>((SortedMap<Long, ChargingSession>)o);
+            return (SortedMap<Long, ChargingSession>)o;
+        }
+        return new TreeMap<>(Collections.reverseOrder());
     }
 
     /**
@@ -308,7 +343,7 @@ public class CaratDataStorage {
     public long readLastUploadTimestamp(){
         String s = readText(SAMPLES_LASTUPLOAD);
         if(Constants.DEBUG){
-            Logger.d("CaratDataStorage", "Read last sampel upload " + s);
+            Logger.d(TAG, "Read last sampel upload " + s);
         }
         if(s != null){
             return Long.parseLong(s);
@@ -320,7 +355,7 @@ public class CaratDataStorage {
     public long readBlacklistFreshness() {
         String s = readText(BLACKLIST_FRESHNESS);
         if (Constants.DEBUG)
-            Logger.d("CaratDataStorage", "Read freshness: " + s);
+            Logger.d(TAG, "Read freshness: " + s);
         if (s != null)
             return Long.parseLong(s);
         else
@@ -334,7 +369,7 @@ public class CaratDataStorage {
     public long readQuickHogsFreshness() {
         String s = readText(QUICKHOGS_FRESHNESS);
         if (Constants.DEBUG)
-            Logger.d("CaratDataStorage", "Read freshness: " + s);
+            Logger.d(TAG, "Read freshness: " + s);
         if (s != null)
             return Long.parseLong(s);
         else
@@ -433,7 +468,7 @@ public class CaratDataStorage {
     @SuppressWarnings("unchecked")
     public List<String> readBlacklist() {
         Object o = readObject(BLACKLIST_FILE);
-        //Logger.d("CaratDataStorage", "Read blacklist: " + o);
+        //Logger.d(TAG, "Read blacklist: " + o);
         if (o != null) {
             blacklistedApps = new WeakReference<List<String>>((List<String>) o);
             return (List<String>) o;
@@ -457,7 +492,7 @@ public class CaratDataStorage {
     @SuppressWarnings("unchecked")
     public List<String> readGloblist() {
         Object o = readObject(GLOBLIST_FILE);
-        //Logger.d("CaratDataStorage", "Read glob blacklist: " + o);
+        //Logger.d(TAG, "Read glob blacklist: " + o);
         if (o != null) {
             blacklistedGlobs = new WeakReference<List<String>>((List<String>) o);
             return (List<String>) o;
@@ -624,7 +659,7 @@ public class CaratDataStorage {
      */
     public String readQuestionnaireUrl() {
         String url = readText(QUESTIONNAIRE_URL_FILE);
-        //Logger.d("CaratDataStorage", "Read blacklist: " + o);
+        //Logger.d(TAG, "Read blacklist: " + o);
         if (url != null) {
             return url;
         } else
@@ -652,7 +687,7 @@ public class CaratDataStorage {
     public long readSamplesReported() {
         String s = readText(SAMPLES_REPORTED);
         if (Constants.DEBUG)
-            Logger.d("CaratDataStorage", "Read samples reported: " + s);
+            Logger.d(TAG, "Read samples reported: " + s);
         // here is the bug. s is null!
         if (s != null)
             return Long.parseLong(s);
@@ -843,7 +878,7 @@ public class CaratDataStorage {
 
     public SimpleHogBug[] readBugReport() {
         Object o = readObject(BUGFILE);
-        //Logger.d("CaratDataStorage", "Read Bugs: " + o);
+        //Logger.d(TAG, "Read Bugs: " + o);
         if (o == null || !(o instanceof SimpleHogBug[]))
             return null;
         SimpleHogBug[] r = (SimpleHogBug[]) o;
@@ -853,7 +888,7 @@ public class CaratDataStorage {
 
     public SimpleHogBug[] readHogReport() {
         Object o = readObject(HOGFILE);
-        //Logger.d("CaratDataStorage", "Read Hogs: " + o);
+        //Logger.d(TAG, "Read Hogs: " + o);
         if (o == null || !(o instanceof SimpleHogBug[]))
             return null;
         SimpleHogBug[] r = (SimpleHogBug[]) o;

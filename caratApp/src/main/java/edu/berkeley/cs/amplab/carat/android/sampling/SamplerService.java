@@ -1,5 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.sampling;
 
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import android.annotation.SuppressLint;
@@ -19,6 +20,8 @@ import android.support.v4.app.NotificationCompat;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.models.ChargingPoint;
+import edu.berkeley.cs.amplab.carat.android.models.ChargingSession;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Boolean3;
@@ -63,13 +66,25 @@ public class SamplerService extends IntentService {
 		receiver = new Intent(this, SamplerService.class);
 		receiver.setAction(Constants.RAPID_SAMPLING);
 
+		long now = System.currentTimeMillis();
 		String action = intent.getAction();
 		switch (action) {
 			case Intent.ACTION_BATTERY_CHANGED:
 				Boolean3 charging = BatteryUtils.isCharging(intent);
+				double level = BatteryUtils.getBatteryLevel(intent);
 				if (charging == Boolean3.YES && !BatteryUtils.isFull(intent)) {
 					startRapidSampling(context);
+					ChargingSession session = sampler.getCurrentChargingSession();
+					if(session == null){
+						session = sampler.newChargingSession();
+						session.addPoint((int)level, 0.0);
+						sampler.setLastLevelTimestamp(now);
+					} else {
+						double diff = now - sampler.getLastLevelTimestamp();
+						session.addPoint((int) level, diff);
+					}
 				} else if (charging == Boolean3.NO) {
+					Sampler.getInstance().stopChargingSession();
 					stopRapidSampling(context);
 				}
 
@@ -86,6 +101,7 @@ public class SamplerService extends IntentService {
 				if (BatteryUtils.isCharging(check) == Boolean3.NO || BatteryUtils.isFull(check)) {
 					Logger.d(TAG, "User stopped charging or battery was full");
 					stopRapidSampling(context);
+					Sampler.getInstance().stopChargingSession();
 				} else {
 					this.sample(Constants.RAPID_SAMPLING, context);
 				}
