@@ -84,8 +84,10 @@ import com.flurry.android.FlurryAgent;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CallMonth;
 import edu.berkeley.cs.amplab.carat.thrift.CellInfo;
@@ -200,8 +202,15 @@ public final class SamplingLibrary {
 	// so it might be zero until we get the non-zero value from the intent
 	// (BatteryManager.EXTRA_LEVEL & BatteryManager.EXTRA_SCALE)
 
-	/** Library class, prevent instantiation */
-	private SamplingLibrary() {
+	private Context context;
+
+	private SamplingLibrary(Context context) {
+		this.context = context;
+	}
+
+	public static SamplingLibrary from(Context context){
+		SamplingLibrary samplingLibrary = new SamplingLibrary(context);
+		return samplingLibrary;
 	}
 
 	/**
@@ -602,11 +611,20 @@ public final class SamplingLibrary {
 		return (now[1] - then[1]) / idleAndCpuDiff;
 	}
 
+
+	public static SystemLoadPoint getSystemLoad() {
+		Integer[][] data = Util.readRAF("/proc/stat", 1, 10, "\\s+");
+		if(data == null || data.length == 0){
+			return null;
+		}
+		else return new SystemLoadPoint(data[0]);
+	}
+
 	private static WeakReference<List<RunningAppProcessInfo>> runningAppInfo = null;
 
-	public static List<ProcessInfo> getRunningAppInfo(Context c) {
-		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(c);
-		List<RunningServiceInfo> runningServices = getRunningServiceInfo(c);
+	public List<ProcessInfo> getRunningAppInfo() {
+		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(context);
+		List<RunningServiceInfo> runningServices = getRunningServiceInfo(context);
 
 		Set<String> packages = new HashSet<String>();
 		List<ProcessInfo> l = new ArrayList<ProcessInfo>();
@@ -1032,16 +1050,15 @@ public final class SamplingLibrary {
 
 	/**
 	 * Returns a List of ProcessInfo objects, helper for sample.
-	 * 
-	 * @param context the Context.
+	 *
 	 * @return a List of ProcessInfo objects, helper for sample.
 	 */
-	private static List<ProcessInfo> getRunningProcessInfoForSample(Context context) {
+	public List<ProcessInfo> getRunningProcessInfoForSample() {
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
 
 		// Reset list for each sample
 		runningAppInfo = null;
-		List<ProcessInfo> list = getRunningAppInfo(context);
+		List<ProcessInfo> list = getRunningAppInfo();
 		List<ProcessInfo> result = new ArrayList<ProcessInfo>();
 
 		PackageManager pm = context.getPackageManager();

@@ -695,7 +695,7 @@ public class CommunicationManager {
 			registration.setPlatformId(model);
 			registration.setSystemVersion(os);
 			registration.setTimestamp(System.currentTimeMillis() / 1000.0);
-			List<ProcessInfo> pi = SamplingLibrary.getRunningAppInfo(a.getApplicationContext());
+			List<ProcessInfo> pi = SamplingLibrary.from(a.getApplicationContext()).getRunningAppInfo();
 			List<String> processList = new ArrayList<String>();
 			for (ProcessInfo p : pi)
 				processList.add(p.pName);
