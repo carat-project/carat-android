@@ -33,6 +33,6 @@ public class BootReceiver extends BroadcastReceiver {
         editor.commit();
 
         // Register sampler
-        SamplingStarter.from(context).run();
+        //SamplingStarter.from(context).run();
     }
 }

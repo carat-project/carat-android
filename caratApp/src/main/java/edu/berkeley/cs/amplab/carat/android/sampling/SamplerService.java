@@ -31,7 +31,7 @@ import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 public class SamplerService extends IntentService {
     private static final String TAG = "SamplerService";
-	private static final long DUPLICATE_INTERVAL = 1000;
+	private static final long DUPLICATE_INTERVAL = 1;
 	private AlarmManager alarmManager;
 	private Intent receiver;
     
@@ -79,7 +79,7 @@ public class SamplerService extends IntentService {
 						session = sampler.newChargingSession();
 						session.addPoint((int)level, 0.0);
 						sampler.setLastLevelTimestamp(now);
-					} else {
+					} else if(level > session.getLastLevel()){
 						double diff = now - sampler.getLastLevelTimestamp();
 						session.addPoint((int) level, diff);
 					}
@@ -162,9 +162,9 @@ public class SamplerService extends IntentService {
 	private boolean nothingChanged(Sample s1){
 		Sample s2 = Sampler.getInstance().getLastSample();
 		if(s2 != null && s2.getTriggeredBy().equals(s1.getTriggeredBy())){
-			if(s1.getTimestamp() - s2.getTimestamp() < 1){
+			if(s1.getTimestamp() - s2.getTimestamp() < DUPLICATE_INTERVAL){
 				Logger.d(TAG, "Sample was triggered within 1 second (diff: " +
-						(s1.getTimestamp() - s2.getTimestamp()) + " s) of the last one " +
+						(s1.getTimestamp() - s2.getTimestamp()) + "s) of the last one " +
 						"and by the same event. Checking if it's a duplicate..");
 				BatteryDetails bd1 = s1.getBatteryDetails();
 				BatteryDetails bd2 = s2.getBatteryDetails();

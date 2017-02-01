@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.TreeMap;
 
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.MathUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.PeakUtils;
 
@@ -42,7 +43,9 @@ public class ChargingSession implements Serializable {
     }
 
     public Integer getLastLevel(){
-        return points.firstKey();
+        int lastLevel = points.lastKey();
+        Logger.d(TAG, "Last level is " + lastLevel);
+        return lastLevel;
     }
 
     public Long getTimestamp() {
@@ -51,6 +54,9 @@ public class ChargingSession implements Serializable {
 
     public void addPoint(Integer level, Double time) {
         // TODO: Interpolate if we skip a level.
+
+        Logger.d(TAG, "Session " + timestamp + ": " +
+                "New level " + level + " took (" + time/1000.0 + " s)");
 
         // Calculate moving average and square sum
         Double cma = getMovingAverage(level, time);
@@ -84,5 +90,15 @@ public class ChargingSession implements Serializable {
         Double prevSs = points.get(prevKey).getSquareSum();
         int n = points.size();
         return MathUtils.ss(value, prevSs, n, cma);
+    }
+
+    @Override
+    public String toString() {
+        return "ChargingSession{" +
+                "peaks=" + peaks +
+                ", points=" + points +
+                ", timestamp=" + timestamp +
+                ", replaceOnZigZag=" + replaceOnZigZag +
+                '}';
     }
 }

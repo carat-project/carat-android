@@ -24,8 +24,10 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 public class Sampler extends WakefulBroadcastReceiver implements LocationListener {
-
+    private static final String TAG = Sampler.class.getSimpleName();
     public static final int MAX_SAMPLES = 250;
+    public static final int CHARGING_SESSION_LIMIT = 10;
+    public static final int CHARGING_MINIMUM_LEVELS = 5;
 
     private static Sampler instance = null;
     private ChargingSession session = null;
@@ -61,7 +63,8 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
     public void onReceive(Context context, Intent intent) {
         double level = BatteryUtils.getBatteryLevel(intent);
         if(level != 1){
-            // For some reason we use decimal levels
+            // For some reason we use dec
+            // imal levels
             SamplingLibrary.setCurrentBatteryLevel(level/100);
             if(this.context == null){
                 this.context = context;
@@ -137,6 +140,7 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
             saveCurrentChargingSession();
         }
         session = ChargingSession.create();
+        Logger.i(TAG, "Started a charging session!");
         return session;
     }
 
@@ -152,15 +156,22 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
     }
 
     private void saveCurrentChargingSession(){
+        // TODO: Is this too slow to do here, move to separate service?
+        if(session.getPoints().size() < CHARGING_MINIMUM_LEVELS){
+            Logger.d(TAG, "Charging session did not have enough points, discarding.");
+            return;
+        }
         long timestamp = session.getTimestamp();
         SortedMap<Long, ChargingSession> sessions
                 = CaratApplication.getStorage().getChargingSessions();
-        int diff = sessions.size() - 10;
+        int diff = sessions.size() - CHARGING_SESSION_LIMIT;
         if(diff >= 0){
-            sessions = Util.firstEntries(9, sessions);
+            sessions = Util.firstEntries(CHARGING_SESSION_LIMIT-1, sessions);
         }
         sessions.put(timestamp, session);
+        Logger.d(TAG, "Saved session " + session);
         CaratApplication.getStorage().writeChargingSessions(sessions);
+        Logger.i(TAG, "Stopped charging session!");
     }
 
     public void setLastLevelTimestamp(long timestamp){

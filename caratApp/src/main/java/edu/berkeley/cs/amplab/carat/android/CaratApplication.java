@@ -147,7 +147,7 @@ public class CaratApplication extends Application {
         setStorage(new CaratDataStorage(this));
         setReportData(); // Show initial data asap
 
-        SamplingStarter.from(getApplicationContext()).run();
+        //SamplingStarter.from(getApplicationContext()).run();
 
         new Thread() {
             public void run() {

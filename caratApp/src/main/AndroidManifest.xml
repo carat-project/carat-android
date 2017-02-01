@@ -86,13 +86,16 @@
             <intent-filter>
                 <!-- These are also dynamically registered in SamplingStarter -->
 
-                <!-- System actions -->
-                <action android:name="android.intent.action.BATTERY_CHANGED" />
+                <!-- System actions used in sampling -->
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+                <action android:name="android.net.wifi.STATE_CHANGE" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
 
                 <!-- Custom actions -->
+                <action android:name="edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE" />
                 <action android:name="edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING" />
 
                 <!-- TODO: What is this needed for in this receiver? -->

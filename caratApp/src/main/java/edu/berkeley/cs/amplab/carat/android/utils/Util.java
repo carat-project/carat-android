@@ -28,4 +28,8 @@ public class Util {
         }
         return result;
     }
+
+    public static long timeAfterTime(long milliseconds){
+        return System.currentTimeMillis() + milliseconds;
+    }
 }
