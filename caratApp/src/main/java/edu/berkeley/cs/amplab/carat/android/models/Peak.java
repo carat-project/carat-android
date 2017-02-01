@@ -32,6 +32,7 @@ public class Peak implements Serializable {
 
     public Peak setRange(Range<Double> range) {
         this.range = range;
+        this.length = range.getMax() - range.getMin();
         return this;
     }
 

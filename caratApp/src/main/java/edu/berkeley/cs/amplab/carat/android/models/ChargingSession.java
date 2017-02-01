@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.TreeMap;
 
-import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.MathUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.PeakUtils;
 
 /**
@@ -71,7 +71,7 @@ public class ChargingSession implements Serializable {
         }
         Double prevAvg = points.get(prevKey).getAverage();
         int n = points.size();
-        return PeakUtils.cma(value, prevAvg, n, 40);
+        return MathUtils.cma(value, prevAvg, n, 40);
     }
 
     private Double getSquareSum(int level, double value, double cma){
@@ -81,6 +81,6 @@ public class ChargingSession implements Serializable {
         }
         Double prevSs = points.get(prevKey).getSquareSum();
         int n = points.size();
-        return PeakUtils.ss(value, prevSs, n, cma);
+        return MathUtils.ss(value, prevSs, n, cma);
     }
 }

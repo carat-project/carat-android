@@ -1,7 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.moment.Kurtosis;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
@@ -31,7 +30,6 @@ public class PeakUtils {
         }
 
         TreeSet<Double> xi = getIntersections(points);
-        Logger.d(TAG, "Intersections are: " + xi.toString());
         List<Double> times = new ArrayList<>();
         List<Double> averages = new ArrayList<>();
         for(ChargingPoint point : points.values()){
@@ -39,59 +37,55 @@ public class PeakUtils {
             averages.add(point.getAverage());
         }
 
-        UnivariateFunction timesFunction = getFunction(times);
-        UnivariateFunction averagesFunction = getFunction(averages);
+        UnivariateFunction timeFunction = MathUtils.functionFromPoints(times);
+        UnivariateFunction averageFunction = MathUtils.functionFromPoints(averages);
 
-        int i = 1; // First point cannot be measured
+        int offset = 1;
         for(Integer level : points.keySet()){
             ChargingPoint point = points.get(level);
             double time = point.getTime();
             double avg = point.getAverage();
             double ss = point.getSquareSum();
-            if(isPeak(time, avg, ss, i+1)){
+            if(isPeak(time, avg, ss, offset+1)){
                 Double lower = xi.lower((double)level);
                 Double higher = xi.higher((double)level);
                 if(lower != null && higher != null){
-                    Skewness skewness = new Skewness();
-                    Kurtosis kurtosis = new Kurtosis();
-                    Variance variance = new Variance();
-                    Mean mean = new Mean();
-
-                    int lowerKey = (int)Math.floor(lower);
-                    int higherKey = (int)Math.ceil(higher);
-                    SortedMap<Integer, ChargingPoint> peakPoints = points.subMap(lowerKey, higherKey+1);
-                    List<Double> values = new ArrayList<>();
-                    for(ChargingPoint value : peakPoints.values()){
-                        values.add(value.getTime());
-                    }
-
-                    int startingLevel = points.firstKey();
-                    double[] timesArr = toArray(values);
-                    Peak peak = new Peak()
-                            .setValues(values)
-                            .setRange(new Range<>(lower, higher))
-                            .setAuc(auc(lower-startingLevel, higher-startingLevel, timesFunction, averagesFunction))
-                            .setInten1(Collections.max(values) - points.get(lowerKey).getAverage())
-                            .setInten2(Collections.min(values) - points.get(lowerKey).getAverage())
-                            .setSkewness(skewness.evaluate(timesArr))
-                            .setKurtosis(kurtosis.evaluate(timesArr))
-                            .setVariance(variance.evaluate(timesArr))
-                            .setMean(mean.evaluate(timesArr));
-                    System.out.println("Constructed peak: " + peak);
+                    Peak peak = constructPeak(lower, higher, points, timeFunction, averageFunction);
+                    Logger.d(TAG, "Detected a peak: " + peak);
                     peaks.add(peak);
                 }
             }
-            i++;
+            offset++;
         }
         return peaks;
     }
 
-    private static double[] toArray(List<Double> list){
-        double[] result = new double[list.size()];
-        for(int i=0; i<result.length; i++){
-            result[i] = list.get(i);
-        }
-        return result;
+    private static Peak constructPeak(double lower, double higher,
+                                      TreeMap<Integer, ChargingPoint> points,
+                                      UnivariateFunction timeFunction,
+                                      UnivariateFunction averageFunction){
+        Skewness skewness = new Skewness();
+        Kurtosis kurtosis = new Kurtosis();
+        Variance variance = new Variance();
+        Mean mean = new Mean();
+
+        int lowerKey = (int)Math.floor(lower);
+        int higherKey = (int)Math.ceil(higher);
+        List<Double> peakTimes = getValues(points, lowerKey, higherKey);
+
+        int offset = points.firstKey();
+        double[] timeArray = toArray(peakTimes);
+
+        return new Peak()
+                .setValues(peakTimes)
+                .setRange(new Range<>(lower, higher))
+                .setAuc(MathUtils.auc(lower-offset, higher-offset, timeFunction, averageFunction))
+                .setInten1(Collections.max(peakTimes) - points.get(lowerKey).getAverage())
+                .setInten2(Collections.min(peakTimes) - points.get(lowerKey).getAverage())
+                .setSkewness(skewness.evaluate(timeArray))
+                .setKurtosis(kurtosis.evaluate(timeArray))
+                .setVariance(variance.evaluate(timeArray))
+                .setMean(mean.evaluate(timeArray));
     }
 
     public static TreeSet<Double> getIntersections(TreeMap<Integer, ChargingPoint> points){
@@ -118,8 +112,8 @@ public class PeakUtils {
                     // Intersection happens between these points, so we need to calculate
                     // the intersection point between the two lines constructed from the
                     // two pairs of points.
-                    intersections.add(collide(prevLevel, prevTime, level, time,
-                                              prevLevel, prevAvg, level, avg));
+                    intersections.add(MathUtils.intersection2L(prevLevel, prevTime, level, time,
+                            prevLevel, prevAvg, level, avg));
                 }
             }
             prevDist = dist;
@@ -140,72 +134,20 @@ public class PeakUtils {
         return (z > th1 || z < th2);
     }
 
-    /**
-     * Calculate cumulative moving average for nth addition with value x.
-     * @param x new value
-     * @param prev previous average
-     * @param n item count after adding x
-     * @param window window for n
-     * @return cumulative moving average
-     */
-    public static double cma(double x, double prev, int n, double window){
-        // This is slightly better known variation of the formula:
-        // double d = Math.min(n+1, window);
-        // return (x + (d-1) * prev)/d;
-        // It is, however, less precise and therefore not used here.
-        double alpha = Math.max(1/(double)(n+2), 1/window);
-        return prev + alpha*(x-prev);
+    private static List<Double> getValues(TreeMap<Integer, ChargingPoint> map, int start, int end){
+        List<Double> values = new ArrayList<>();
+        SortedMap<Integer, ChargingPoint> points = map.subMap(start, end+1);
+        for(ChargingPoint value : points.values()){
+            values.add(value.getTime());
+        }
+        return values;
     }
 
-    // Square sum
-    public static double ss(double x, double prev, int n, double cma){
-        double beta = n/(double)(n+1);
-        return prev + beta * Math.pow(x - cma, 2);
-    }
-
-    /**
-     * Differences of area under curve for two lines.
-     * @param start start x-coordinate
-     * @param end end x-coordinate
-     * @param f1 first line function
-     * @param f2 second line function
-     * @return difference
-     */
-    public static double auc(double start, double end, UnivariateFunction f1, UnivariateFunction f2){
-        TrapezoidIntegrator trapezoid = new TrapezoidIntegrator();
-        double area1 = trapezoid.integrate(Integer.MAX_VALUE, f1, start, end);
-        double area2 = trapezoid.integrate(Integer.MAX_VALUE, f2, start, end);
-        return area1 - area2;
-    }
-
-    /**
-     * Intersection between two lines constructed from two pairs of points.
-     * Line 1 is constructed between points (x1,y1) and (x2,y2).
-     * Line 2 is constructed between points (x3,y3) and (x4,y4).
-     * @return intersection point on the x-axis
-     */
-    private static Double collide(double x1, double y1, double x2, double y2,
-                                 double x3, double y3, double x4, double y4){
-        return ((x1*y2 - y1*x2)*(x3 - x4) - (x1-x2)*(x3*y4-y3*x4))/
-                ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4));
-    }
-
-
-    public static UnivariateFunction getFunction(List<Double> arr){
-        return x -> {
-            // Integer points beside the requested point
-            int x1 = (int)Math.floor(x);
-            int x2 = x1 + 1;
-
-            // If we are beyond the known points just use a simple interpolation
-            // between the first and the last known points.
-            if(x2 >= arr.size() || x1 < 0){
-                x1 = 0;
-                x2 = arr.size()-1;
-            }
-            double y1 = arr.get(x1);
-            double y2 = arr.get(x2);
-            return ((y2-y1)/(x2-x1))*(x-x1)+y1;
-        };
+    private static double[] toArray(List<Double> list){
+        double[] result = new double[list.size()];
+        for(int i=0; i<result.length; i++){
+            result[i] = list.get(i);
+        }
+        return result;
     }
 }
