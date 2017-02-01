@@ -10,7 +10,8 @@ import java.util.TreeSet;
 
 import edu.berkeley.cs.amplab.carat.android.models.ChargingPoint;
 import edu.berkeley.cs.amplab.carat.android.models.ChargingSession;
-import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.models.Peak;
+import edu.berkeley.cs.amplab.carat.android.utils.MathUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.PeakUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -35,9 +36,9 @@ public class PeakUtilsTest {
         return span;
     }
 
-
     @Test
     public void testPeakDetection(){
+        List<Double> peak2 = Arrays.asList(39.0, 53.0, 65.0, 70.0, 78.0, 66.0, 70.0, 124.0, 41.0);
         ChargingSession session = ChargingSession.create();
         String ss[] = line1.split(";");
         for(int i=0; i<ss.length; i++){
@@ -46,6 +47,32 @@ public class PeakUtilsTest {
                 session.addPoint(i, number);
             }
         }
+        boolean flag = true;
+        List<Peak> peaks = session.getPeaks();
+        assertTrue(peaks != null && peaks.size() == 2);
+
+        Peak peak = session.getPeaks().get(1);
+        List<Double> values = peak.getValues();
+
+        flag = true;
+        for(int i=0; i<values.size(); i++){
+            if(!peak2.get(i).equals(values.get(i))){
+                flag = false;
+            }
+        }
+        assertTrue(flag);
+
+        // Not precise
+        assertEquals(227.0014, peak.getAuc(), 5);
+        assertEquals(8.0, peak.getLength(), 0.5);
+
+        // Precise
+        assertEquals(84.3043, peak.getInten1(), 0.001);
+        assertEquals(-0.6957, peak.getInten2(), 0.001);
+        assertEquals(1.4119, peak.getSkewness(), 0.001);
+        assertEquals(3.1595, peak.getKurtosis(), 0.001);
+        assertEquals(67.3333, peak.getMean(), 0.001);
+        assertEquals(631.0, peak.getVariance(), 0.001);
     }
 
     @Test
@@ -58,7 +85,7 @@ public class PeakUtilsTest {
             if(prev == null){
                 cma = numbers.get(i);
             } else {
-                cma = PeakUtils.cma(numbers.get(i), prev, i, 40);
+                cma = MathUtils.cma(numbers.get(i), prev, i, 40);
             }
             cmas.add(cma);
             prev = cma;
@@ -82,8 +109,8 @@ public class PeakUtilsTest {
                 cma = numbers.get(i);
                 ss = 0.0;
             } else {
-                cma = PeakUtils.cma(numbers.get(i), prevCma, i, 40);
-                ss = PeakUtils.ss(numbers.get(i), prev, i, cma);
+                cma = MathUtils.cma(numbers.get(i), prevCma, i, 40);
+                ss = MathUtils.ss(numbers.get(i), prev, i, cma);
             }
             sums.add(ss);
             prev = ss;
