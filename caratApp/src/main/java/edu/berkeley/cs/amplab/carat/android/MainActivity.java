@@ -654,7 +654,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String memoryUsed = "Memory Used: " + (memoryUsedConverted * 100) + "%";
         String memoryActive = "Memory Active: " + (memoryActiveConverted * 100) + "%";
         String chargeCounter = "Battery charge counter: " + SamplingLibrary.getBatteryChargeCounter(this);
-        String batteryCapacity = "Battery capacity: " + SamplingLibrary.getBatteryCapacity(this) + " mAh";
+        String batteryCapacity = "Battery capacity: " + SamplingLibrary.from(this).getBatteryCapacity() + " mAh";
         String batteryVoltage = "Battery voltage: " + SamplingLibrary.getBatteryVoltage(this) + "V";
         String pleaseSpecify = "";
         if(which == 1 || which == 3) {

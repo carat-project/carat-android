@@ -532,8 +532,8 @@ public class CaratApplication extends Application {
         Context context = getContext();
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean useWifiOnly = p.getBoolean(getString(R.string.wifi_only_key), false);
-        String networkStatus = SamplingLibrary.getNetworkStatus(getApplicationContext());
-        String networkType = SamplingLibrary.getNetworkType(context);
+        String networkStatus = SamplingLibrary.from(getApplicationContext()).getNetworkStatus();
+        String networkType = SamplingLibrary.from(context).getNetworkType();
         return (!useWifiOnly && networkStatus.equalsIgnoreCase(SamplingLibrary.NETWORKSTATUS_CONNECTED))
                 || networkType.equals("WIFI");
     }
@@ -544,7 +544,7 @@ public class CaratApplication extends Application {
         if(elapsed < Constants.FRESHNESS_TIMEOUT) return;
 
         // Wait for 5 seconds to see if network comes up
-        String status = SamplingLibrary.getNetworkStatus(getApplicationContext());
+        String status = SamplingLibrary.from(getApplicationContext()).getNetworkStatus();
         if(status.equals(SamplingLibrary.NETWORKSTATUS_CONNECTING)){
             try {Thread.sleep(Constants.COMMS_WIFI_WAIT);}
             catch (InterruptedException e1) {

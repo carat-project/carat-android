@@ -5,11 +5,15 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.preference.PreferenceManager;
 
 import java.util.concurrent.TimeUnit;
 
+import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 /**
@@ -26,6 +30,7 @@ public class IntentRouter extends IntentService {
 
     public IntentRouter(){
         super(TAG);
+        context = getApplicationContext();
         alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
@@ -35,7 +40,8 @@ public class IntentRouter extends IntentService {
             String action = intent.getAction();
             if(action != null){
                 switch(action){
-                    case Constants.SCHEDULED_SAMPLE: scheduledSample();
+                    case Constants.SCHEDULED_SAMPLE: scheduledSample(); break;
+                    default: Logger.d(TAG, "Implement me: " + action + "!");
                 }
             }
         }
@@ -43,7 +49,9 @@ public class IntentRouter extends IntentService {
 
 
     private void scheduledSample(){
-        //Sampler2.sample();
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
+        String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
+        Sampler2.sample(uuId, Constants.SCHEDULED_SAMPLE, "FIXME", SamplingLibrary.from(context));
 
         Intent scheduleIntent = new Intent(context, IntentRouter.class);
         scheduleIntent.setAction(Constants.SCHEDULED_SAMPLE);

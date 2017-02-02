@@ -448,7 +448,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         // These fields will be prefilled
         String surveyUrl = CaratApplication.getStorage().getQuestionnaireUrl();
         String uuid = SamplingLibrary.getUuid(mainActivity);
-        String cc = SamplingLibrary.getCountryCode(context);
+        String cc = SamplingLibrary.from(context).getCountryCode();
         Reports r = CaratApplication.getStorage().getReports();
         String os = SamplingLibrary.getOsVersion();
         String model = SamplingLibrary.getModel();

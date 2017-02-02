@@ -184,7 +184,7 @@ public class CommunicationManager {
 			}
 			String os = SamplingLibrary.getOsVersion();
 			String model = SamplingLibrary.getModel();
-			String countryCode = SamplingLibrary.getCountryCode(a.getApplicationContext());
+			String countryCode = SamplingLibrary.from(a.getApplicationContext()).getCountryCode();
 			if (Constants.DEBUG)
 			    Logger.d("CommunicationManager", "First run, registering this device: " + uuId + ", " + os + ", " + model);
 			try {
@@ -215,7 +215,7 @@ public class CommunicationManager {
 	public synchronized boolean refreshAllReports() {
 		registerLocal();
 		// Do not refresh if not connected
-		if (!SamplingLibrary.networkAvailable(a.getApplicationContext())){
+		if (!SamplingLibrary.from(a.getApplicationContext()).networkAvailable()){
 			return false;
 		}
 		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT){
@@ -241,7 +241,7 @@ public class CommunicationManager {
 		String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
 		String model = SamplingLibrary.getModel();
 		String OS = SamplingLibrary.getOsVersion();
-		String countryCode = SamplingLibrary.getCountryCode(a.getApplicationContext());
+		String countryCode = SamplingLibrary.from(a.getApplicationContext()).getCountryCode();
 
 		// NOTE: Fake data for simulator
 		if (model.equals("sdk")) {

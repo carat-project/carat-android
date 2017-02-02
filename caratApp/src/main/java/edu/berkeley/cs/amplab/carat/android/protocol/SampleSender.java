@@ -43,8 +43,8 @@ public class SampleSender {
         synchronized(sendLock){
             Context c = app.getApplicationContext();
     
-            String networkStatus = SamplingLibrary.getNetworkStatus(c);
-            String networkType = SamplingLibrary.getNetworkType(c);
+            String networkStatus = SamplingLibrary.from(c).getNetworkStatus();
+            String networkType = SamplingLibrary.from(c).getNetworkType();
     
             final SharedPreferences p = PreferenceManager
                     .getDefaultSharedPreferences(c);

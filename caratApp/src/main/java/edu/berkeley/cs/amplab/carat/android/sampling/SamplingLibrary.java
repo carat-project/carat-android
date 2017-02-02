@@ -611,6 +611,16 @@ public final class SamplingLibrary {
 		return (now[1] - then[1]) / idleAndCpuDiff;
 	}
 
+	public static double getCpuUsage(SystemLoadPoint cpu1, SystemLoadPoint cpu2){
+		float totalDiff = cpu2.total - cpu1.total;
+		if(totalDiff == 0) return 100; // Avoid diving by zero
+		float idleDiff = cpu2.idleAll - cpu1.idleAll;
+		float cpuP = 100*(totalDiff - idleDiff)/totalDiff;
+
+		// Disregard negative values caused by a bug in linux kernel
+		return (cpuP > 0)? cpuP : 0;
+	}
+
 
 	public static SystemLoadPoint getSystemLoad() {
 		Integer[][] data = Util.readRAF("/proc/stat", 1, 10, "\\s+");
@@ -1346,12 +1356,27 @@ public final class SamplingLibrary {
 		return TimeUnit.MILLISECONDS.toSeconds(sleep);
 	}
 
+	public String getNetworkStatusForSample(){
+		String network = getNetworkStatus();
+		String networkType = getNetworkType();
+		String mobileNetworkType = getMobileNetworkType();
+
+		// Required in new Carat protocol
+		if (network.equals(NETWORKSTATUS_CONNECTED)) {
+			if (networkType.equals("WIFI"))
+				return networkType;
+			else
+				return mobileNetworkType;
+		} else
+			return network;
+	}
+
 	/**
 	 * Get the network status, one of connected, disconnected, connecting, or disconnecting.
 	 * @param context the Context.
 	 * @return the network status, one of connected, disconnected, connecting, or disconnecting.
 	 */
-	public static String getNetworkStatus(Context context) {
+	public String getNetworkStatus() {
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (cm == null)
 			return NETWORKSTATUS_DISCONNECTED;
@@ -1378,7 +1403,7 @@ public final class SamplingLibrary {
 	 * @param context
 	 * @return
 	 */
-	public static String getNetworkType(Context context) {
+	public String getNetworkType() {
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (cm == null)
 			return TYPE_UNKNOWN;
@@ -1393,13 +1418,13 @@ public final class SamplingLibrary {
 	 * @param c the Context
 	 * @return true if the Internet is reachable.
 	 */
-	public static boolean networkAvailable(Context c) {
-		String network = getNetworkStatus(c);
+	public boolean networkAvailable() {
+		String network = getNetworkStatus();
 		return network.equals(NETWORKSTATUS_CONNECTED);
 	}
 
 	/* Get current WiFi signal Strength */
-	public static int getWifiSignalStrength(Context context) {
+	public int getWifiSignalStrength() {
 		WifiManager myWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		WifiInfo myWifiInfo = myWifiManager.getConnectionInfo();
 		int wifiRssi = myWifiInfo.getRssi();
@@ -1422,7 +1447,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get current WiFi link speed */
-	public static int getWifiLinkSpeed(Context context) {
+	public int getWifiLinkSpeed() {
 		WifiManager myWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		WifiInfo myWifiInfo = myWifiManager.getConnectionInfo();
 		int linkSpeed = myWifiInfo.getLinkSpeed();
@@ -1442,7 +1467,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get Wifi state: */
-	public static String getWifiState(Context context) {
+	public String getWifiState() {
 		WifiManager myWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		int wifiState = myWifiManager.getWifiState();
 		switch (wifiState) {
@@ -1492,23 +1517,21 @@ public final class SamplingLibrary {
 	}
 
 	/* Get Current Screen Brightness Value */
-	public static int getScreenBrightness(Context context) {
-
+	public int getScreenBrightness() {
+		if(isAutoBrightness()){
+			return -1;
+		}
 		int screenBrightnessValue = 0;
 		try {
 			screenBrightnessValue = android.provider.Settings.System.getInt(context.getContentResolver(),
 					android.provider.Settings.System.SCREEN_BRIGHTNESS);
 		} catch (SettingNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		// Log.v("ScreenBrightness", "Screen brightness value:" +
-		// screenBrightnessValue);
 		return screenBrightnessValue;
 	}
 
-	public static boolean isAutoBrightness(Context context) {
+	public boolean isAutoBrightness() {
 		boolean autoBrightness = false;
 		try {
 			autoBrightness = Settings.System.getInt(context.getContentResolver(),
@@ -1516,8 +1539,6 @@ public final class SamplingLibrary {
 		} catch (SettingNotFoundException e) {
 			e.printStackTrace();
 		}
-		// Log.v("AutoScreenBrightness",
-		// "Automatic Screen brightness mode is enabled:" + autoBrightness);
 		return autoBrightness;
 	}
 
@@ -1564,7 +1585,7 @@ public final class SamplingLibrary {
 				curCell.LAC = lac;
 				curCell.MNC = mnc;
 				curCell.MCC = mcc;
-				curCell.radioType = SamplingLibrary.getMobileNetworkType(context);
+				curCell.radioType = SamplingLibrary.from(context).getMobileNetworkType();
 
 				// Log.v("MCC", "MCC is:" + mcc);
 				// Log.v("MNC", "MNC is:" + mnc);
@@ -1587,7 +1608,7 @@ public final class SamplingLibrary {
 				curCell.MNC = mnc;
 				curCell.LAC = lac;
 				curCell.CID = cid;
-				curCell.radioType = SamplingLibrary.getMobileNetworkType(context);
+				curCell.radioType = SamplingLibrary.from(context).getMobileNetworkType();
 
 				// Log.v("MCC", "MCC is:" + mcc);
 				// Log.v("MNC", "MNC is:" + mnc);
@@ -1674,7 +1695,7 @@ public final class SamplingLibrary {
 	 *            from onReceive or app.
 	 * @return
 	 */
-	public static List<String> getEnabledLocationProviders(Context context) {
+	public List<String> getEnabledLocationProviders() {
 		LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 		return lm.getProviders(true);
 	}
@@ -1723,7 +1744,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get network type */
-	public static String getMobileNetworkType(Context context) {
+	public String getMobileNetworkType() {
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
 		int netType = telManager.getNetworkType();
@@ -1781,7 +1802,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Check is it network roaming */
-	public static boolean getRoamingStatus(Context context) {
+	public boolean getRoamingStatus() {
 		boolean roamStatus = false;
 
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -1792,7 +1813,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get data state */
-	public static String getDataState(Context context) {
+	public String getDataState() {
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
 		int dataState = telManager.getDataState();
@@ -1809,7 +1830,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get data activity */
-	public static String getDataActivity(Context context) {
+	public String getDataActivity() {
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
 		int dataActivity = telManager.getDataActivity();
@@ -1974,7 +1995,7 @@ public final class SamplingLibrary {
 	 * 
 	 * @return true if the screen is on.
 	 */
-	public static int isScreenOn(Context context) {
+	public int isScreenOn() {
 		android.os.PowerManager powerManager = (android.os.PowerManager) context
 				.getSystemService(Context.POWER_SERVICE);
 		if (powerManager != null)
@@ -1987,7 +2008,7 @@ public final class SamplingLibrary {
 	 * Get the current timezone of the device.
 	 */
 
-	public static String getTimeZone(Context context) {
+	public String getTimeZone() {
 		Calendar cal = Calendar.getInstance();
 		TimeZone tz = cal.getTimeZone();
 		return tz.getID();
@@ -1999,7 +2020,7 @@ public final class SamplingLibrary {
 	 * @param context
 	 * @return true when app installation from unknown sources is enabled.
 	 */
-	public static int allowUnknownSources(Context context) {
+	public int allowUnknownSources() {
 		ContentResolver res = context.getContentResolver();
 		int unknownSources = Settings.Secure.getInt(res, Settings.Secure.INSTALL_NON_MARKET_APPS, 0);
 		return unknownSources;
@@ -2010,7 +2031,7 @@ public final class SamplingLibrary {
 	 * @param context
 	 * @return true when developer mode is enabled.
 	 */
-	public static int isDeveloperModeOn(Context context) {
+	public int isDeveloperModeOn() {
 		ContentResolver res = context.getContentResolver();
 		int adb = Settings.Secure.getInt(res, Settings.Secure.ADB_ENABLED, 0);
 		// In API level 17, this is Settings.Global.ADB_ENABLED.
@@ -2186,7 +2207,7 @@ public final class SamplingLibrary {
 		// } else {
 		// Logger.d(TAG,
 		// "the action has NOT been Intent.ACTION_SCREEN_ON or SCREEN_OFF. Taking sample of running processes.");
-		List<ProcessInfo> processes = getRunningProcessInfoForSample(context);
+		List<ProcessInfo> processes = getRunningProcessInfoForSample();
 		mySample.setPiList(processes);
 		// }
 
@@ -2404,12 +2425,16 @@ public final class SamplingLibrary {
 		return mySample;
 	}
 
+	public Intent getLastBatteryIntent(){
+		return context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+	}
+
 	/**
 	 * Returns numeric mobile country code.
 	 * @param context Application context
 	 * @return 3-digit country code
      */
-	public static String getMcc(Context context){
+	public String getMcc(){
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String networkOperator = telephonyManager.getNetworkOperator();
 		if(networkOperator != null && networkOperator.length() >= 5) {
@@ -2434,7 +2459,7 @@ public final class SamplingLibrary {
 		return -1;
 	}
 
-	public static double getBatteryCapacity(Context context) {
+	public double getBatteryCapacity() {
 		try {
 			// Please note: Uses reflection, API not available on all devices
 			Class<?> powerProfile = Class.forName("com.android.internal.os.PowerProfile");
@@ -2465,7 +2490,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return 2-3 digit network code
      */
-	public static String getMnc(Context context){
+	public String getMnc(){
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String networkOperator = telephonyManager.getNetworkOperator();
 		if(networkOperator != null && networkOperator.length() >= 5) {
@@ -2489,7 +2514,7 @@ public final class SamplingLibrary {
  	 * @param context Application context
 	 * @return Two letter country code
      */
-	public static String getCountryCode(Context context) {
+	public String getCountryCode() {
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         String cc;
         if(telephonyManager.getPhoneType() != TelephonyManager.PHONE_TYPE_CDMA){
@@ -2512,7 +2537,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return Wifi access point state
      */
-	public static String getWifiHotspotState(Context context){
+	public String getWifiHotspotState(){
 		try {
 			int state = getWifiApState(context);
 			switch(state){
@@ -2539,7 +2564,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return SIM Operator name
      */
-	public static String getSIMOperator(Context context){
+	public String getSIMOperator(){
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String operator;
 
@@ -2559,7 +2584,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return Network operator name, aka. carrier
 	 */
-	public static String getNetworkOperator(Context context){
+	public String getNetworkOperator(){
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String operator;
 
@@ -2900,7 +2925,7 @@ public final class SamplingLibrary {
 	 * @param context the Context
 	 * @return a List<Feature> populated with extra items to collect outside of the protocol spec.
 	 */
-	private static List<Feature> getExtras(Context context) {
+	public List<Feature> getExtras() {
 		LinkedList<Feature> res = new LinkedList<Feature>();
 		res.add(getVmVersion(context));
 		return res;

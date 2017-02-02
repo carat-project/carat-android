@@ -32,7 +32,7 @@ public class ClickTracking {
 
     public static void track(String user, String name, HashMap<String, String> options, Context c) {
         /*Track only on WIFI for now. See TODO below. */
-        String networkType = SamplingLibrary.getNetworkType(c);
+        String networkType = SamplingLibrary.from(c).getNetworkType();
         if (networkType != null && networkType.equals("WIFI")) {
         HttpAsyncTask task = new HttpAsyncTask(user, name, options);
         /* TODO: We need to store the click in this task, not send yet.
