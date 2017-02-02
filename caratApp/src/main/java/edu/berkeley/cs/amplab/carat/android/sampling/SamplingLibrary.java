@@ -64,6 +64,7 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.os.StatFs;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -1996,11 +1997,14 @@ public final class SamplingLibrary {
 	 * @return true if the screen is on.
 	 */
 	public int isScreenOn() {
-		android.os.PowerManager powerManager = (android.os.PowerManager) context
-				.getSystemService(Context.POWER_SERVICE);
-		if (powerManager != null)
-			if (powerManager.isScreenOn())
-				return 1;
+		PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+		if (powerManager != null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+				return powerManager.isInteractive() ? 1 : 0;
+			} else {
+				return powerManager.isScreenOn() ? 1 : 0;
+			}
+		}
 		return 0;
 	}
 
