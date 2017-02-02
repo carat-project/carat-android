@@ -15,6 +15,8 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
  * Created by Jonatan Hamberg on 2.2.2017.
  */
 public class Sampler2 {
+    // This class should either save the sample to SampleDB or have the methods calling it do so.
+
     public static void sample(String uuId, String trigger, String state, SamplingLibrary library){
         SystemLoadPoint load1 = SamplingLibrary.getSystemLoad();
         Intent batteryIntent = library.getLastBatteryIntent();

@@ -41,18 +41,23 @@ public class IntentRouter extends IntentService {
             if(action != null){
                 switch(action){
                     case Constants.SCHEDULED_SAMPLE: scheduledSample(); break;
+                    // TODO: Implement rest of the actions: normal sample, rapid charging...
                     default: Logger.d(TAG, "Implement me: " + action + "!");
                 }
             }
         }
     }
 
-
     private void scheduledSample(){
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
         Sampler2.sample(uuId, Constants.SCHEDULED_SAMPLE, "FIXME", SamplingLibrary.from(context));
 
+        scheduleNext();
+    }
+
+    private void scheduleNext(){
+        // TODO: Check if already have something scheduled and exit if we do.
         Intent scheduleIntent = new Intent(context, IntentRouter.class);
         scheduleIntent.setAction(Constants.SCHEDULED_SAMPLE);
         PendingIntent pendingIntent =

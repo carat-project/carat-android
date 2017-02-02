@@ -2169,6 +2169,7 @@ public final class SamplingLibrary {
 		return buf.toString();
 	}
 
+	// TODO: This should be removed in favor of Sampler2.sample()
 	public static Sample sample(Context context, String action, String lastBatteryState) {
 		final String TAG = "SamplingLibrary.sample";
 		if (Constants.DEBUG)
