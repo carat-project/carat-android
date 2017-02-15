@@ -92,7 +92,7 @@ Per utilizzare questa applicazione dovete accettare il contratto di Licenza uten
     <string name="settings">IMPOSTAZIONI</string>
     <string name="active_battery_life">Durata della batteria</string>
     <string name="battery_life_value">10h 23m</string>
-    <string name="my_device">IL MIO DEVICE</string>
+    <string name="my_device">IL MIO DISPOSITIVO</string>
 
     <!-- MENU -->
     <string name="menu_wifi_only">Solo wifi</string>
@@ -340,7 +340,7 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
     <!-- Actions -->
     <string name="information">Information</string>
     <!-- Detail view -->
-    <string name="samples">CAmpioni positivi:</string>
+    <string name="samples">Campioni positivi:</string>
     <string name="samplesWithout">Campioni negativi:</string>
     <string name="error">Precisione:</string>
     <!-- The pie chart -->
@@ -349,5 +349,5 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
     <string name="dialog_enable">Abilita il Wifi</string>
     <string name="dialog_cancel">Cancella</string>
 
-    <string name="title_activity_dashboard">DASHBOARD</string>
+    <string name="title_activity_dashboard">CRUSCOTTO</string>
 </resources>
