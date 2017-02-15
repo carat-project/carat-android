@@ -261,12 +261,6 @@
     <string name="twenty">Impatto &lt; 20 min</string>
     <string name="hour">Impatto &lt; 1 hour</string>
 
-    <string name="num0" translatable="false">0</string>
-    <string name="num5" translatable="false">5</string>
-    <string name="num10" translatable="false">10</string>
-    <string name="num20" translatable="false">20</string>
-    <string name="num60" translatable="false">60</string>
-
     <string name="hogs_camel">Hogs</string>
     <string name="bugs_camel">Bugs</string>
     <string name="well_behaved_caps">VIRTUOSI</string>
@@ -274,11 +268,8 @@
 These are the same for all languages. When translating,
 delete these from your file.
     -->
-    <string name="app_name" translatable="false">Carat</string>
 
     <color name="black">#000000</color>
-
-    <string name="blackBackground" translatable="false">false</string>
 
     <!-- <string name="confidence">Confidence:</string> -->
 
@@ -397,12 +388,6 @@ delete these from your file.
     <!-- Hog threshold values used by the system, do not translate -->
 
     <!-- SharedPreference keys -->
-    <string name="hog_hide_threshold" translatable="false">hoghidethreshold</string>
-    <string name="wifi_only_key" translatable="false">wifionly</string>
-    <string name="installation_key" translatable="false">installdate</string>
-    <string name="disable_questionnaires" translatable="false">noQuestionnaires</string>
-    <string name="disable_notifications" translatable="false">noNotifications</string>
-    <string name="enable_background" translatable="false">bgRefresh</string>
 
     <!-- TODO: Remove or change this placeholder text -->
 
