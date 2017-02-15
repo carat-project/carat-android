@@ -1,75 +1,73 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <!-- NEW -->
 
     <!-- EXPLANATIONS -->
     <string name="jscore_explanation">Il J-Score rappresenta il vostro posizionamento rispetto a tutti gli altri
-        dispositivi visionati da Carat in riferimento alla durata della batteria. Quindi, se avete
-        un J-punteggio di 50, significa che la durata prevista della vostra batteria è maggiore della
-        esatta metà dei nostri utenti; un punteggio di 99 significa che durerà più di quanto è previsto
-        duri la batteria del 99% dei nostri utenti. 
-        Naturalmente, un singolo numero non fornisce una descrizione completa della vita della vostra
-	batteria. 
-        Un basso J-punteggio potrebbe significare che il dispositivo utilizza una grande batteria
-        inefficiente o una piccola batteria con efficienza media. Allo stesso modo, un alto J-Score
-        potrebbe semplicemente significare che usate poco il dispositivo. 
-        Carat calcola una grande varietà di statistiche, e il J-Score è solo uno dei tanti.
-    </string>
+dispositivi visionati da Carat in riferimento alla durata della batteria. Quindi, se avete
+un J-Score di 50, significa che la durata stimata della vostra batteria è maggiore della
+metà degli utenti monitorati da Carat; un punteggio di 99 significa che durerà più di quanto è previsto
+duri la batteria del 99% dei nostri utenti.
+Naturalmente, un singolo numero non fornisce una descrizione completa della vita della vostra
+batteria.
+Un basso J-Score potrebbe dipendere sia dall'uso non efficiente di una capiente batteria,
+sia da una batteria troppo piccola usata efficientemente. In analogia, un alto J-Score
+può semplicemente significare che non consumi batteria perché non usi il dispotivo.
+Ma Carat fornisce molte altre statitistiche e J-Score è solo una di queste.
+</string>
     <string name="memory_explanation">
-        Il sistema operativo (OS) classifica la memoria fisica del vostro dispositivo come impiegata o libera. 
-        Se la memoria è utilizzata, significa che esistono dati correnti appartenenti a qualche processo
-        (come una delle tue applicazioni o il sistema operativo stesso). Quando il dispositivo esaurisce la
-        memoria libera, ha bisogno di liberare spazio per poter memorizzare nuovi dati, quindi chiude
-        applicazioni che potrebbe essere in esecuzione in background o chiede alle applicazioni di
-        eliminare i dati che non stanno utilizzando.
-        Il sistema operativo distingue ulteriormente tra memoria attiva o inattiva, rispettivamente a
-        seconda che siano realizzati degli accessi recenti o no. Quando il sistema operativo esaurisce
-        la memoria libera, inizia a recuperare la memoria inattiva. 
-        La parte di memoria attiva utilizzata può aumentare quando si aprono molte applicazioni, quando
-        le applicazioni utilizzano un sacco di dati (spesso un compito ad alta intensità energetica) o 
-        quando il sistema operativo precarica le applicazioni di uso frequente nella memoria, per ridurne
-        i tempi di attesa.
-    </string>
-    <string name="cpu_usage_explanation">CPU Usage indica la percentuale della capacità elaborativa del
-        vostro dispositivo usualmente usata.
-        Una percentuale elevata indica che il dispositivo è prossimo alla saturazione delle capacità
-        eleborative, come si verifica, ad esempio, durante un gioco o con la installazione di nuove applicazioni.
-    </string>
+Il sistema operativo (OS) classifica la memoria fisica del vostro dispositivo come impiegata o libera.
+Se la memoria è impiegata, significa che esistono dati correnti appartenenti a qualche processo
+(ad esempio una delle tue applicazioni o il sistema operativo stesso). Quando il dispositivo esaurisce la
+memoria libera, ha bisogno di liberare spazio per poter memorizzare nuovi dati, quindi chiude
+applicazioni che potrebbe essere in esecuzione in background o chiede alle applicazioni di
+eliminare i dati che non stanno utilizzando.
+Il sistema operativo distingue ulteriormente tra memoria attiva o inattiva, rispettivamente a
+seconda che siano realizzati degli accessi recenti o no. Quando il sistema operativo esaurisce
+la memoria libera, inizia a recuperare la memoria inattiva.
+La parte di memoria attiva utilizzata può aumentare quando si aprono molte applicazioni, quando
+le applicazioni utilizzano un sacco di dati (spesso un compito ad alta intensità energetica) o
+quando il sistema operativo precarica le applicazioni di uso frequente nella memoria, per ridurne
+i tempi di attesa.
+</string>
+    <string name="cpu_usage_explanation">L\'utilizzo della CPU indica la percentuale della capacità elaborativa del
+vostro dispositivo normalmente usata.
+Una percentuale elevata indica che il dispositivo è prossimo alla saturazione delle capacità
+eleborative, come si verifica, ad esempio, durante un gioco o con la installazione di nuove applicazioni.
+</string>
     <string name="well_behaved_explanation">
-        Le app virtuose utilizzano l\'energia correttamente, e non richiedono misure specifiche da parte dell\'utente. 
-    </string>
+Le app virtuose utilizzano l\'energia correttamente, e non richiedono misure specifiche da parte dell\'utente.
+</string>
     <string name="jscore_dialog_title">J-SCORE</string>
     <string name="what_are_these_numbers_title">Cosa sono questi numeri?</string>
-    <string name="what_are_these_numbers_explanation">Battery life impact indica quanto ci si può aspettare
-        in termini di aumento della durata della batteria agendo sugli hog/bug. L’azione su un hog consiste
-        nel chiudere tale applicazione e usarla di meno, mentre una azione su un bug può essere un semplice restart,
-        aggiornare la versione, o un diverso settaggio.
-        <b>Samples</b> è il numero di misure che Carat ha raccolto sulla applicazione attraverso gli utenti.
-        Un elevato numero di misure indica che questa app è diffusa e il suo comportamento energetico è ben conosciuto.
-        Molte misure permettono aumentare la precisione della misura (in minuti).
-        Misure senza indica il numero di misure che Carat ha eseguito senza rilevare l\'applicazione in questione.
-        Entrambe le misure, con e senza applicazione sono necessarie per monitorare il comportamento energetico. 
-    </string>
+    <string name="what_are_these_numbers_explanation">L\'impatto sulla batteria  indica quanto ci si può aspettare
+in termini di aumento della durata della batteria agendo sugli hog/bug. L’azione su un hog consiste
+nel chiudere tale applicazione e usarla di meno, mentre una azione su un bug può essere un semplice restart,
+aggiornare la versione, o un diverso settaggio.
+<b>Campionamenti positivi</b> è il numero di misure che Carat ha raccolto sulla applicazione attraverso gli utenti.
+Un elevato numero di misure indica che questa app è diffusa e il suo comportamento energetico è ben conosciuto.
+Molte misure permettono di aumentare la precisione della misura (in minuti).
+Campionamenti negativi indica il numero di misure che Carat ha eseguito senza rilevare l\'applicazione in questione.
+Entrambe le misure, positive e negative, sono necessarie per monitorare il comportamento energetico.
+</string>
 
     <!-- TUTORIAL -->
-    <string name="tutorial_accept">ACCEPT</string>
+    <string name="tutorial_accept">ACCETTO</string>
     <string name="tutorial_eula_text">Continuando si accetta questo accordo di licenza con utente finale e la politica della privacy.</string>
     <string name="tutorial_fragment_main_title">Carat: diagnosi energetica collettiva</string>
     <string name="tutorial_fragment_main_message">Carat é un progetto di ricerca dell\'Università di Helsinki,
-        creato originariamente in collaborazione con AMP Lab di UC Berkeley, che aiuta a individuare
-        e diagnosticare i problemi legati alla batteria, dando indicazioni personalizzate.</string>
+creato originariamente in collaborazione con AMP Lab di UC Berkeley, che aiuta a individuare
+e diagnosticare i problemi legati alla batteria, dando indicazioni personalizzate.</string>
     <string name="tutorial_fragment_bugs_title">BUGS</string>
     <string name="tutorial_fragment_bugs_message">Bugs sono quelle app che usano molta energia in pochi dispositivi,
-        compreso il vostro. Un semplice riavvio applicazione può aumentare la durata della batteria.</string>
+compreso il vostro. Un semplice riavvio dell'applicazione può aumentare la durata della batteria.</string>
     <string name="tutorial_fragment_hogs_title">HOGS</string>
-    <string name="tutorial_fragment_hogs_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra 
-        nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
+    <string name="tutorial_fragment_hogs_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra
+nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
     <string name="tutorial_fragment_eula_title">EULA</string>
     <string name="tutorial_fragment_eula_message">
-            Carat raccoglie periodicamente informazioni generiche sul vostro dispositivo e su come lo usate.
-            Per utilizzare questa applicazione dovete accettare il contratto di Licenza utente finale.
-    </string>
+Carat raccoglie periodicamente informazioni generiche sul vostro dispositivo e su come lo usate.
+Per utilizzare questa applicazione dovete accettare il contratto di Licenza utente finale.
+</string>
     <string name="tutorial_fragment_eula_link"><b><u>Read EULA</u></b></string>
 
     <!-- MENU -->
@@ -92,46 +90,44 @@
     <string name="statistics">STATISTICHE</string>
     <string name="actions">AZIONI</string>
     <string name="settings">IMPOSTAZIONI</string>
-
-    <string name="active_battery_life">Carica della batteria</string>
+    <string name="active_battery_life">Durata della batteria</string>
     <string name="battery_life_value">10h 23m</string>
     <string name="my_device">IL MIO DEVICE</string>
+
     <!-- MENU -->
     <string name="menu_wifi_only">Solo wifi</string>
     <string name="menu_wifi_desc">I dati mobile non saranno utilizzati</string>
     <string name="menu_disable_notifications">Disabilita le notifiche</string>
     <string name="menu_notifications_desc">La app non invierà notifiche</string>
     <string name="menu_disable_questionnaires">Disabilita i questionari</string>
-    <string name="menu_questionnaires_desc">Non porpone i questionari nelle azioni</string>
+    <string name="menu_questionnaires_desc">Non proporrà i questionari nelle azioni</string>
     <string name="menu_allow_background">Aggiornamento automatico</string>
     <string name="menu_background_desc">Aggiorna in background</string>
-    <string name="menu_hide_apps">Escludi app da analisi</string>
+    <string name="menu_hide_apps">Soglia per la segnalazione</string>
     <string name="menu_feedback">Invia un feedback</string>
     <string name="menu_settings">Impostazioni</string>
     <string name="menu_about">Descrizione</string>
-    <string name="menu_website">Visita la homepage</string>
+    <string name="menu_website">Visita il sito web</string>
 
     <!-- BUGS -->
     <string name="what_are_these_numbers">Cosa sono questi numeri?</string>
     <string name="bug_list_message">Bugs sono quelle app che usano molta energia in pochi dispositivi,
-        compreso il vostro. Un semplice riavvio applicazione può aumentare la durata della batteria.
-    </string>
-
+compreso il vostro. Un semplice riavvio applicazione può aumentare la durata della batteria.
+</string>
     <string name="no_bugs_title">Non hai bug.</string>
     <string name="no_bugs_message">Per cortesia, riprova fra una settimana.\n\n
-        Le tue app si stanno comportando normalmente quindi non hai bugs.\n\n
-        Se una applicazione incominciasse a consumare parecchia più energia sul tuo dispositivo in confronto
-        agli altri, sarà elencata qui.</string>
+Le tue app si stanno comportando normalmente quindi non hai bugs.\n\n
+Se una applicazione incominciasse a consumare parecchia più energia sul tuo dispositivo in confronto
+agli altri, sarà elencata qui.</string>
 
     <!-- HOGS -->
-    <string name="hog_list_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra 
-        nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
-
+    <string name="hog_list_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra
+nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
     <string name="no_hogs_title">Non hai hogs.</string>
     <string name="no_hogs_message">Per cortesia, riprova fra una settimana.\n\n
-        Le tue app si stanno comportando normalmente quindi non hai bugs.\n\n
-        Se una applicazione incominciasse a consumare parecchia più energia sul tuo dispositivo in confronto
-        agli altri, sarà elencata qui.</string>
+Le tue app si stanno comportando normalmente quindi non hai bugs.\n\n
+Se una applicazione incominciasse a consumare parecchia più energia sul tuo dispositivo in confronto
+agli altri, sarà elencata qui.</string>
 
     <!-- MY DEVICE -->
     <string name="carat_id_title">Carat ID</string>
@@ -148,53 +144,53 @@
     <string name="about_general_title">Carat</string>
     <string name="about_general_message">Informazioni generali</string>
     <string name="about_general_child_message">Carat è un progetto
-        di ricerca dell\'Università di Helsinki e UC Berkeley Lab AMP. 
-        Carat aiutare a trovare e risolvere i problemi di durata della batteria, e dare suggerimenti personalizzati. 
-        Carat è in divenire, perciò controlla spesso se ci sono nuovi risultati. Più lo usi e più ti servirà.
-    </string>
+di ricerca dell\'Università di Helsinki e UC Berkeley Lab AMP.
+Carat aiuta a trovare e risolvere i problemi di durata della batteria e dà suggerimenti personalizzati.
+Carat è in divenire, perciò controlla spesso se ci sono nuovi risultati. Più lo usi e più ti servirà.
+</string>
     <string name="about_actions_title">Azioni</string>
     <string name="about_actions_message">Come usare Carat</string>
-    <string name="about_actions_child_message">La lista di azioni ti indica come far durare di più la batteria.</string>
+    <string name="about_actions_child_message">La lista delle azioni ti indica come far durare di più la batteria.</string>
     <string name="about_bugs_title">Bugs</string>
     <string name="about_bugs_message">Guarda i tuoi bugs</string>
     <string name="about_bugs_child_message">Bugs sono quelle app che usano molta energia in pochi dispositivi,
-        compreso il vostro. Un semplice riavvio dell\'applicazione può aumentare la durata della batteria.</string>
+compreso il tuo. Un semplice riavvio dell\'applicazione può aumentare la durata della batteria.</string>
     <string name="about_hogs_title">Hogs</string>
     <string name="about_hogs_message">Guarda i tuoi hogs</string>
-    <string name="about_hogs_child_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra 
-        nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
+    <string name="about_hogs_child_message">Hogs sono le app che usualmente usano molta batteria nella maggior
+parte dei dispositivi. Terminarle può migliorare la durata della batteria. </string>
     <string name="about_collect_title">Raccolta dati</string>
-    <string name="about_collect_message">Informazioni su come e quali dati Carat raccoglie.</string>
+    <string name="about_collect_message">Informazioni su come e quali dati raccoglie Carat.</string>
     <string name="about_collect_child_message">Carat raccoglie periodicamente informazioni generiche sul vostro dispositivo
-        in base ai uali agisce;
-        non riguarda assolutamente nessun dato ce possa contribuire ad identificarvi. Period.</string>
+in base alle quali agisce;
+non rileva assolutamente nessun dato ce possa contribuire ad identificarvi. </string>
     <string name="about_battery_title">Durata della batteria</string>
     <string name="about_battery_message">Cosa indica la durata della batteria?</string>
     <string name="about_battery_child_message">La durata della batteria indica quanto tempo può durare la vostra batteria
-        se inziate con una carica totale e la batteria si scarica mediamente come Carat ha osservato sul dispositivo durante l\'uso attivo.
-        Questo tempo esclude i tempi in cui il dispositivo è inattivo e, ovviamente, non può tener conto del comportamento
-        che Carat non ha potuto osservare.
-        Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l\'utilizzo del vostro dispositivo.
-    </string>
+se inziate con una carica totale e la batteria si scarica mediamente come Carat ha osservato sul dispositivo durante l\'uso attivo.
+Questo tempo esclude i tempi in cui il dispositivo è inattivo e, ovviamente, non può tener conto del comportamento
+che Carat non ha potuto osservare.
+Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l\'utilizzo del vostro dispositivo.
+</string>
 
     <!-- GLOBAL RESULTS -->
     <string name="global_results">RISULTATI GLOBALI</string>
     <string name="show_global">WORLDWIDE</string>
     <string name="all_reports">TUTTI I REPORTS</string>
     <string name="global_general_statistics">STATISTICA GENERALE</string>
-    <string name="global_general_all_message">Oltre 431,882 applicazioni installate, 9 sono energy-intensive
-        (Hogs in Carat) e 4 sono anomali nel consumo (Bugs).</string>
-    <string name="global_general_android_message">Oltre 295,665 applicazioni Android installate,
-        12 sono energy-intensive e 4 sono anomale nel consumo.</string>
-    <string name="global_general_ios_message">Oltre 136,217 applicazioni iOS installate,
-        2 sono energy-intensive e 4 sono anomale nel consumo.</string>
-    <string name="global_general_users_message">Oltre 644,024 utilizzatori, 49 hanno una anomalia nel consumo.</string>
+    <string name="global_general_all_message">Su 431,882 applicazioni installate, 9 sono energy-intensive
+(Hogs in Carat) e 4 sono anomali nel consumo (Bugs).</string>
+    <string name="global_general_android_message">Su 295,665 applicazioni Android installate,
+12 sono energy-intensive e 4 sono anomale nel consumo.</string>
+    <string name="global_general_ios_message">Su 136,217 applicazioni iOS installate,
+2 sono energy-intensive e 4 sono anomale nel consumo.</string>
+    <string name="global_general_users_message">Su 644,024 utilizzatori, 49 hanno una anomalia nel consumo.</string>
     <string name="global_general_popular_title">MODELLI PIU\' POPOLARI</string>
     <string name="global_general_android">Android</string>
-    <string name="well_behaved">Educati</string>
+    <string name="well_behaved">Virtuosi</string>
     <string name="out_of"><![CDATA[Out of ]]></string>
     <string name="all_installed">applicazioni installate,</string>
-    <string name="hog_intensity">sono energy-intensive (Hogs in the Carat App) and</string>
+    <string name="hog_intensity">sono energy-intensive (Hogs in Carat) e</string>
     <string name="bug_intensity">sono anomale nel consumo (Bugs).</string>
     <string name="android_installed">applicazioni Android installate,</string>
     <string name="ios_installed">applicazioni iOS installate,</string>
@@ -206,8 +202,8 @@
     <string name="reported_by">Segnalato da:</string>
     <string name="by_users">utilizzatori</string>
     <string name="hog_stats_description">Questa è la top-200 globale degli Hogs.
-        Hanno un gran consumo di energia su molti dispositivi.
-        Puoi verificare se una app è presente.</string>
+Hanno un gran consumo di energia su molti dispositivi.
+Puoi verificare se una app è presente.</string>
     <string name="query_hint">Cerca</string>
 
     <!-- ACTIONS -->
@@ -215,20 +211,19 @@
     <string name="app_manager_title">GESTISCI</string>
     <string name="actions_list_message">Le azioni ti indicano cosa puoi fare per preservare la tua batteria e di quanto può migliorare.</string>
     <string name="actions_expanded_info">Chiudendo una applicazione, questa non può più consumare ulteriore
-        batteria. Alcune applicazioni che funzionano anche in background, come ad esempio Facebook, possono riavviarsi autonomamnete anche
-        dopo che le hai terminate.\n\nSe una applicazione non può essere fermata, puoi provare ancora a fermarla o disinstallarla attraverso il 
-        gestore applicazioni.</string>
+batteria. Alcune applicazioni che funzionano anche in background, come ad esempio Facebook, possono riavviarsi autonomamnete anche
+dopo che le hai terminate.\n\nSe una applicazione non può essere fermata, puoi provare ancora a fermarla o disinstallarla attraverso il
+gestore applicazioni.</string>
     <string name="no_actions_title">Non hai nessuna azione.</string>
     <string name="no_actions_message">
-        Puoi aprire Carat regolarmente perchè acquisisca campioni dello stato del tuo dispositivo per comunicarlo ai server.\n\nOttimale
-        è aprire Carat ogni giorno, o ogni volta che ti ricordi, specialmente la prima settimana dopo l\'installazione.
-        Dopo aver installato Carat può essere necessaria una settimana e oltre per riuscire a raccogliere abbastanza dati per generare un report personalizzato.\n\nAssicurati
-        di dare a Carat la possibilità di comunicare con i servers (ad es., aprila quando disponi della connettività).
-        Più la usi e più Carat potrà inviare report ai server e più informazioni conterranno i report, più saranno accurate le indicazioni sul da farsi.\n\nCarat
-        non è attiva in background, perchè è contrario alla sua logica.\n\nL\'applicazione può raccogliere e inviare dai anche quando non è in primo piano,
-        ma non si riavvia se viene chiusa (per liberare risorse) o dopo un restart del dispositivo.
-    </string>
-
+Puoi aprire Carat regolarmente perché acquisisca campioni dello stato del tuo dispositivo per comunicarlo ai server.\n\nOttimale
+è aprire Carat ogni giorno, o ogni volta che ti ricordi, specialmente la prima settimana dopo l\'installazione.
+Dopo aver installato Carat può essere necessaria una settimana e oltre per riuscire a raccogliere abbastanza dati per generare un report personalizzato.\n\nAssicurati
+di dare a Carat la possibilità di comunicare con i servers (ad es., aprila quando disponi della connettività).
+Più la usi e più Carat potrà inviare report ai server e più informazioni conterranno i report, più saranno accurate le indicazioni sul da farsi.\n\n
+\n\nL\'applicazione può raccogliere e inviare dai anche quando non è in primo piano,
+ma non si riavvia se viene chiusa (per liberare risorse) o dopo un restart del dispositivo.
+</string>
     <string name="show_information">Mostra informazioni sulle azioni</string>
     <string name="actions_info_title">Gestisci l\'applicazione</string>
     <string name="action_app_type">Comportamento:</string>
@@ -250,9 +245,9 @@
     <string name="about">INFORMAZIONI</string>
 
     <!-- PROCESS LIST -->
-    <string name="version">Version</string>
-    <string name="process_list_message">La lista dei processi mostra applicazioni e servizi correntemente attivi. 
-    Più applications e servizi attivi di norma contribuiscono a peggiorare la durata della batteria.</string>
+    <string name="version">Versione</string>
+    <string name="process_list_message">La lista dei processi mostra applicazioni e i servizi correntemente attivi.
+Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durata della batteria.</string>
 
     <!-- PREFERENCES LIST -->
     <string name="show_all">Mostra tutto</string>
@@ -265,131 +260,94 @@
     <string name="bugs_camel">Bugs</string>
     <string name="well_behaved_caps">VIRTUOSI</string>
     <!--
-These are the same for all languages. When translating,
-delete these from your file.
+    These are the same for all languages. When translating,
+    delete these from your file.
     -->
-
     <color name="black">#000000</color>
-
     <!-- <string name="confidence">Confidence:</string> -->
-
     <!-- These will be different -->
-
-    <string name="calibrating">Calibrating</string>
-
-    <string name="helpcarat">Help Carat collect data</string>
-    <string name="helpcarat_subtitle">Get better results</string>
-    <string name="helpcarat_expanded_title">How to help Carat collect data?</string>
-
+    <string name="calibrating">Azioni</string>
+    <string name="helpcarat">Aiuta Carat a raccogliere dati</string>
+    <string name="helpcarat_subtitle">Avrai risultati migliori</string>
+    <string name="helpcarat_expanded_title">Come posso aiutare Carat a raccogliere dati?</string>
     <!-- Questionnaire -->
-    <string name="other">Other</string>
-    <string name="writeHere">Write here</string>
-    <string name="submit">Submit</string>
-    <string name="continueText">continue</string>
-    <string name="nextQuestion">Next question</string>
-    <string name="participationThanks">Questionnaire submitted!</string>
-    <string name="backToApp">≪ BACK TO APPLICATION</string>
-    <string name="question">QUESTION</string>
-    <string name="share">Share …</string>
-    <string name="sharetitle">Improve your battery life with Carat!</string>
-    <string name="sharetext1">Carat is improving my battery life</string>
-    <string name="sharetext2">What\'s yours? \n\nFind out here: \nhttp://carat.cs.helsinki.fi/</string>
-    <string name="myjscoreis">My J-Score is %1$d!</string>
-    <string name="findoutmore">Find out more: \nhttp://carat.cs.helsinki.fi/</string>
-
+    <string name="other">Altro</string>
+    <string name="writeHere">Scrivi qui</string>
+    <string name="submit">Accetta</string>
+    <string name="continueText">continua</string>
+    <string name="nextQuestion">Domanda successiva</string>
+    <string name="participationThanks">Questionario inviato!</string>
+    <string name="backToApp">≪ TORNA ALL\'APPLICAZIONE</string>
+    <string name="question">DOMANDA</string>
+    <string name="share">Condividi …</string>
+    <string name="sharetitle">Migliora la durata della tua batteria con Carat!</string>
+    <string name="sharetext1">Carat migliora la durata della mia batteria</string>
+    <string name="sharetext2">Qual\'è il tuo? \n\nScoprilo qui: \nhttp://carat.cs.helsinki.fi/</string>
+    <string name="myjscoreis">Il mio J-Score é %1$d!</string>
+    <string name="findoutmore">Scopri di più: \nhttp://carat.cs.helsinki.fi/</string>
     <!-- Navigation drawer items (tabs) -->
     <string-array name="drawer_items">
-        <item>Summary</item>
-        <item>Actions</item>
-        <item>My Device</item>
+        <item>Sommario</item>
+        <item>Azioni</item>
+        <item>Il mio dispositivo</item>
         <item>Bugs</item>
         <item>Hogs</item>
-        <item>Carat Settings</item>
-        <item>About</item>
+        <item>Impostazioni</item>
+        <item>Descrizione</item>
     </string-array>
-
     <!-- Updating etc -->
-    <string name="samplesreported">Samples reported</string>
-    <string name="updating">Updating</string>
-    <string name="updated">Updated </string>
-    <string name="neverupdated">Never updated</string>
-    <string name="updatedjustnow">Updated just now</string>
-    <string name="didntget">got no</string>
+    <string name="samplesreported">Report delle misure</string>
+    <string name="updating">Aggiornamento</string>
+    <string name="updated">Aggiornato </string>
+    <string name="neverupdated">Non aggiornato</string>
+    <string name="updatedjustnow">Appena aggiornato</string>
+    <string name="didntget">Errore di comunicazione</string>
     <string name="blacklist">Blacklist</string>
-    <string name="finishing">Finishing up</string>
-
+    <string name="finishing">Sto finendo</string>
     <!--- Time quantity strings -->
-    <string name="ago">ago</string>
+    <string name="ago">prima</string>
     <plurals name="weeks">
-        <item quantity="one">a week</item>
-        <item quantity="other">%d weeks</item>
+        <item quantity="one">alla settimana</item>
+        <item quantity="other">%d settimane</item>
     </plurals>
     <plurals name="days">
-        <item quantity="one">a day</item>
-        <item quantity="other">%d days</item>
+        <item quantity="one">al giorno</item>
+        <item quantity="other">%d giorni</item>
     </plurals>
     <plurals name="hours">
-        <item quantity="one">an hour</item>
-        <item quantity="other">%d hours</item>
+        <item quantity="one">un\'ora</item>
+        <item quantity="other">%d ore</item>
     </plurals>
     <plurals name="minutes">
-        <item quantity="one">a minute</item>
-        <item quantity="other">%d minutes</item>
+        <item quantity="one">un minuto</item>
+        <item quantity="other">%d minuti</item>
     </plurals>
-
-    <string name="impact">Impact:</string>
-    <string name="expected">Battery life impact:</string>
-    <string name="priority">Priority:</string>
-    <string name="priorityDefault">Not running</string>
-    <string name="prioritynotrunning">Not running</string>
-    <string name="priorityforeground">Current app</string>
-    <string name="prioritybackground">Running</string>
-    <string name="priorityservice">Background Service</string>
-    <string name="priorityperceptible">Running</string>
-    <string name="priorityvisible">Visible</string>
-    <string name="prioritysuggestion">Suggestion</string>
-
+    <string name="impact">Impatto:</string>
+    <string name="expected">Impatto sulla batteria:</string>
+    <string name="priority">Stato:</string>
+    <string name="priorityDefault">Non attiva</string>
+    <string name="prioritynotrunning">Non attiva</string>
+    <string name="priorityforeground">App corrente</string>
+    <string name="prioritybackground">Attiva</string>
+    <string name="priorityservice">Background</string>
+    <string name="priorityperceptible">Attiva</string>
+    <string name="priorityvisible">Visibile</string>
+    <string name="prioritysuggestion">Suggerimenti</string>
     <!-- Settings screen related -->
-
-    <string name="wifisettings">Wifi Settings</string>
-    <string name="opening">Opening </string>
-    <string name="notsupported">is not supported on this device, sorry.</string>
-
+    <string name="wifisettings">Impostazioni Wifi</string>
+    <string name="opening">Apri </string>
+    <string name="notsupported">non supportato su questo dispositivo, mi spiace.</string>
     <!-- Actions -->
-
     <string name="information">Information</string>
-
     <!-- Detail view -->
-
-    <string name="samples">Samples:</string>
-    <string name="samplesWithout">Samples without:</string>
-    <string name="error">Error:</string>
-
+    <string name="samples">CAmpioni positivi:</string>
+    <string name="samplesWithout">Campioni negativi:</string>
+    <string name="error">Precisione:</string>
     <!-- The pie chart -->
-
     <!-- The dialog to enable Internet -->
-    <string name="dialog_text">Carat needs an Internet connection to update your personalized reports.</string>
-    <string name="dialog_enable">Enable Wifi</string>
-    <string name="dialog_cancel">Cancel</string>
-
-    <!-- error messages -->
-
-    <!-- Navigation Drawer -->
-
-    <!-- Does not need translation -->
-
-    <!-- Carat settings screen -->
-    <!-- switch backport strings -->
-
-    <!-- New screen titles -->
-
-    <!-- Hog threshold values visible to user -->
-
-    <!-- Hog threshold values used by the system, do not translate -->
-
-    <!-- SharedPreference keys -->
-
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="dialog_text">Carat ha bisogno della connessione Internet per ricevere i tuoi report personalizzati.</string>
+    <string name="dialog_enable">Abilita il Wifi</string>
+    <string name="dialog_cancel">Cancella</string>
 
     <string name="title_activity_dashboard">DASHBOARD</string>
 </resources>
