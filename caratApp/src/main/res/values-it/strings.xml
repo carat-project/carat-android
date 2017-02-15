@@ -9,7 +9,7 @@ metà degli utenti monitorati da Carat; un punteggio di 99 significa che durerà
 duri la batteria del 99% dei nostri utenti.
 Naturalmente, un singolo numero non fornisce una descrizione completa della vita della vostra
 batteria.
-Un basso J-Score potrebbe dipendere sia dall'uso non efficiente di una capiente batteria,
+Un basso J-Score potrebbe dipendere sia dall\'uso non efficiente di una capiente batteria,
 sia da una batteria troppo piccola usata efficientemente. In analogia, un alto J-Score
 può semplicemente significare che non consumi batteria perché non usi il dispotivo.
 Ma Carat fornisce molte altre statitistiche e J-Score è solo una di queste.
@@ -59,7 +59,7 @@ creato originariamente in collaborazione con AMP Lab di UC Berkeley, che aiuta a
 e diagnosticare i problemi legati alla batteria, dando indicazioni personalizzate.</string>
     <string name="tutorial_fragment_bugs_title">BUGS</string>
     <string name="tutorial_fragment_bugs_message">Bugs sono quelle app che usano molta energia in pochi dispositivi,
-compreso il vostro. Un semplice riavvio dell'applicazione può aumentare la durata della batteria.</string>
+compreso il vostro. Un semplice riavvio dell\'applicazione può aumentare la durata della batteria.</string>
     <string name="tutorial_fragment_hogs_title">HOGS</string>
     <string name="tutorial_fragment_hogs_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra
 nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
