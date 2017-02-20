@@ -123,7 +123,7 @@ agli altri, sarà elencata qui.</string>
     <!-- HOGS -->
     <string name="hog_list_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra
 nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
-    <string name="no_hogs_title">Non hai hogs.</string>
+    <string name="no_hogs_title">Non hai hog.</string>
     <string name="no_hogs_message">Per cortesia, riprova fra una settimana.\n\n
 Le tue app si stanno comportando normalmente quindi non hai bugs.\n\n
 Se una applicazione incominciasse a consumare parecchia più energia sul tuo dispositivo in confronto
