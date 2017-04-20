@@ -64,8 +64,8 @@
 
         <!--- Services -->
         <service
-            android:name=".sampling.SamplerService"
-            android:label="SamplingService" />
+            android:name=".sampling.IntentRouter"
+            android:label="IntentRouter" />
 
         <!-- Receivers -->
         <receiver
@@ -79,7 +79,7 @@
         </receiver>
 
         <receiver
-            android:name=".sampling.Sampler"
+            android:name=".sampling.IntentReceiver"
             android:enabled="true"
             android:exported="true"
             android:label="Carat sampler" >

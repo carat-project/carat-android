@@ -20,7 +20,7 @@ public class Constants {
     public static final int THRIFT_CONNECTION_TIMEOUT = (int)TimeUnit.MINUTES.toMillis(1);
 
     public static final String PREFERENCE_FIRST_RUN = "carat.first.run";
-    static final String REGISTERED_UUID = "carat.registered.uuid";
+    public static final String REGISTERED_UUID = "carat.registered.uuid";
     public static final String REGISTERED_OS = "carat.registered.os";
     public static final String REGISTERED_MODEL = "carat.registered.model";
 

@@ -50,7 +50,7 @@ public class Sampler extends WakefulBroadcastReceiver implements LocationListene
         LocationManager locationManager =
                 (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.removeUpdates(this);
-        List<String> providers = SamplingLibrary.from(context).getEnabledLocationProviders();
+        List<String> providers = SamplingLibrary.getEnabledLocationProviders(context);
         if (providers != null) {
             for (String provider : providers) {
                 locationManager.requestLocationUpdates(provider,

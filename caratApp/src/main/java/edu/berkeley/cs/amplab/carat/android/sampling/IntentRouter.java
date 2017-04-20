@@ -18,8 +18,8 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
@@ -29,8 +29,7 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
 public class IntentRouter extends IntentService implements LocationListener {
     private final static String TAG = IntentRouter.class.getSimpleName();
     private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(15);
-    private final static int requestCode = 67294580;
-    private final static int NO_FLAG = 0;
+    private final static int REQUEST_CODE = 67294580;
 
     private Context context;
     private AlarmManager alarmManager;
@@ -43,40 +42,50 @@ public class IntentRouter extends IntentService implements LocationListener {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        requestLocationUpdates();
         if(intent != null){
             String action = intent.getAction();
             if(action != null){
                 switch(action){
-                    case Constants.SCHEDULED_SAMPLE: scheduledSample(); break;
-                    // TODO: Implement rest of the actions: normal sample, rapid charging...
-                    // TODO: Call requestLocationUpdates here before collecting sample
+                    case Constants.RAPID_SAMPLING:
+                        // TODO: Foreground notification and sampling
+                        break;
+                    case Constants.SCHEDULED_SAMPLE:
+                        scheduleNextSample(SAMPLING_INTERVAL);
+                        break;
+                    case Intent.ACTION_BATTERY_CHANGED:
+                        // TODO: Do something here?
+                        break;
                     default: Logger.d(TAG, "Implement me: " + action + "!");
                 }
+                checkSchedule();
+                Sampler2.sample(context, action);
             }
         }
     }
 
-    private void scheduledSample(){
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
-        String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
-        Sampler2.sample(context, uuId, Constants.SCHEDULED_SAMPLE);
-
-        scheduleNext();
+    private void checkSchedule(){
+        // TODO: See if the schedule still holds and reschedule if not.
     }
 
-    private void scheduleNext(){
-        // TODO: Check if already have something scheduled and exit if we do.
+    private boolean isAlreadyScheduled(Intent intent){
+        return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_NO_CREATE) != null;
+    }
+
+    private void scheduleNextSample(long interval){
         Intent scheduleIntent = new Intent(context, IntentRouter.class);
         scheduleIntent.setAction(Constants.SCHEDULED_SAMPLE);
-        PendingIntent pendingIntent =
-                PendingIntent.getBroadcast(context, requestCode, scheduleIntent, NO_FLAG);
-        long t =  Util.timeAfterTime(SAMPLING_INTERVAL);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, pendingIntent);
-        } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, t, pendingIntent);
-        } else {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, t, pendingIntent);
+        if(!isAlreadyScheduled(scheduleIntent)){
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, scheduleIntent, 0);
+            long then = Util.timeAfterTime(interval);
+
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, then, pendingIntent);
+            } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, then, pendingIntent);
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, then, pendingIntent);
+            }
         }
     }
 
@@ -94,14 +103,14 @@ public class IntentRouter extends IntentService implements LocationListener {
     public void onLocationChanged(Location location) {
         Context context = getApplicationContext();
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        long distance = prefs.getLong("distanceMoved", 0);
-        String locationJSON = prefs.getString("lastKnownLocation", "");
+        long distance = prefs.getLong(Keys.distanceTraveled, 0);
+        String locationJSON = prefs.getString(Keys.lastKnownLocation, "");
         Location lastKnownLocation = new Gson().fromJson(locationJSON, Location.class);
         if (location != null && lastKnownLocation != null) {
             distance += lastKnownLocation.distanceTo(location);
         }
-        prefs.edit().putLong("distanceMoved", distance).apply();
-        prefs.edit().putString("lastKnownLocation", new Gson().toJson(location)).apply();
+        prefs.edit().putLong(Keys.distanceTraveled, distance).apply();
+        prefs.edit().putString(Keys.lastKnownLocation, new Gson().toJson(location)).apply();
     }
 
     @Override

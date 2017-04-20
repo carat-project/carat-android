@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
@@ -23,34 +24,36 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
  */
 public class Sampler2 {
     private static String TAG = Sampler2.class.getSimpleName();
-    private static long distanceMoved = 0;
 
-    public static void sample(Context context, String uuId, String trigger){
-        Sample sample = constructSample(context, uuId, trigger);
+    public static void sample(Context context, String trigger){
+        Sample sample = constructSample(context, trigger);
+
         SampleDB db = SampleDB.getInstance(context);
         Sample lastSample = db.getLastSample(context);
         if(sample != null && !essentiallyIdentical(sample, lastSample)){
             long id = db.putSample(sample);
             Logger.i(TAG, "Stored sample " + id + " for " + trigger);
         }
+
         int sampleCount = SampleDB.getInstance(context).countSamples();
         if(sampleCount >= Sampler.MAX_SAMPLES){
             CaratApplication.postSamplesNotification(sampleCount);
         }
     }
 
-    private static Sample constructSample(Context context, String uuId, String trigger){
+    private static Sample constructSample(Context context, String trigger){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SystemLoadPoint load1 = SamplingLibrary.getSystemLoad();
         Intent batteryIntent = SamplingLibrary.getLastBatteryIntent(context);
 
         Sample sample = new Sample();
-        sample.setUuId(uuId);
+        sample.setUuId(prefs.getString(Keys.registeredUUID, null));
         sample.setTriggeredBy(trigger);
 
 
         sample.setBatteryLevel(BatteryUtils.getBatteryLevel(batteryIntent)/100.0);
         sample.setBatteryDetails(getBatteryDetails(context, batteryIntent));
-        sample.setBatteryState(getBatteryStatusString(context, batteryIntent));
+        sample.setBatteryState(getBatteryStatusString(prefs, batteryIntent));
 
         sample.setTimestamp(System.currentTimeMillis()/1000.0);
         sample.setPiList(SamplingLibrary.getRunningProcessInfoForSample(context));
@@ -97,9 +100,8 @@ public class Sampler2 {
         return details;
     }
 
-    private static String getBatteryStatusString(Context context, Intent intent){
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String lastState = prefs.getString("lastBatteryStatus", "Unknown");
+    private static String getBatteryStatusString(SharedPreferences prefs, Intent intent){
+        String lastState = prefs.getString(Keys.lastBatteryStatus, "Unknown");
         int id = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
         String status;
         switch(id){
@@ -110,7 +112,7 @@ public class Sampler2 {
             case BatteryManager.BATTERY_STATUS_UNKNOWN: status = "Unknown"; break;
             default: status = lastState;
         }
-        prefs.edit().putString("lastBatteryStatus", status).apply();
+        prefs.edit().putString(Keys.lastBatteryStatus, status).apply();
         return status;
     }
 
@@ -191,7 +193,6 @@ public class Sampler2 {
                                 && 	bd1.getBatteryHealth().equals(bd2.getBatteryHealth());
 
                 Logger.d(TAG, isDuplicate ? "Discarding as a duplicate.." : "Not a duplicate, proceeding..");
-
                 return isDuplicate;
             }
         }
