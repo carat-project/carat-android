@@ -4,8 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.BatteryManager;
 
+import edu.berkeley.cs.amplab.carat.android.CaratApplication;
+import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
+import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.NetworkDetails;
@@ -16,15 +20,34 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
  * Created by Jonatan Hamberg on 2.2.2017.
  */
 public class Sampler2 {
-    // This class should either save the sample to SampleDB or have the methods calling it do so.
+    private static String TAG = Sampler2.class.getSimpleName();
+    private static long distanceMoved = 0;
 
     public static void sample(Context context, String uuId, String trigger, String state){
+        Sample sample = constructSample(context, uuId, trigger, state);
+        SampleDB db = SampleDB.getInstance(context);
+        Sample lastSample = db.getLastSample(context);
+        if(sample != null && !essentiallyIdentical(sample, lastSample)){
+            // TODO: sample.setDistanceTraveled(Sampler.getInstance().getDistanceSinceLastSample());
+            long id = db.putSample(sample);
+            Logger.d(TAG, "Sample id " + id + " stored for " + trigger);
+        } else {
+            Logger.d(TAG, "Sample was either null or essentially a duplicate, skipping");
+        }
+        int sampleCount = SampleDB.getInstance(context).countSamples();
+        if(sampleCount >= Sampler.MAX_SAMPLES){
+            CaratApplication.postSamplesNotification(sampleCount);
+        }
+    }
+
+    private static Sample constructSample(Context context, String uuId, String trigger, String state){
         SystemLoadPoint load1 = SamplingLibrary.getSystemLoad();
         Intent batteryIntent = SamplingLibrary.getLastBatteryIntent(context);
 
         Sample sample = new Sample();
         sample.setUuId(uuId);
         sample.setTriggeredBy(trigger);
+
         sample.setBatteryLevel(BatteryUtils.getBatteryLevel(batteryIntent)/100.0);
         sample.setBatteryDetails(getBatteryDetails(context, batteryIntent));
         sample.setBatteryState(getBatteryStatusString(batteryIntent, state));
@@ -45,6 +68,8 @@ public class Sampler2 {
         sample.setCountryCode(SamplingLibrary.getCountryCode(context));
         sample.setExtra(SamplingLibrary.getExtras(context));
 
+        sample.setDistanceTraveled(SamplingLibrary.getDistanceTraveled(context));
+
 
         int[] memoryInfo = SamplingLibrary.readMeminfo();
         if(memoryInfo != null && memoryInfo.length == 4){
@@ -57,6 +82,7 @@ public class Sampler2 {
         // Take as much time between cpu measurements as possible
         SystemLoadPoint load2 = SamplingLibrary.getSystemLoad();
         sample.setCpuStatus(constructCpuStatus(load1, load2));
+        return sample;
     }
 
     private static BatteryDetails getBatteryDetails(Context context, Intent intent){
@@ -137,5 +163,34 @@ public class Sampler2 {
             case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE: return "Unspecified failure";
             default: return "Unknown";
         }
+    }
+
+    private static boolean essentiallyIdentical(Sample s1, Sample s2){
+        if(s2 != null && s2.getTriggeredBy().equals(s1.getTriggeredBy())){
+            if(s1.getTimestamp() - s2.getTimestamp() < Constants.DUPLICATE_INTERVAL){
+
+                Logger.d(TAG, "Sample was triggered within 1 second " +
+                        "(diff: " + (s1.getTimestamp() - s2.getTimestamp()) + "s) " +
+                        "of the last one and by the same event. Checking if it's a duplicate..");
+
+                BatteryDetails bd1 = s1.getBatteryDetails();
+                BatteryDetails bd2 = s2.getBatteryDetails();
+                boolean isDuplicate =
+                        s1.getBatteryLevel() == s2.getBatteryLevel()
+                                && 	s1.getBatteryState().equals(s2.getBatteryState())
+                                && 	s1.getTimeZone().equals(s2.getTimeZone())
+                                && 	bd1.getBatteryTemperature() == bd2.getBatteryTemperature()
+                                && 	bd1.getBatteryCapacity() == bd2.getBatteryCapacity()
+                                && 	bd1.getBatteryVoltage() == bd2.getBatteryVoltage()
+                                && 	bd1.getBatteryTechnology().equals(bd2.getBatteryTechnology())
+                                && 	bd1.getBatteryCharger().equals(bd2.getBatteryCharger())
+                                && 	bd1.getBatteryHealth().equals(bd2.getBatteryHealth());
+
+                Logger.d(TAG, isDuplicate ? "Discarding as a duplicate.." : "Not a duplicate, proceeding..");
+
+                return isDuplicate;
+            }
+        }
+        return false;
     }
 }

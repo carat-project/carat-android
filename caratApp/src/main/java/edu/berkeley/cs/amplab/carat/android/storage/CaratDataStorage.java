@@ -2,7 +2,6 @@ package edu.berkeley.cs.amplab.carat.android.storage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -20,18 +19,10 @@ import java.util.TreeMap;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.nfc.Tag;
 import android.util.Log;
-
-import org.apache.thrift.TBase;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFileTransport;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
-import edu.berkeley.cs.amplab.carat.android.fragments.questionnaire.InformationFragment;
 import edu.berkeley.cs.amplab.carat.android.models.ChargingSession;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
@@ -825,7 +816,7 @@ public class CaratDataStorage {
         for (int i = 0; i < size; ++i) {
             HogsBugs item = list.get(i);
             String n = fixName(item.getAppName());
-            if (SamplingLibrary.isHidden(CaratApplication.getContext(), n))
+            if (SamplingLibrary.isHidden(CaratApplication.getAppContext(), n))
                 continue;
             SimpleHogBug h = new SimpleHogBug(n, isBug ? Constants.Type.BUG : Constants.Type.HOG);
             h.setAppLabel(item.getAppLabel());

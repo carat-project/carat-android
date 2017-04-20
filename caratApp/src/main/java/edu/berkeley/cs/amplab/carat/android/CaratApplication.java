@@ -5,6 +5,7 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
@@ -12,7 +13,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -20,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -37,7 +38,6 @@ import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.android.protocol.SampleSender;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
-import edu.berkeley.cs.amplab.carat.android.sampling.SamplingStarter;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
@@ -79,7 +79,9 @@ public class CaratApplication extends Application {
         mInstance = this;
     }
 
-    public static Context getContext() {
+
+
+    public static Context getAppContext() {
         return mInstance;
     }
 
@@ -186,8 +188,8 @@ public class CaratApplication extends Application {
             String surveyUrl = CaratApplication.getStorage().getQuestionnaireUrl();
             if(surveyUrl != null && surveyUrl.contains("http")){
                 actions.add(new CustomAction(ActionType.GOOGLE_SURVEY,
-                        getContext().getString(R.string.survey_action_title),
-                        getContext().getString(R.string.survey_action_subtitle)));
+                        getAppContext().getString(R.string.survey_action_title),
+                        getAppContext().getString(R.string.survey_action_subtitle)));
             }
 
             // Local survey
@@ -208,19 +210,15 @@ public class CaratApplication extends Application {
             // Help Carat collect data
             if(getActionsAmount() == 0){
                 actions.add(new CustomAction(ActionType.COLLECT,
-                        getContext().getString(R.string.helpcarat), getContext().getString(R.string.helpcarat_subtitle))
+                        getAppContext().getString(R.string.helpcarat), getAppContext().getString(R.string.helpcarat_subtitle))
                         .makeExpandable(R.string.helpcarat_expanded_title,
                                 R.string.no_actions_message));
             }
             return actions;
     }
 
-    public static void postNotification(String title, String text){
-        postNotification(title, text, null);
-    }
-
     public static void postNotification(String title, String text, Integer fragment){
-        Context context = getContext();
+        Context context = getAppContext();
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean disableNotifications =
                 p.getBoolean(context.getString(R.string.disable_notifications), false);
@@ -241,8 +239,30 @@ public class CaratApplication extends Application {
         mNotificationManager.notify(1, mBuilder.build());
     }
 
+    public static void postSamplesNotification(int samples){
+        Context context = getAppContext();
+        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
+        if(!p.getBoolean(context.getString(R.string.disable_notifications), false)){
+            PendingIntent launchCarat = PendingIntent.getActivity(context, 0,
+                    new Intent(context, MainActivity.class), 0);
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+                    context)
+                    .setSmallIcon(R.drawable.carat_notif_icon)
+                    .setContentTitle("Please open Carat")
+                    .setContentText("Please open Carat. Samples to send:")
+                    .setNumber(samples);
+            mBuilder.setContentIntent(launchCarat);
+            mBuilder.setAutoCancel(true);
+            NotificationManager mNotificationManager = (NotificationManager) context
+                    .getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.notify(1, mBuilder.build());
+        } else {
+            Logger.d(TAG, "Notifications are disabled, skipping sample notification");
+        }
+    }
+
     public static void dismissNotifications(){
-        Context context = getContext();
+        Context context = getAppContext();
         NotificationManager mNotificationManager = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancelAll();
@@ -272,8 +292,8 @@ public class CaratApplication extends Application {
         if(installDate != 0){
             return installDate;
         }
-        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getContext());
-        Context c = getContext();
+        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getAppContext());
+        Context c = getAppContext();
         String key = c.getString(R.string.installation_key);
         PackageManager pm = c.getPackageManager();
         String packageName = c.getPackageName();
@@ -322,7 +342,7 @@ public class CaratApplication extends Application {
         HashMap<String, SimpleHogBug> running = new HashMap<>();
         if(report == null) return new ArrayList<>();
         for(SimpleHogBug s : report){
-            if(SamplingLibrary.isRunning(getContext(), s.getAppName())){
+            if(SamplingLibrary.isRunning(getAppContext(), s.getAppName())){
                 SimpleHogBug duplicate = running.get(s.getAppName());
                 if(duplicate != null
                         && s.getAppPriority() == duplicate.getAppPriority()
@@ -425,7 +445,7 @@ public class CaratApplication extends Application {
      * @return True if package is found, otherwise false
      */
     public static boolean isPackageInstalled(String packageName){
-        PackageManager packageManager = getContext().getPackageManager();
+        PackageManager packageManager = getAppContext().getPackageManager();
         ApplicationInfo applicationInfo = null;
         try {
             // Throws an exception when there is no such package installed
@@ -445,7 +465,7 @@ public class CaratApplication extends Application {
     public static boolean isPackageSystemApp(String packageName){
         if(packageName == null) return false;
 
-        PackageManager packageManager = getContext().getPackageManager();
+        PackageManager packageManager = getAppContext().getPackageManager();
         try{
             ApplicationInfo info = packageManager.getApplicationInfo(packageName, 0);
             if(info != null){
@@ -465,7 +485,7 @@ public class CaratApplication extends Application {
     private static boolean isSystemSigned(String packageName){
         try {
 
-            PackageManager pm = getContext().getPackageManager();
+            PackageManager pm = getAppContext().getPackageManager();
             PackageInfo pi = pm.getPackageInfo(packageName, PackageManager.GET_SIGNATURES);
             PackageInfo sys = pm.getPackageInfo("android", PackageManager.GET_SIGNATURES);
             if(pi==null || pi.signatures == null) return false;
@@ -492,7 +512,7 @@ public class CaratApplication extends Application {
      * @return titles from the drawer items array.
      */
     public static String[] getTitles() {
-        Resources res = getContext().getResources();
+        Resources res = getAppContext().getResources();
         return res.getStringArray(R.array.drawer_items);
     }
 
@@ -529,11 +549,11 @@ public class CaratApplication extends Application {
     }
 
     public boolean isNetworkReady() {
-        Context context = getContext();
+        Context context = getAppContext();
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean useWifiOnly = p.getBoolean(getString(R.string.wifi_only_key), false);
-        String networkStatus = SamplingLibrary.from(getApplicationContext()).getNetworkStatus();
-        String networkType = SamplingLibrary.from(context).getNetworkType();
+        String networkStatus = SamplingLibrary.getNetworkStatus(context);
+        String networkType = SamplingLibrary.getNetworkType(context);
         return (!useWifiOnly && networkStatus.equalsIgnoreCase(SamplingLibrary.NETWORKSTATUS_CONNECTED))
                 || networkType.equals("WIFI");
     }
@@ -544,7 +564,7 @@ public class CaratApplication extends Application {
         if(elapsed < Constants.FRESHNESS_TIMEOUT) return;
 
         // Wait for 5 seconds to see if network comes up
-        String status = SamplingLibrary.from(getApplicationContext()).getNetworkStatus();
+        String status = SamplingLibrary.getNetworkStatus(getApplicationContext());
         if(status.equals(SamplingLibrary.NETWORKSTATUS_CONNECTING)){
             try {Thread.sleep(Constants.COMMS_WIFI_WAIT);}
             catch (InterruptedException e1) {
@@ -692,7 +712,7 @@ public class CaratApplication extends Application {
 
         String blS;
         if(blh == 0 && blmin == 0){
-            blS = getContext().getString(R.string.calibrating);
+            blS = getAppContext().getString(R.string.calibrating);
         } else if(errorH > 0){
             blS =  blh + "h " + blmin + "min \u00B1 " + errorH + "h";
         } else if(errorMin > 0){
@@ -714,7 +734,7 @@ public class CaratApplication extends Application {
 		 */
 
         SharedPreferences p = PreferenceManager
-                .getDefaultSharedPreferences(getContext());
+                .getDefaultSharedPreferences(getAppContext());
         String caratId = p.getString(Constants.REGISTERED_UUID, "0");
 
         myDeviceData.setAllFields(freshness, h, min, caratId, blS);
@@ -725,7 +745,7 @@ public class CaratApplication extends Application {
      */
     public static CaratDataStorage getStorage() {
         if (storage == null)
-            storage = new CaratDataStorage(CaratApplication.getContext());
+            storage = new CaratDataStorage(CaratApplication.getAppContext());
         return storage;
     }
 

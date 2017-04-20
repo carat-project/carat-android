@@ -80,4 +80,5 @@ dependencies {
     compile 'com.android.support:gridlayout-v7:25.1.0'
     compile 'com.android.support:preference-v7:25.1.0'
     compile 'com.android.support:preference-v14:25.1.0'
+    compile 'com.google.code.gson:gson:2.6.2'
 }
