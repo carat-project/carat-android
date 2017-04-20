@@ -54,8 +54,7 @@
     <string name="tutorial_fragment_bugs_message">Bugs are apps that use a lot of energy on a small
         number of devices, including yours. Restarting a buggy app may improve battery life.</string>
     <string name="tutorial_fragment_hogs_title">HOGS</string>
-    <string name="tutorial_fragment_hogs_message">Hogs are apps that are correlated with higher
-        energy use across many devices. Closing hogs may improve battery life.</string>
+    <string name="tutorial_fragment_hogs_message">Hogs are applications on your device that we have identified as energy inefficient among you and other users in our analysis</string>
     <string name="tutorial_fragment_eula_title">EULA</string>
     <string name="tutorial_fragment_eula_message">
             Carat periodically collects generic information about your device and how you are using it.
@@ -114,8 +113,7 @@
         When an app starts to use significantly more energy on your device than on others, it will show up here.</string>
 
     <!-- HOGS -->
-    <string name="hog_list_message">Hogs are apps that are correlated with higher energy use across
-        many devices. Closing hogs may improve battery life.</string>
+    <string name="hog_list_message">Hogs are applications on your device that we have identified as energy inefficient among you and other users in our analysis.</string>
 
     <string name="no_hogs_title">You have no hogs.</string>
     <string name="no_hogs_message">Please check back in a week.\n\n
@@ -144,7 +142,7 @@
     </string>
     <string name="about_actions_title">Actions</string>
     <string name="about_actions_message">How to use Carat</string>
-    <string name="about_actions_child_message">The Actions list tells you how to make your battery last longer and how much improvement to expect.</string>
+    <string name="about_actions_child_message">Recommended actions are based on our cloud analysis and your current device state. They can greatly improve your battery life.</string>
     <string name="about_bugs_title">Bugs</string>
     <string name="about_bugs_message">See your bugs</string>
     <string name="about_bugs_child_message">Bugs are apps that use a lot of energy on a small number
@@ -205,7 +203,8 @@
     <!-- ACTIONS -->
     <string name="stop_app_title">STOP</string>
     <string name="app_manager_title">MANAGE</string>
-    <string name="actions_list_message">The Actions list tells you how to make your battery last longer and how much improvement to expect.</string>
+    <string name="uninstall_app_title">REMOVE</string>
+    <string name="actions_list_message">Recommended actions are based on our cloud analysis and your current device state. They can greatly improve your battery life.</string>
     <string name="actions_expanded_info">Stopping an application closes it, so it no longer drains your
         battery. Some applications that also run on the background, such as Facebook, may automatically
         start up again after being stopped.\n\nIf an app cannot be stopped, you can still force stop or uninstall it
@@ -400,4 +399,7 @@ delete these from your file.
     <!-- TODO: Remove or change this placeholder text -->
 
     <string name="title_activity_dashboard">DASHBOARD</string>
+    <string name="battery_cost">Impact:</string>
+    <string name="stop">Stop</string>
+    <string name="manage">Manage</string>
 </resources>

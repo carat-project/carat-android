@@ -13,7 +13,7 @@
         android:id="@+id/bugs_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/lightgray"
+        android:background="@color/white"
         android:orientation="horizontal">
 
         <ImageView

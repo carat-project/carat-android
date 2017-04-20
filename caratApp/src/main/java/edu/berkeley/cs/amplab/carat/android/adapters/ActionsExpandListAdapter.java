@@ -1,8 +1,11 @@
 package edu.berkeley.cs.amplab.carat.android.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -54,6 +57,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         private TextView samplesAmount;
         private Button killAppButton;
         private Button appManagerButton;
+        private Button uninstallAppButton;
         private TextView appCategory;
         private TextView reportType;
         private TextView informationLink;
@@ -165,6 +169,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         holder.samplesText = (TextView) v.findViewById(R.id.samples_title);
         holder.samplesAmount = (TextView) v.findViewById(R.id.samples_amount);
         holder.killAppButton = (Button) v.findViewById(R.id.stop_app_button);
+        holder.uninstallAppButton = (Button) v.findViewById(R.id.uninstall_button);
         holder.appManagerButton = (Button) v.findViewById(R.id.app_manager_button);
         holder.appCategory = (TextView) v.findViewById(R.id.app_category);
         holder.informationLink = (TextView) v.findViewById(R.id.action_information);
@@ -262,6 +267,10 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
             }
         });
 
+        holder.uninstallAppButton.setOnClickListener(v1 -> {
+            uninstallApp(item, v, holder);
+        });
+
         holder.appManagerButton.setEnabled(true);
         holder.appManagerButton.setTag(item.getAppName()+"_manager");
         holder.appManagerButton.setOnClickListener(new View.OnClickListener(){
@@ -298,8 +307,15 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
 
         holder.icon.setImageDrawable(CaratApplication.iconForApp(caratApplication.getApplicationContext(),
                 item.getAppName()));
-        holder.title.setText(CaratApplication.labelForApp(caratApplication.getApplicationContext(),
-                item.getAppName()));
+        String appLabel = CaratApplication.labelForApp(caratApplication.getApplicationContext(), item.getAppName());
+        String actionTitle;
+        if(CaratApplication.isPackageSystemApp(item.getAppName())){
+            actionTitle = context.getString(R.string.manage) + " " + appLabel;
+        } else {
+            actionTitle = context.getString(R.string.stop) + " " + appLabel;
+        }
+
+        holder.title.setText(actionTitle);
 
         holder.subtitle.setText(item.getBenefitText());
     }
@@ -351,6 +367,17 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         }
 
         CaratApplication.refreshStaticActionCount();
+    }
+
+    public void uninstallApp(SimpleHogBug fullObject, View v, ExpandedViewHolder holder){
+        Intent uninstallIntent;
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH){
+            uninstallIntent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
+        } else {
+            uninstallIntent = new Intent(Intent.ACTION_DELETE);
+        }
+        uninstallIntent.setData(Uri.parse("package:"+fullObject.getAppName()));
+        context.startActivity(uninstallIntent);
     }
 
     public boolean openAppDetails(SimpleHogBug fullObject) {
@@ -448,7 +475,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         // These fields will be prefilled
         String surveyUrl = CaratApplication.getStorage().getQuestionnaireUrl();
         String uuid = SamplingLibrary.getUuid(mainActivity);
-        String cc = SamplingLibrary.getCountryCode(context);
+        String cc = SamplingLibrary.getCountryCode(context      );
         Reports r = CaratApplication.getStorage().getReports();
         String os = SamplingLibrary.getOsVersion();
         String model = SamplingLibrary.getModel();

@@ -1818,8 +1818,8 @@ public final class SamplingLibrary {
 		}
 		try{
 			context.startActivity(intent);
-			Toast.makeText(context,  context.getResources().getString(R.string.opening_manager),
-					Toast.LENGTH_SHORT).show();
+			/*Toast.makeText(context,  context.getResources().getString(R.string.opening_manager),
+					Toast.LENGTH_SHORT).show();*/
 		} catch(Exception e){
 			if(e.getLocalizedMessage() != null){
 				Toast.makeText(context,  context.getResources().getString(R.string.opening_manager_failed),

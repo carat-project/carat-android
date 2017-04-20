@@ -30,8 +30,8 @@
             style="@style/MediumBlackText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/process_improvement"
-            android:layout_alignStart="@+id/process_improvement"
+            android:layout_alignLeft="@+id/battery_impact_label"
+            android:layout_alignStart="@+id/battery_impact_label"
             android:layout_alignTop="@+id/process_icon"
             android:layout_toLeftOf="@id/collapse_icon"
             android:layout_marginRight="16dp"
@@ -39,16 +39,26 @@
             android:text="Carat" />
 
         <TextView
+            android:id="@+id/battery_impact_label"
+            style="@style/SmallGrayText"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/process_name"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="8dp"
+            android:layout_toRightOf="@id/process_icon"
+            android:text="@string/battery_cost" />
+
+        <TextView
             android:id="@+id/process_improvement"
             style="@style/SmallGrayText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/process_name"
-            android:layout_toLeftOf="@id/collapse_icon"
-            android:layout_marginRight="16dp"
             android:layout_marginBottom="8dp"
-            android:layout_toRightOf="@id/process_icon"
-            android:text="Expected Improvement: 1h 42m" />
+            android:layout_toRightOf="@id/battery_impact_label"
+            android:text="1h 42min" />
 
         <ImageView
             android:id="@+id/collapse_icon"
@@ -62,4 +72,9 @@
 
     </RelativeLayout>
 
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_alignParentTop="true"
+        android:background="@color/lightgray" />
 </LinearLayout>
