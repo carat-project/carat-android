@@ -1,5 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.sampling;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.BatteryManager;
 
@@ -17,32 +18,32 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
 public class Sampler2 {
     // This class should either save the sample to SampleDB or have the methods calling it do so.
 
-    public static void sample(String uuId, String trigger, String state, SamplingLibrary library){
+    public static void sample(Context context, String uuId, String trigger, String state){
         SystemLoadPoint load1 = SamplingLibrary.getSystemLoad();
-        Intent batteryIntent = library.getLastBatteryIntent();
+        Intent batteryIntent = SamplingLibrary.getLastBatteryIntent(context);
 
         Sample sample = new Sample();
         sample.setUuId(uuId);
         sample.setTriggeredBy(trigger);
         sample.setBatteryLevel(BatteryUtils.getBatteryLevel(batteryIntent)/100.0);
-        sample.setBatteryDetails(getBatteryDetails(library, batteryIntent));
+        sample.setBatteryDetails(getBatteryDetails(context, batteryIntent));
         sample.setBatteryState(getBatteryStatusString(batteryIntent, state));
 
         sample.setTimestamp(System.currentTimeMillis()/1000.0);
-        sample.setPiList(library.getRunningProcessInfoForSample());
-        sample.setScreenBrightness(library.getScreenBrightness());
-        sample.setLocationProviders(library.getEnabledLocationProviders());
-        sample.setNetworkStatus(library.getNetworkStatusForSample());
-        sample.setNetworkDetails(constructNetworkDetails(library));
+        sample.setPiList(SamplingLibrary.getRunningProcessInfoForSample(context));
+        sample.setScreenBrightness(SamplingLibrary.getScreenBrightness(context));
+        sample.setLocationProviders(SamplingLibrary.getEnabledLocationProviders(context));
+        sample.setNetworkStatus(SamplingLibrary.getNetworkStatusForSample(context));
+        sample.setNetworkDetails(constructNetworkDetails(context));
 
         sample.setStorageDetails(SamplingLibrary.getStorageDetails());
         sample.setSettings(constructSettings());
-        sample.setDeveloperMode(library.isDeveloperModeOn());
-        sample.setUnknownSources(library.allowUnknownSources());
-        sample.setScreenOn(library.isScreenOn());
-        sample.setTimeZone(library.getTimeZone());
-        sample.setCountryCode(library.getCountryCode());
-        sample.setExtra(library.getExtras());
+        sample.setDeveloperMode(SamplingLibrary.isDeveloperModeOn(context));
+        sample.setUnknownSources(SamplingLibrary.allowUnknownSources(context));
+        sample.setScreenOn(SamplingLibrary.isScreenOn(context));
+        sample.setTimeZone(SamplingLibrary.getTimeZone(context));
+        sample.setCountryCode(SamplingLibrary.getCountryCode(context));
+        sample.setExtra(SamplingLibrary.getExtras(context));
 
 
         int[] memoryInfo = SamplingLibrary.readMeminfo();
@@ -58,7 +59,7 @@ public class Sampler2 {
         sample.setCpuStatus(constructCpuStatus(load1, load2));
     }
 
-    private static BatteryDetails getBatteryDetails(SamplingLibrary samplingLibrary, Intent intent){
+    private static BatteryDetails getBatteryDetails(Context context, Intent intent){
         if(intent == null) return null;
 
         BatteryDetails details = new BatteryDetails();
@@ -67,7 +68,7 @@ public class Sampler2 {
         details.setBatteryTemperature(intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 100);
         details.setBatteryVoltage(intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000.0);
         details.setBatteryCharger(getChargerString(intent));
-        details.setBatteryCapacity(samplingLibrary.getBatteryCapacity());
+        details.setBatteryCapacity(SamplingLibrary.getBatteryCapacity(context));
         return details;
     }
 
@@ -83,21 +84,21 @@ public class Sampler2 {
         }
     }
 
-    private static NetworkDetails constructNetworkDetails(SamplingLibrary library){
+    private static NetworkDetails constructNetworkDetails(Context context){
         NetworkDetails details = new NetworkDetails();
-        details.setNetworkType(library.getNetworkType());
-        details.setMobileNetworkType(library.getMobileNetworkType());
-        details.setRoamingEnabled(library.getRoamingStatus());
-        details.setMobileDataStatus(library.getDataState());
-        details.setMobileDataActivity(library.getDataActivity());
-        details.setSimOperator(library.getSIMOperator());
-        details.setNetworkOperator(library.getNetworkOperator());
-        details.setMcc(library.getMcc());
-        details.setMnc(library.getMnc());
-        details.setWifiStatus(library.getWifiState());
-        details.setWifiSignalStrength(library.getWifiSignalStrength());
-        details.setWifiLinkSpeed(library.getWifiLinkSpeed());
-        details.setWifiApStatus(library.getWifiHotspotState());
+        details.setNetworkType(SamplingLibrary.getNetworkType(context));
+        details.setMobileNetworkType(SamplingLibrary.getMobileNetworkType(context));
+        details.setRoamingEnabled(SamplingLibrary.getRoamingStatus(context));
+        details.setMobileDataStatus(SamplingLibrary.getDataState(context));
+        details.setMobileDataActivity(SamplingLibrary.getDataActivity(context));
+        details.setSimOperator(SamplingLibrary.getSIMOperator(context));
+        details.setNetworkOperator(SamplingLibrary.getNetworkOperator(context));
+        details.setMcc(SamplingLibrary.getMcc(context));
+        details.setMnc(SamplingLibrary.getMnc(context));
+        details.setWifiStatus(SamplingLibrary.getWifiState(context));
+        details.setWifiSignalStrength(SamplingLibrary.getWifiSignalStrength(context));
+        details.setWifiLinkSpeed(SamplingLibrary.getWifiLinkSpeed(context));
+        details.setWifiApStatus(SamplingLibrary.getWifiHotspotState(context));
         return details;
     }
 

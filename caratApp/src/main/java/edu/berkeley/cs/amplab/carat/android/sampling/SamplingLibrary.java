@@ -203,16 +203,8 @@ public final class SamplingLibrary {
 	// so it might be zero until we get the non-zero value from the intent
 	// (BatteryManager.EXTRA_LEVEL & BatteryManager.EXTRA_SCALE)
 
-	private Context context;
+	private static Location lastKnownLocation = null;
 
-	private SamplingLibrary(Context context) {
-		this.context = context;
-	}
-
-	public static SamplingLibrary from(Context context){
-		SamplingLibrary samplingLibrary = new SamplingLibrary(context);
-		return samplingLibrary;
-	}
 
 	/**
 	 * Returns a randomly generated unique identifier that stays constant for
@@ -633,7 +625,7 @@ public final class SamplingLibrary {
 
 	private static WeakReference<List<RunningAppProcessInfo>> runningAppInfo = null;
 
-	public List<ProcessInfo> getRunningAppInfo() {
+	public static List<ProcessInfo> getRunningAppInfo(Context context) {
 		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(context);
 		List<RunningServiceInfo> runningServices = getRunningServiceInfo(context);
 
@@ -1064,17 +1056,15 @@ public final class SamplingLibrary {
 	 *
 	 * @return a List of ProcessInfo objects, helper for sample.
 	 */
-	public List<ProcessInfo> getRunningProcessInfoForSample() {
+	public static List<ProcessInfo> getRunningProcessInfoForSample(Context context) {
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
 
 		// Reset list for each sample
 		runningAppInfo = null;
-		List<ProcessInfo> list = getRunningAppInfo();
+		List<ProcessInfo> list = getRunningAppInfo(context);
 		List<ProcessInfo> result = new ArrayList<ProcessInfo>();
 
 		PackageManager pm = context.getPackageManager();
-		// Collected in the same loop to save computation.
-		int[] procMem = new int[list.size()];
 
 		Set<String> procs = new HashSet<String>();
 
@@ -1100,23 +1090,14 @@ public final class SamplingLibrary {
 
 				// Human readable label (if any)
 				String label = pm.getApplicationLabel(info).toString();
-				if (label != null && label.length() > 0)
+				if (label.length() > 0){
 					item.setApplicationLabel(label);
+				}
 				int flags = pak.applicationInfo.flags;
-				// Check if it is a system app
+
 				boolean isSystemApp = (flags & ApplicationInfo.FLAG_SYSTEM) > 0;
 				isSystemApp = isSystemApp || (flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) > 0;
 				item.setIsSystemApp(isSystemApp);
-				/*
-				 * boolean sigSent = p.getBoolean(SIG_SENT_256 + pname, false);
-				 * if (collectSignatures && !sigSent && pak.signatures != null
-				 * && pak.signatures.length > 0) { List<String> sigList =
-				 * getSignatures(pak); boolean sigSentOld =
-				 * p.getBoolean(SIG_SENT + pname, false); if (sigSentOld)
-				 * p.edit().remove(SIG_SENT + pname);
-				 * p.edit().putBoolean(SIG_SENT_256 + pname, true).commit();
-				 * item.setAppSignatures(sigList); }
-				 */
 			}
 			item.setImportance(pi.getImportance());
 			item.setPId(pi.getPId());
@@ -1125,8 +1106,6 @@ public final class SamplingLibrary {
 			String installationSource = null;
 			if (!pi.isSystemApp) {
 				try {
-					// Log.w(STAG, "Calling getInstallerPackageName with: " +
-					// pname);
 					installationSource = pm.getInstallerPackageName(pname);
 				} catch (IllegalArgumentException iae) {
 					Logger.e(STAG, "Could not get installer for " + pname);
@@ -1135,14 +1114,6 @@ public final class SamplingLibrary {
 			if (installationSource == null)
 				installationSource = "null";
 			item.setInstallationPkg(installationSource);
-
-			// procMem[list.indexOf(pi)] = pi.getPId();
-			// FIXME: More fields will need to be added here, but ProcessInfo
-			// needs to change.
-			/*
-			 * uid lru
-			 */
-			// add to result
 			result.add(item);
 		}
 
@@ -1204,17 +1175,6 @@ public final class SamplingLibrary {
 		}
 		if (edited)
 			e.commit();
-
-		// FIXME: These are not used yet.
-		/*
-		 * ActivityManager pActivityManager = (ActivityManager) context
-		 * .getSystemService(Activity.ACTIVITY_SERVICE); Debug.MemoryInfo[]
-		 * memoryInfo = pActivityManager .getProcessMemoryInfo(procMem); for
-		 * (Debug.MemoryInfo info : memoryInfo) { // Decide which ones of info.*
-		 * we want, add to a new and improved // ProcessInfo object // FIXME:
-		 * Not used yet, Sample needs more fields // FIXME: Which memory fields
-		 * to choose? //int memory = info.dalvikPrivateDirty; }
-		 */
 
 		return result;
 	}
@@ -1357,10 +1317,10 @@ public final class SamplingLibrary {
 		return TimeUnit.MILLISECONDS.toSeconds(sleep);
 	}
 
-	public String getNetworkStatusForSample(){
-		String network = getNetworkStatus();
-		String networkType = getNetworkType();
-		String mobileNetworkType = getMobileNetworkType();
+	public static String getNetworkStatusForSample(Context context){
+		String network = getNetworkStatus(context);
+		String networkType = getNetworkType(context);
+		String mobileNetworkType = getMobileNetworkType(context);
 
 		// Required in new Carat protocol
 		if (network.equals(NETWORKSTATUS_CONNECTED)) {
@@ -1377,7 +1337,7 @@ public final class SamplingLibrary {
 	 * @param context the Context.
 	 * @return the network status, one of connected, disconnected, connecting, or disconnecting.
 	 */
-	public String getNetworkStatus() {
+	public static String getNetworkStatus(Context context) {
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (cm == null)
 			return NETWORKSTATUS_DISCONNECTED;
@@ -1404,7 +1364,7 @@ public final class SamplingLibrary {
 	 * @param context
 	 * @return
 	 */
-	public String getNetworkType() {
+	public static String getNetworkType(Context context) {
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (cm == null)
 			return TYPE_UNKNOWN;
@@ -1419,13 +1379,13 @@ public final class SamplingLibrary {
 	 * @param c the Context
 	 * @return true if the Internet is reachable.
 	 */
-	public boolean networkAvailable() {
-		String network = getNetworkStatus();
+	public static boolean networkAvailable(Context context) {
+		String network = getNetworkStatus(context);
 		return network.equals(NETWORKSTATUS_CONNECTED);
 	}
 
 	/* Get current WiFi signal Strength */
-	public int getWifiSignalStrength() {
+	public static int getWifiSignalStrength(Context context) {
 		WifiManager myWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		WifiInfo myWifiInfo = myWifiManager.getConnectionInfo();
 		int wifiRssi = myWifiInfo.getRssi();
@@ -1448,7 +1408,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get current WiFi link speed */
-	public int getWifiLinkSpeed() {
+	public static int getWifiLinkSpeed(Context context) {
 		WifiManager myWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		WifiInfo myWifiInfo = myWifiManager.getConnectionInfo();
 		int linkSpeed = myWifiInfo.getLinkSpeed();
@@ -1468,7 +1428,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get Wifi state: */
-	public String getWifiState() {
+	public static String getWifiState(Context context) {
 		WifiManager myWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		int wifiState = myWifiManager.getWifiState();
 		switch (wifiState) {
@@ -1518,8 +1478,8 @@ public final class SamplingLibrary {
 	}
 
 	/* Get Current Screen Brightness Value */
-	public int getScreenBrightness() {
-		if(isAutoBrightness()){
+	public static int getScreenBrightness(Context context) {
+		if(isAutoBrightness(context)){
 			return -1;
 		}
 		int screenBrightnessValue = 0;
@@ -1532,7 +1492,7 @@ public final class SamplingLibrary {
 		return screenBrightnessValue;
 	}
 
-	public boolean isAutoBrightness() {
+	public static boolean isAutoBrightness(Context context) {
 		boolean autoBrightness = false;
 		try {
 			autoBrightness = Settings.System.getInt(context.getContentResolver(),
@@ -1696,7 +1656,7 @@ public final class SamplingLibrary {
 	 *            from onReceive or app.
 	 * @return
 	 */
-	public List<String> getEnabledLocationProviders() {
+	public static List<String> getEnabledLocationProviders(Context context) {
 		LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 		return lm.getProviders(true);
 	}
@@ -1710,33 +1670,6 @@ public final class SamplingLibrary {
 		return provider;
 	}
 
-	/* Check the maximum number of satellites can be used in the satellite list */
-	public static int getMaxNumSatellite(Context context) {
-
-		LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-		GpsStatus gpsStatus = locationManager.getGpsStatus(null);
-		int maxNumSatellite = gpsStatus.getMaxSatellites();
-
-		// Log.v("maxNumStatellite", "Maxmium number of satellites:" +
-		// maxNumSatellite);
-		return maxNumSatellite;
-	}
-
-	/* Get call status */
-	public static String getCallState(Context context) {
-		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
-		int callState = telManager.getCallState();
-		switch (callState) {
-		case TelephonyManager.CALL_STATE_OFFHOOK:
-			return CALL_STATE_OFFHOOK;
-		case TelephonyManager.CALL_STATE_RINGING:
-			return CALL_STATE_RINGING;
-		default:
-			return CALL_STATE_IDLE;
-		}
-	}
-
 	private static String getDeviceId(Context context) {
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		if (telManager == null)
@@ -1745,7 +1678,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get network type */
-	public String getMobileNetworkType() {
+	public static String getMobileNetworkType(Context context) {
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
 		int netType = telManager.getNetworkType();
@@ -1803,7 +1736,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Check is it network roaming */
-	public boolean getRoamingStatus() {
+	public static boolean getRoamingStatus(Context context) {
 		boolean roamStatus = false;
 
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -1814,7 +1747,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get data state */
-	public String getDataState() {
+	public static String getDataState(Context context) {
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
 		int dataState = telManager.getDataState();
@@ -1831,7 +1764,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Get data activity */
-	public String getDataActivity() {
+	public static String getDataActivity(Context context) {
 		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
 		int dataActivity = telManager.getDataActivity();
@@ -1847,156 +1780,15 @@ public final class SamplingLibrary {
 		}
 	}
 
-	/* Get the current location of the device */
-	public static CellLocation getDeviceLocation(Context context) {
-		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
-		CellLocation LocDevice = telManager.getCellLocation();
-		// Log.v("DeviceLocation", "Device Location:" + LocDevice);
-		return LocDevice;
-	}
 
-	/**
-	 * Return a long[3] with incoming call time, outgoing call time, and
-	 * non-call time in seconds since boot.
-	 * 
-	 * @param context
-	 *            from onReceive or Activity
-	 * @return a long[3] with incoming call time, outgoing call time, and
-	 *         non-call time in seconds since boot.
-	 */
-	public static long[] getCalltimesSinceBoot(Context context) {
-
-		long[] result = new long[3];
-
-		long callInSeconds = 0;
-		long callOutSeconds = 0;
-		int type;
-		long dur;
-
-		// ms since boot
-		long uptime = SystemClock.elapsedRealtime();
-		long now = System.currentTimeMillis();
-		long bootTime = now - uptime;
-
-		String[] queries = new String[] { android.provider.CallLog.Calls.TYPE, android.provider.CallLog.Calls.DATE,
-				android.provider.CallLog.Calls.DURATION };
-
-		Cursor cur = context.getContentResolver().query(android.provider.CallLog.Calls.CONTENT_URI, queries,
-				android.provider.CallLog.Calls.DATE + " > " + bootTime, null,
-				android.provider.CallLog.Calls.DATE + " ASC");
-
-		if (cur != null) {
-			if (cur.moveToFirst()) {
-				while (!cur.isAfterLast()) {
-					type = cur.getInt(0);
-					dur = cur.getLong(2);
-					switch (type) {
-					case android.provider.CallLog.Calls.INCOMING_TYPE:
-						callInSeconds += dur;
-						break;
-					case android.provider.CallLog.Calls.OUTGOING_TYPE:
-						callOutSeconds += dur;
-						break;
-					default:
-					}
-					cur.moveToNext();
-				}
-			} else {
-				Log.w("CallDurFromBoot", "No calls listed");
-			}
-			cur.close();
-		} else {
-			Log.w("CallDurFromBoot", "Cursor is null");
-		}
-
-		// uptime is ms, so it needs to be divided by 1000
-		long nonCallTime = uptime / 1000 - callInSeconds - callOutSeconds;
-		result[0] = callInSeconds;
-		result[1] = callOutSeconds;
-		result[2] = nonCallTime;
-		return result;
-	}
-
-	/* Get a monthly call duration record */
-	public static Map<String, CallMonth> getMonthCallDur(Context context) {
-
-		Map<String, CallMonth> callMonth = new HashMap<String, CallMonth>();
-		Map<String, String> callInDur = new HashMap<String, String>();
-		Map<String, String> callOutDur = new HashMap<String, String>();
-
-		int callType;
-		long callDur;
-		Date callDate;
-		String tmpTime = null;
-		String time;
-		SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM");
-		CallMonth curMonth = null;
-
-		String[] queryFields = new String[] { android.provider.CallLog.Calls.TYPE, android.provider.CallLog.Calls.DATE,
-				android.provider.CallLog.Calls.DURATION };
-
-		Cursor myCursor = context.getContentResolver().query(android.provider.CallLog.Calls.CONTENT_URI, queryFields,
-				null, null, android.provider.CallLog.Calls.DATE + " DESC");
-
-		if (myCursor.moveToFirst()) {
-			for (int i = 0; i < myCursor.getColumnCount(); i++) {
-				myCursor.moveToPosition(i);
-				callType = myCursor.getInt(0);
-				callDate = new Date(myCursor.getLong(1));
-				callDur = myCursor.getLong(2);
-
-				time = dateformat.format(callDate);
-				if (tmpTime != null && !time.equals(tmpTime)) {
-					callMonth.put(tmpTime, curMonth);
-					callInDur.clear();
-					callOutDur.clear();
-					curMonth = new CallMonth();
-				}
-				tmpTime = time;
-
-				if (callType == 1) {
-					curMonth.tolCallInNum++;
-					curMonth.tolCallInDur += callDur;
-					callInDur.put("tolCallInNum", String.valueOf(curMonth.tolCallInNum));
-					callInDur.put("tolCallInDur", String.valueOf(curMonth.tolCallInDur));
-				}
-				if (callType == 2) {
-					curMonth.tolCallOutNum++;
-					curMonth.tolCallOutDur += callDur;
-					callOutDur.put("tolCallOutNum", String.valueOf(curMonth.tolCallOutNum));
-					callOutDur.put("tolCallOutDur", String.valueOf(curMonth.tolCallOutDur));
-				}
-				if (callType == 3) {
-					curMonth.tolMissedCallNum++;
-					callInDur.put("tolMissedCallNum", String.valueOf(curMonth.tolMissedCallNum));
-				}
-			}
-		} else {
-			// Log.v("MonthType", "callType=None");
-			// Log.v("MonthDate", "callDate=None");
-			// Log.v("MonthDuration", "callduration =None");
-		}
-		return callMonth;
-	}
-
-	public static CallMonth getCallMonthinfo(Context context, String time) {
-
-		Map<String, CallMonth> callInfo;
-		callInfo = SamplingLibrary.getMonthCallDur(context);
-		CallMonth call = new CallMonth();
-		call = callInfo.get(time);
-		return call;
-	}
-
-	private static Location lastKnownLocation = null;
 
 	/**
 	 * Get whether the screen is on or off.
 	 * 
 	 * @return true if the screen is on.
 	 */
-	public int isScreenOn() {
+	public static int isScreenOn(Context context) {
 		PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 		if (powerManager != null) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
@@ -2012,11 +1804,10 @@ public final class SamplingLibrary {
 	 * Get the current timezone of the device.
 	 */
 
-	public String getTimeZone() {
+	public static String getTimeZone(Context context) {
 		Calendar cal = Calendar.getInstance();
 		TimeZone tz = cal.getTimeZone();
 		return tz.getID();
-		//return tz.getDisplayName();
 	}
 
 	/**
@@ -2024,7 +1815,7 @@ public final class SamplingLibrary {
 	 * @param context
 	 * @return true when app installation from unknown sources is enabled.
 	 */
-	public int allowUnknownSources() {
+	public static int allowUnknownSources(Context context) {
 		ContentResolver res = context.getContentResolver();
 		int unknownSources = Settings.Secure.getInt(res, Settings.Secure.INSTALL_NON_MARKET_APPS, 0);
 		return unknownSources;
@@ -2035,7 +1826,7 @@ public final class SamplingLibrary {
 	 * @param context
 	 * @return true when developer mode is enabled.
 	 */
-	public int isDeveloperModeOn() {
+	public static int isDeveloperModeOn(Context context) {
 		ContentResolver res = context.getContentResolver();
 		int adb = Settings.Secure.getInt(res, Settings.Secure.ADB_ENABLED, 0);
 		// In API level 17, this is Settings.Global.ADB_ENABLED.
@@ -2430,7 +2221,7 @@ public final class SamplingLibrary {
 		return mySample;
 	}
 
-	public Intent getLastBatteryIntent(){
+	public static Intent getLastBatteryIntent(Context context){
 		return context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 	}
 
@@ -2439,7 +2230,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return 3-digit country code
      */
-	public String getMcc(){
+	public static String getMcc(Context context){
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String networkOperator = telephonyManager.getNetworkOperator();
 		if(networkOperator != null && networkOperator.length() >= 5) {
@@ -2464,7 +2255,7 @@ public final class SamplingLibrary {
 		return -1;
 	}
 
-	public double getBatteryCapacity() {
+	public static double getBatteryCapacity(Context context) {
 		try {
 			// Please note: Uses reflection, API not available on all devices
 			Class<?> powerProfile = Class.forName("com.android.internal.os.PowerProfile");
@@ -2495,7 +2286,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return 2-3 digit network code
      */
-	public String getMnc(){
+	public static String getMnc(Context context){
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String networkOperator = telephonyManager.getNetworkOperator();
 		if(networkOperator != null && networkOperator.length() >= 5) {
@@ -2519,7 +2310,7 @@ public final class SamplingLibrary {
  	 * @param context Application context
 	 * @return Two letter country code
      */
-	public String getCountryCode() {
+	public static String getCountryCode(Context context) {
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         String cc;
         if(telephonyManager.getPhoneType() != TelephonyManager.PHONE_TYPE_CDMA){
@@ -2542,7 +2333,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return Wifi access point state
      */
-	public String getWifiHotspotState(){
+	public static String getWifiHotspotState(Context context){
 		try {
 			int state = getWifiApState(context);
 			switch(state){
@@ -2569,7 +2360,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return SIM Operator name
      */
-	public String getSIMOperator(){
+	public static String getSIMOperator(Context context){
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String operator;
 
@@ -2589,7 +2380,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return Network operator name, aka. carrier
 	 */
-	public String getNetworkOperator(){
+	public static String getNetworkOperator(Context context){
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String operator;
 
@@ -2930,19 +2721,11 @@ public final class SamplingLibrary {
 	 * @param context the Context
 	 * @return a List<Feature> populated with extra items to collect outside of the protocol spec.
 	 */
-	public List<Feature> getExtras() {
+	public static List<Feature> getExtras(Context context) {
 		LinkedList<Feature> res = new LinkedList<Feature>();
 		res.add(getVmVersion(context));
 		return res;
 	}
-
-	//TODO: disabled for debugging
-//	private static TrafficRecord getAppTraffic(Integer uid) {
-//		TrafficRecord trafficRecord = new TrafficRecord();
-//		trafficRecord.setTx(TrafficStats.getUidTxBytes(uid));
-//		trafficRecord.setRx(TrafficStats.getUidRxBytes(uid));
-//		return trafficRecord;
-//	}
 
 	/**
 	 * Get the java.vm.version system property as a Feature("vm", version).

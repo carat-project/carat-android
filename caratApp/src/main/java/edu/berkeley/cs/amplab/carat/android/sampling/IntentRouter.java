@@ -51,7 +51,7 @@ public class IntentRouter extends IntentService {
     private void scheduledSample(){
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
-        Sampler2.sample(uuId, Constants.SCHEDULED_SAMPLE, "FIXME", SamplingLibrary.from(context));
+        Sampler2.sample(context, uuId, Constants.SCHEDULED_SAMPLE, "FIXME");
 
         scheduleNext();
     }
