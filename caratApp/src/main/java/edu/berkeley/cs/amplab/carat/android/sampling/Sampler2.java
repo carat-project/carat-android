@@ -2,7 +2,9 @@ package edu.berkeley.cs.amplab.carat.android.sampling;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.BatteryManager;
+import android.preference.PreferenceManager;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
@@ -23,16 +25,13 @@ public class Sampler2 {
     private static String TAG = Sampler2.class.getSimpleName();
     private static long distanceMoved = 0;
 
-    public static void sample(Context context, String uuId, String trigger, String state){
-        Sample sample = constructSample(context, uuId, trigger, state);
+    public static void sample(Context context, String uuId, String trigger){
+        Sample sample = constructSample(context, uuId, trigger);
         SampleDB db = SampleDB.getInstance(context);
         Sample lastSample = db.getLastSample(context);
         if(sample != null && !essentiallyIdentical(sample, lastSample)){
-            // TODO: sample.setDistanceTraveled(Sampler.getInstance().getDistanceSinceLastSample());
             long id = db.putSample(sample);
-            Logger.d(TAG, "Sample id " + id + " stored for " + trigger);
-        } else {
-            Logger.d(TAG, "Sample was either null or essentially a duplicate, skipping");
+            Logger.i(TAG, "Stored sample " + id + " for " + trigger);
         }
         int sampleCount = SampleDB.getInstance(context).countSamples();
         if(sampleCount >= Sampler.MAX_SAMPLES){
@@ -40,7 +39,7 @@ public class Sampler2 {
         }
     }
 
-    private static Sample constructSample(Context context, String uuId, String trigger, String state){
+    private static Sample constructSample(Context context, String uuId, String trigger){
         SystemLoadPoint load1 = SamplingLibrary.getSystemLoad();
         Intent batteryIntent = SamplingLibrary.getLastBatteryIntent(context);
 
@@ -48,14 +47,16 @@ public class Sampler2 {
         sample.setUuId(uuId);
         sample.setTriggeredBy(trigger);
 
+
         sample.setBatteryLevel(BatteryUtils.getBatteryLevel(batteryIntent)/100.0);
         sample.setBatteryDetails(getBatteryDetails(context, batteryIntent));
-        sample.setBatteryState(getBatteryStatusString(batteryIntent, state));
+        sample.setBatteryState(getBatteryStatusString(context, batteryIntent));
 
         sample.setTimestamp(System.currentTimeMillis()/1000.0);
         sample.setPiList(SamplingLibrary.getRunningProcessInfoForSample(context));
         sample.setScreenBrightness(SamplingLibrary.getScreenBrightness(context));
         sample.setLocationProviders(SamplingLibrary.getEnabledLocationProviders(context));
+        sample.setDistanceTraveled(SamplingLibrary.getDistanceTraveled(context));
         sample.setNetworkStatus(SamplingLibrary.getNetworkStatusForSample(context));
         sample.setNetworkDetails(constructNetworkDetails(context));
 
@@ -67,8 +68,6 @@ public class Sampler2 {
         sample.setTimeZone(SamplingLibrary.getTimeZone(context));
         sample.setCountryCode(SamplingLibrary.getCountryCode(context));
         sample.setExtra(SamplingLibrary.getExtras(context));
-
-        sample.setDistanceTraveled(SamplingLibrary.getDistanceTraveled(context));
 
 
         int[] memoryInfo = SamplingLibrary.readMeminfo();
@@ -98,16 +97,21 @@ public class Sampler2 {
         return details;
     }
 
-    private static String getBatteryStatusString(Intent intent, String lastState){
-        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
-        switch(status){
-            case BatteryManager.BATTERY_STATUS_CHARGING: return "Charging";
-            case BatteryManager.BATTERY_STATUS_DISCHARGING: return "Discharging";
-            case BatteryManager.BATTERY_STATUS_FULL: return "Full";
-            case BatteryManager.BATTERY_STATUS_NOT_CHARGING: return "Not charging";
-            case BatteryManager.BATTERY_STATUS_UNKNOWN: return "Unknown";
-            default: return lastState != null ? lastState : "Unknown";
+    private static String getBatteryStatusString(Context context, Intent intent){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String lastState = prefs.getString("lastBatteryStatus", "Unknown");
+        int id = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
+        String status;
+        switch(id){
+            case BatteryManager.BATTERY_STATUS_CHARGING: status =  "Charging"; break;
+            case BatteryManager.BATTERY_STATUS_DISCHARGING: status = "Discharging"; break;
+            case BatteryManager.BATTERY_STATUS_FULL: status = "Full"; break;
+            case BatteryManager.BATTERY_STATUS_NOT_CHARGING: status = "Not charging"; break;
+            case BatteryManager.BATTERY_STATUS_UNKNOWN: status = "Unknown"; break;
+            default: status = lastState;
         }
+        prefs.edit().putString("lastBatteryStatus", status).apply();
+        return status;
     }
 
     private static NetworkDetails constructNetworkDetails(Context context){

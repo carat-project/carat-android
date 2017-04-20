@@ -49,7 +49,7 @@ public class IntentRouter extends IntentService implements LocationListener {
                 switch(action){
                     case Constants.SCHEDULED_SAMPLE: scheduledSample(); break;
                     // TODO: Implement rest of the actions: normal sample, rapid charging...
-                    // TODO: Call requestLocationUpdates here before collecting Sample
+                    // TODO: Call requestLocationUpdates here before collecting sample
                     default: Logger.d(TAG, "Implement me: " + action + "!");
                 }
             }
@@ -59,7 +59,7 @@ public class IntentRouter extends IntentService implements LocationListener {
     private void scheduledSample(){
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
         String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
-        Sampler2.sample(context, uuId, Constants.SCHEDULED_SAMPLE, "FIXME");
+        Sampler2.sample(context, uuId, Constants.SCHEDULED_SAMPLE);
 
         scheduleNext();
     }
@@ -93,15 +93,15 @@ public class IntentRouter extends IntentService implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         Context context = getApplicationContext();
-        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
-        long distance = p.getLong("distanceMoved", 0);
-        String locationJSON = p.getString("lastKnownLocation", "");
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        long distance = prefs.getLong("distanceMoved", 0);
+        String locationJSON = prefs.getString("lastKnownLocation", "");
         Location lastKnownLocation = new Gson().fromJson(locationJSON, Location.class);
         if (location != null && lastKnownLocation != null) {
             distance += lastKnownLocation.distanceTo(location);
         }
-        p.edit().putLong("distanceMoved", distance).apply();
-        p.edit().putString("lastKnownLocation", new Gson().toJson(location)).apply();
+        prefs.edit().putLong("distanceMoved", distance).apply();
+        prefs.edit().putString("lastKnownLocation", new Gson().toJson(location)).apply();
     }
 
     @Override

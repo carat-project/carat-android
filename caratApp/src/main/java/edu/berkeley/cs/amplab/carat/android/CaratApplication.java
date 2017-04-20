@@ -245,6 +245,7 @@ public class CaratApplication extends Application {
         if(!p.getBoolean(context.getString(R.string.disable_notifications), false)){
             PendingIntent launchCarat = PendingIntent.getActivity(context, 0,
                     new Intent(context, MainActivity.class), 0);
+
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
                     context)
                     .setSmallIcon(R.drawable.carat_notif_icon)
@@ -253,6 +254,7 @@ public class CaratApplication extends Application {
                     .setNumber(samples);
             mBuilder.setContentIntent(launchCarat);
             mBuilder.setAutoCancel(true);
+
             NotificationManager mNotificationManager = (NotificationManager) context
                     .getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.notify(1, mBuilder.build());

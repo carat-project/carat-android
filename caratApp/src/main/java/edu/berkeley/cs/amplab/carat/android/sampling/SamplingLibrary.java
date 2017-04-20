@@ -1513,106 +1513,25 @@ public final class SamplingLibrary {
 		return gpsEnabled;
 	}
 
-	/* check the GSM cell information */
-	public static CellInfo getCellInfo(Context context) {
-		CellInfo curCell = new CellInfo();
-
-		TelephonyManager myTelManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
-		String netOperator = myTelManager.getNetworkOperator();
-
-		// Fix crash when not connected to network (airplane mode, underground,
-		// etc)
-		if (netOperator == null || netOperator.length() < 3) {
-			return curCell;
-		}
-
-		/*
-		 * FIXME: Actually check for mobile network status == connected before
-		 * doing this stuff.
-		 */
-
-		if (SamplingLibrary.getPhoneType(context) == PHONE_TYPE_CDMA) {
-			CdmaCellLocation cdmaLocation = (CdmaCellLocation) myTelManager.getCellLocation();
-			if (cdmaLocation == null) {
-				// Log.v("cdmaLocation", "CDMA Location:" + cdmaLocation);
-			} else {
-				int cid = cdmaLocation.getBaseStationId();
-				int lac = cdmaLocation.getNetworkId();
-				int mnc = cdmaLocation.getSystemId();
-				int mcc = Integer.parseInt(netOperator.substring(0, 3));
-
-				curCell.CID = cid;
-				curCell.LAC = lac;
-				curCell.MNC = mnc;
-				curCell.MCC = mcc;
-				curCell.radioType = SamplingLibrary.from(context).getMobileNetworkType();
-
-				// Log.v("MCC", "MCC is:" + mcc);
-				// Log.v("MNC", "MNC is:" + mnc);
-				// Log.v("CID", "CID is:" + cid);
-				// Log.v("LAC", "LAC is:" + lac);
-			}
-
-		} else if (SamplingLibrary.getPhoneType(context) == PHONE_TYPE_GSM) {
-			GsmCellLocation gsmLocation = (GsmCellLocation) myTelManager.getCellLocation();
-
-			if (gsmLocation == null) {
-				// Log.v("gsmLocation", "GSM Location:" + gsmLocation);
-			} else {
-				int cid = gsmLocation.getCid();
-				int lac = gsmLocation.getLac();
-				int mcc = Integer.parseInt(netOperator.substring(0, 3));
-				int mnc = Integer.parseInt(netOperator.substring(3));
-
-				curCell.MCC = mcc;
-				curCell.MNC = mnc;
-				curCell.LAC = lac;
-				curCell.CID = cid;
-				curCell.radioType = SamplingLibrary.from(context).getMobileNetworkType();
-
-				// Log.v("MCC", "MCC is:" + mcc);
-				// Log.v("MNC", "MNC is:" + mnc);
-				// Log.v("CID", "CID is:" + cid);
-				// Log.v("LAC", "LAC is:" + lac);
-			}
-		}
-		return curCell;
-	}
-
-	/**
-	 * Return distance between <code>lastKnownLocation</code> and a newly
-	 * obtained location from any available provider.
-	 * 
-	 * @param c
-	 *            from Intent or Application.
-	 * @return
-	 */
-	public static double getDistance(Context c) {
-		Location l = getLastKnownLocation(c);
-		double distance = 0.0;
-		if (lastKnownLocation != null && l != null) {
-			distance = lastKnownLocation.distanceTo(l);
-		}
-		lastKnownLocation = l;
-		return distance;
+	// This value gets updated in IntentRouter, look there for implementation
+	public static long getDistanceTraveled(Context context){
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
+		long distanceTraveled = p.getLong("distanceTraveled", 0);
+		p.edit().putLong("distanceTraveled", 0).apply(); // Reset the counter
+		return distanceTraveled;
 	}
 
 	public static Location getLastKnownLocation(Context c) {
 		String provider = getBestProvider(c);
-		// FIXME: Some buggy device is giving GPS to us, even though we cannot
-		// use it.
 		if (provider != null && !provider.equals("gps")) {
-			Location l = getLastKnownLocation(c, provider);
-			return l;
+			return getLastKnownLocation(c, provider);
 		}
 		return null;
 	}
 
 	private static Location getLastKnownLocation(Context context, String provider) {
 		LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-		Location l = lm.getLastKnownLocation(provider);
-		return l;
+		return lm.getLastKnownLocation(provider);
 	}
 
 	/* Get the distance users between two locations */
@@ -1779,10 +1698,6 @@ public final class SamplingLibrary {
 			return DATA_ACTIVITY_NONE;
 		}
 	}
-
-
-
-
 	/**
 	 * Get whether the screen is on or off.
 	 * 
@@ -1981,29 +1896,7 @@ public final class SamplingLibrary {
 
 		// Record first data point for CPU usage
 		long[] idleAndCpu1 = readUsagePoint();
-
-		// If the sampler is running because of the SCREEN_ON or SCREEN_OFF
-		// event/action,
-		// we want to get the info of all installed apps/packages, not only
-		// those running.
-		// This is because we need the traffic info of all apps, some might not
-		// be running when
-		// those events (screen on / screen off) occur
-
-		// TODO: let's comment out these lines for debugging purpose
-
-		// if (action.equals(Intent.ACTION_SCREEN_ON) ||
-		// action.equals(Intent.ACTION_SCREEN_OFF)) {
-		// Logger.d(TAG,
-		// "the action has been Intent.ACTION_SCREEN_ON or SCREEN_OFF. Taking sample of ALL INSTALLED packages (rather than running processes)");
-		// Map<String, ProcessInfo> installedPackages =
-		// getInstalledPackages(context, false);
-		// List<ProcessInfo> processes = new ArrayList<ProcessInfo>();
-		// processes.addAll(installedPackages.values());
-		// } else {
-		// Logger.d(TAG,
-		// "the action has NOT been Intent.ACTION_SCREEN_ON or SCREEN_OFF. Taking sample of running processes.");
-		List<ProcessInfo> processes = getRunningProcessInfoForSample();
+		List<ProcessInfo> processes = getRunningProcessInfoForSample(context);
 		mySample.setPiList(processes);
 		// }
 
@@ -2750,9 +2643,9 @@ public final class SamplingLibrary {
 			String hexB = convertToHex(bytes);
 			sigList.add(hexB);
 		}
-		Signature[] sigs = pak.signatures;
+		Signature[] signatures = pak.signatures;
 
-		for (Signature s : sigs) {
+		for (Signature s : signatures) {
 			MessageDigest md = null;
 			try {
 				md = MessageDigest.getInstance("SHA-1");
@@ -2772,38 +2665,42 @@ public final class SamplingLibrary {
 				if (pkPublic == null)
 					continue;
 				String al = pkPublic.getAlgorithm();
-				if (al.equals("RSA")) {
-					md = MessageDigest.getInstance("SHA-256");
-					RSAPublicKey rsa = (RSAPublicKey) pkPublic;
-					byte[] data = rsa.getModulus().toByteArray();
-					if (data[0] == 0) {
-						byte[] copy = new byte[data.length - 1];
-						System.arraycopy(data, 1, copy, 0, data.length - 1);
-						md.update(copy);
-					} else
-						md.update(data);
-					dig = md.digest();
-					// Add SHA-256 of modulus
-					sigList.add(convertToHex(dig));
-				} else if (al.equals("DSA")) {
-					DSAPublicKey dsa = (DSAPublicKey) pkPublic;
-					md = MessageDigest.getInstance("SHA-256");
-					byte[] data = dsa.getY().toByteArray();
-					if (data[0] == 0) {
-						byte[] copy = new byte[data.length - 1];
-						System.arraycopy(data, 1, copy, 0, data.length - 1);
-						md.update(copy);
-					} else
-						md.update(data);
-					dig = md.digest();
-					// Add SHA-256 of public key (DSA)
-					sigList.add(convertToHex(dig));
-				} else {
-					Logger.e("SamplingLibrary", "Weird algorithm: " + al + " for " + pak.packageName);
+				switch (al) {
+					case "RSA": {
+						md = MessageDigest.getInstance("SHA-256");
+						RSAPublicKey rsa = (RSAPublicKey) pkPublic;
+						byte[] data = rsa.getModulus().toByteArray();
+						if (data[0] == 0) {
+							byte[] copy = new byte[data.length - 1];
+							System.arraycopy(data, 1, copy, 0, data.length - 1);
+							md.update(copy);
+						} else
+							md.update(data);
+						dig = md.digest();
+						// Add SHA-256 of modulus
+						sigList.add(convertToHex(dig));
+						break;
+					}
+					case "DSA": {
+						DSAPublicKey dsa = (DSAPublicKey) pkPublic;
+						md = MessageDigest.getInstance("SHA-256");
+						byte[] data = dsa.getY().toByteArray();
+						if (data[0] == 0) {
+							byte[] copy = new byte[data.length - 1];
+							System.arraycopy(data, 1, copy, 0, data.length - 1);
+							md.update(copy);
+						} else
+							md.update(data);
+						dig = md.digest();
+						// Add SHA-256 of public key (DSA)
+						sigList.add(convertToHex(dig));
+						break;
+					}
+					default:
+						Logger.e("SamplingLibrary", "Weird algorithm: " + al + " for " + pak.packageName);
+						break;
 				}
-			} catch (NoSuchAlgorithmException e) {
-				// Do nothing
-			} catch (CertificateException e) {
+			} catch (NoSuchAlgorithmException | CertificateException e) {
 				// Do nothing
 			}
 
