@@ -37,7 +37,6 @@
     <application
         android:name=".CaratApplication"
         android:allowBackup="true"
-        android:enabled="true"
         android:icon="@drawable/carat_material_icon"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
@@ -65,13 +64,16 @@
         <!--- Services -->
         <service
             android:name=".sampling.IntentRouter"
-            android:label="IntentRouter" />
+            android:label="Intent router" />
+
+        <service
+            android:name=".sampling.LocationReceiver"
+            android:label="Location receiver"
+            android:process=":location"/>
 
         <!-- Receivers -->
         <receiver
             android:name=".sampling.BootReceiver"
-            android:enabled="true"
-            android:exported="true"
             android:label="Boot receiver for Carat sampler" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

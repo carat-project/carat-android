@@ -12,9 +12,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
+
+import org.apache.commons.math3.analysis.function.Power;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -27,36 +31,46 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
 /**
  * Created by Jonatan Hamberg on 1.2.2017.
  */
-public class IntentRouter extends IntentService implements LocationListener {
+public class IntentRouter extends IntentService {
     private final static String TAG = IntentRouter.class.getSimpleName();
     private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(15);
     private final static int REQUEST_CODE = 67294580;
 
     private Context context;
     private AlarmManager alarmManager;
+    private PowerManager powerManager;
 
     public IntentRouter(){
         super(TAG);
     }
 
     public void initInstanceValues(){
-        if(context == null || alarmManager == null){
+        if(context == null || alarmManager == null || powerManager == null){
             context = getApplicationContext();
             alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         }
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
         initInstanceValues();
-        Logger.d(TAG, "Received intent on intentreceiver");
 
-        requestLocationUpdates();
-        Logger.d(TAG, "Here" + intent.getAction());
+        // This is a bit hacky, intent service should handle the wakelock by itself but
+        // we are enforcing our own lock here just in case.
+        PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        wl.acquire();
+
+        // Start up a location receiver in case it has died, it should stay up long enough
+        // to get at least one update, which is enough for the coarse location sampling
+        // we do for distance traveled.
+        if(!Util.isServiceRunning(context, LocationReceiver.class)){
+            startService(new Intent(this, LocationReceiver.class));
+        }
 
         String action = intent.getStringExtra(Keys.intentReceiverAction);
         if(action != null){
-            Logger.d(TAG, "Not here");
+            Logger.d(TAG, "Routing intent for " + action);
             switch(action){
                 case Constants.RAPID_SAMPLING:
                     // TODO: Foreground notification and sampling
@@ -70,8 +84,8 @@ public class IntentRouter extends IntentService implements LocationListener {
                 default: Logger.d(TAG, "Implement me: " + action + "!");
             }
             checkSchedule();
-            Logger.d(TAG, "Sampling here");
-            Sampler2.sample(context, action);
+            Sampler2.sample(context, action, wl::release);
+            IntentReceiver.completeWakefulIntent(intent);
         }
     }
 
@@ -98,50 +112,5 @@ public class IntentRouter extends IntentService implements LocationListener {
                 alarmManager.set(AlarmManager.RTC_WAKEUP, then, pendingIntent);
             }
         }
-    }
-
-    private void requestLocationUpdates() {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        List<String> providers = SamplingLibrary.getEnabledLocationProviders(context);
-        if (providers != null) {
-            for (String provider : providers) {
-                locationManager.requestLocationUpdates(provider, Constants.FRESHNESS_TIMEOUT, 0, this);
-            }
-        }
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        Context context = getApplicationContext();
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        long distance = prefs.getLong(Keys.distanceTraveled, 0);
-        String locationJSON = prefs.getString(Keys.lastKnownLocation, "");
-        Location lastKnownLocation = new Gson().fromJson(locationJSON, Location.class);
-        if (location != null && lastKnownLocation != null) {
-            distance += lastKnownLocation.distanceTo(location);
-        }
-
-        locationJSON = new Gson().toJson(location);
-        prefs.edit().putLong(Keys.distanceTraveled, distance).apply();
-        prefs.edit().putString(Keys.lastKnownLocation, locationJSON).apply();
-
-        // TODO: Fix me?
-        Logger.d(TAG, "Distance traveled: " + distance);
-        Logger.d(TAG, "Last known location: " + locationJSON);
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        requestLocationUpdates();
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        requestLocationUpdates();
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        requestLocationUpdates();
     }
 }

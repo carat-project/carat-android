@@ -25,7 +25,7 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
 public class Sampler2 {
     private static String TAG = Sampler2.class.getSimpleName();
 
-    public static void sample(Context context, String trigger){
+    public static void sample(Context context, String trigger, Runnable callback){
         Sample sample = constructSample(context, trigger);
 
         SampleDB db = SampleDB.getInstance(context);
@@ -39,6 +39,9 @@ public class Sampler2 {
         if(sampleCount >= Sampler.MAX_SAMPLES){
             CaratApplication.postSamplesNotification(sampleCount);
         }
+
+        // Release the wakelock
+        callback.run();
     }
 
     private static Sample constructSample(Context context, String trigger){
