@@ -316,8 +316,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         }
 
         holder.title.setText(actionTitle);
-
-        holder.subtitle.setText(item.getBenefitText());
+        holder.subtitle.setText(context.getString(R.string.impact) + " " +  item.getBenefitText());
     }
 
     private void setStaticViews(View v, CustomAction action){

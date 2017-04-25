@@ -168,7 +168,7 @@ public class HogBugExpandListAdapter extends BaseExpandableListAdapter implement
                 item.getAppName()));
         processName.setText(CaratApplication.labelForApp(a.getApplicationContext(),
                 item.getAppName()));
-        processImprovement.setText(item.getBenefitText());
+        processImprovement.setText(mainActivity.getString(R.string.impact) + " " + item.getBenefitText());
 
     }
 
