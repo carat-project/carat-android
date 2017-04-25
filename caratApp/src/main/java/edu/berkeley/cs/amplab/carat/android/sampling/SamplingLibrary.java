@@ -616,11 +616,13 @@ public final class SamplingLibrary {
 
 
 	public static SystemLoadPoint getSystemLoad() {
-		Integer[][] data = Util.readRAF("/proc/stat", 1, 10, "\\s+");
-		if(data == null || data.length == 0){
+		try {
+			RandomAccessFile reader = new RandomAccessFile("/proc/stat", "r");
+			int[] data = Util.readLines(reader, 1, 10, "\\s+")[0];
+			return new SystemLoadPoint(data);
+		} catch (IOException e) {
 			return null;
 		}
-		else return new SystemLoadPoint(data[0]);
 	}
 
 	private static WeakReference<List<RunningAppProcessInfo>> runningAppInfo = null;

@@ -3,6 +3,7 @@ package edu.berkeley.cs.amplab.carat.android.sampling;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,31 +37,41 @@ public class IntentRouter extends IntentService implements LocationListener {
 
     public IntentRouter(){
         super(TAG);
-        context = getApplicationContext();
-        alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+    }
+
+    public void initInstanceValues(){
+        if(context == null || alarmManager == null){
+            context = getApplicationContext();
+            alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        }
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        initInstanceValues();
+        Logger.d(TAG, "Received intent on intentreceiver");
+
         requestLocationUpdates();
-        if(intent != null){
-            String action = intent.getAction();
-            if(action != null){
-                switch(action){
-                    case Constants.RAPID_SAMPLING:
-                        // TODO: Foreground notification and sampling
-                        break;
-                    case Constants.SCHEDULED_SAMPLE:
-                        scheduleNextSample(SAMPLING_INTERVAL);
-                        break;
-                    case Intent.ACTION_BATTERY_CHANGED:
-                        // TODO: Do something here?
-                        break;
-                    default: Logger.d(TAG, "Implement me: " + action + "!");
-                }
-                checkSchedule();
-                Sampler2.sample(context, action);
+        Logger.d(TAG, "Here" + intent.getAction());
+
+        String action = intent.getStringExtra(Keys.intentReceiverAction);
+        if(action != null){
+            Logger.d(TAG, "Not here");
+            switch(action){
+                case Constants.RAPID_SAMPLING:
+                    // TODO: Foreground notification and sampling
+                    break;
+                case Constants.SCHEDULED_SAMPLE:
+                    scheduleNextSample(SAMPLING_INTERVAL);
+                    break;
+                case Intent.ACTION_BATTERY_CHANGED:
+                    // TODO: Do something here?
+                    break;
+                default: Logger.d(TAG, "Implement me: " + action + "!");
             }
+            checkSchedule();
+            Logger.d(TAG, "Sampling here");
+            Sampler2.sample(context, action);
         }
     }
 
@@ -109,8 +120,14 @@ public class IntentRouter extends IntentService implements LocationListener {
         if (location != null && lastKnownLocation != null) {
             distance += lastKnownLocation.distanceTo(location);
         }
+
+        locationJSON = new Gson().toJson(location);
         prefs.edit().putLong(Keys.distanceTraveled, distance).apply();
-        prefs.edit().putString(Keys.lastKnownLocation, new Gson().toJson(location)).apply();
+        prefs.edit().putString(Keys.lastKnownLocation, locationJSON).apply();
+
+        // TODO: Fix me?
+        Logger.d(TAG, "Distance traveled: " + distance);
+        Logger.d(TAG, "Last known location: " + locationJSON);
     }
 
     @Override

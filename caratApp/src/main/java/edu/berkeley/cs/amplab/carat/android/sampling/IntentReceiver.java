@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
+import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
@@ -15,8 +16,8 @@ public class IntentReceiver extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Intent service = new Intent(context, IntentRouter.class);
-        service.putExtras(intent);
-        Logger.d(TAG, "Starting wakeful service for " + service.getAction());
+        service.putExtra(Keys.intentReceiverAction, intent.getAction());
+        Logger.d(TAG, "Starting wakeful service for " + intent.getAction());
         startWakefulService(context, service);
     }
 }

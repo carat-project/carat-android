@@ -32,7 +32,7 @@ public class Sampler2 {
         Sample lastSample = db.getLastSample(context);
         if(sample != null && !essentiallyIdentical(sample, lastSample)){
             long id = db.putSample(sample);
-            Logger.i(TAG, "Stored sample " + id + " for " + trigger);
+            Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
         }
 
         int sampleCount = SampleDB.getInstance(context).countSamples();
@@ -136,7 +136,12 @@ public class Sampler2 {
 
     private static CpuStatus constructCpuStatus(SystemLoadPoint load1, SystemLoadPoint load2){
         CpuStatus cpuStatus = new CpuStatus();
-        cpuStatus.setCpuUsage(SamplingLibrary.getCpuUsage(load1, load2));
+        if(load1 == null || load2 == null){
+            Logger.e(TAG, "CPU usage was null when constructing sample!");
+            cpuStatus.setCpuUsage(0);
+        } else {
+            cpuStatus.setCpuUsage(SamplingLibrary.getCpuUsage(load1, load2));
+        }
         cpuStatus.setUptime(SamplingLibrary.getUptime());
         cpuStatus.setSleeptime(SamplingLibrary.getSleepTime());
         return cpuStatus;
@@ -198,4 +203,5 @@ public class Sampler2 {
         }
         return false;
     }
+
 }

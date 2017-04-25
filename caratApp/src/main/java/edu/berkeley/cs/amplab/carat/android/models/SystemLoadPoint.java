@@ -7,7 +7,7 @@ public class SystemLoadPoint {
     public float user, system, nice, idle, iowait, irq, softirq, steal, guest,
         guestnice, systemAll, idleAll, total, virtualAll, userAll, niceAll;
 
-    public SystemLoadPoint(Integer[] data){
+    public SystemLoadPoint(int[] data){
         this.user =         data[1];
         this.system =       data[2];
         this.nice =         data[3];
