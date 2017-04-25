@@ -80,8 +80,6 @@
 
         <receiver
             android:name=".sampling.IntentReceiver"
-            android:enabled="true"
-            android:exported="true"
             android:label="Carat sampler" >
             <intent-filter>
                 <!-- These are also dynamically registered in SamplingStarter -->
@@ -97,9 +95,6 @@
                 <!-- Custom actions -->
                 <action android:name="edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE" />
                 <action android:name="edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING" />
-
-                <!-- TODO: What is this needed for in this receiver? -->
-                <data android:scheme="package" />
             </intent-filter>
         </receiver>
 
