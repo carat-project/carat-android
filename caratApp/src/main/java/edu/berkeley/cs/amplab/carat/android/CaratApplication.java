@@ -20,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -148,6 +149,8 @@ public class CaratApplication extends Application {
         getInstallationDate();
         setStorage(new CaratDataStorage(this));
         setReportData(); // Show initial data asap
+
+        startService(new Intent(this, LocationListener.class));
 
         //SamplingStarter.from(getApplicationContext()).run();
 

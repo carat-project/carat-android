@@ -89,10 +89,14 @@
                 <!-- System actions used in sampling -->
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+                <action android:name="android.intent.action.BATTERY_CHANGED" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+
+                <!-- Throwaway intents to keep sampling scheduled -->
+                <action android:name="android.intent.action.HEADSET_PLUG"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
                 <action android:name="android.net.wifi.STATE_CHANGE" />
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
 
                 <!-- Custom actions -->
                 <action android:name="edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE" />
