@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.sampling;
+package edu.berkeley.cs.amplab.carat.android.receivers;
 
 import android.app.Service;
 import android.content.Context;
@@ -19,6 +19,7 @@ import java.util.List;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**

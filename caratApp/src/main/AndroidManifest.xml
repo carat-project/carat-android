@@ -67,13 +67,13 @@
             android:label="Intent router" />
 
         <service
-            android:name=".sampling.LocationReceiver"
+            android:name=".receivers.LocationReceiver"
             android:label="Location receiver"
             android:process=":location"/>
 
         <!-- Receivers -->
         <receiver
-            android:name=".sampling.BootReceiver"
+            android:name=".receivers.BootReceiver"
             android:label="Boot receiver for Carat sampler" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -81,7 +81,7 @@
         </receiver>
 
         <receiver
-            android:name=".sampling.IntentReceiver"
+            android:name=".receivers.ActionReceiver"
             android:label="Carat sampler" >
             <intent-filter>
                 <!-- These are also dynamically registered in SamplingStarter -->
@@ -105,7 +105,7 @@
         </receiver>
 
         <receiver
-            android:name=".sampling.InstallReceiver"
+            android:name=".receivers.InstallReceiver"
             android:label="Package action receiver">
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_ADDED" />

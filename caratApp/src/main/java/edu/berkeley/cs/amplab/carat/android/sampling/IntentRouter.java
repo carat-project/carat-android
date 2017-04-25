@@ -3,28 +3,17 @@ package edu.berkeley.cs.amplab.carat.android.sampling;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
-import android.preference.PreferenceManager;
 
-import com.google.gson.Gson;
-
-import org.apache.commons.math3.analysis.function.Power;
-
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
+import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
+import edu.berkeley.cs.amplab.carat.android.receivers.LocationReceiver;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
@@ -85,7 +74,7 @@ public class IntentRouter extends IntentService {
             }
             checkSchedule();
             Sampler2.sample(context, action, wl::release);
-            IntentReceiver.completeWakefulIntent(intent);
+            ActionReceiver.completeWakefulIntent(intent);
         }
     }
 

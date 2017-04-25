@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.sampling;
+package edu.berkeley.cs.amplab.carat.android.receivers;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -9,6 +9,7 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 public class InstallReceiver extends BroadcastReceiver {

@@ -1,17 +1,18 @@
-package edu.berkeley.cs.amplab.carat.android.sampling;
+package edu.berkeley.cs.amplab.carat.android.receivers;
 
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
 import edu.berkeley.cs.amplab.carat.android.Keys;
+import edu.berkeley.cs.amplab.carat.android.sampling.IntentRouter;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
  * Created by Jonatan Hamberg on 1.2.2017.
  */
-public class IntentReceiver extends WakefulBroadcastReceiver {
-    private static final String TAG = IntentReceiver.class.getSimpleName();
+public class ActionReceiver extends WakefulBroadcastReceiver {
+    private static final String TAG = ActionReceiver.class.getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {

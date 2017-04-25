@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.sampling;
+package edu.berkeley.cs.amplab.carat.android.receivers;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
@@ -31,8 +31,5 @@ public class BootReceiver extends BroadcastReceiver {
         SharedPreferences.Editor editor = p.edit();
         editor.putLong("bootTime", new Date().getTime());
         editor.commit();
-
-        // Register sampler
-        //SamplingStarter.from(context).run();
     }
 }
