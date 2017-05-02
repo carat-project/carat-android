@@ -61,7 +61,21 @@ public class ProtocolClient {
         TTransport transport = null;
         if(location == ServerLocation.GLOBAL){
             if(SERVER_ADDRESS_GLOBAL == null || SERVER_PORT_GLOBAL == 0) return null;
-            transport = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
+            // TODO: Remove to go live
+            if(Constants.DEBUG){
+                if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null){
+                    if(!loadSSLProperties(c)){
+                        return null; // Failed to load SSL properties
+                    }
+                }
+                Log.d(TAG, "In dedug mode, using experimental TLS/SSL support!");
+                TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
+                String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
+                params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
+                transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_GLOBAL, 8443, Constants.THRIFT_CONNECTION_TIMEOUT, params);
+            } else {
+                transport = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
+            }
         }
         else if(location == ServerLocation.EU){
             if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null){
