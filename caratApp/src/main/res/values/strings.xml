@@ -119,7 +119,7 @@
 
     <string name="no_hogs_title">You have no hogs.</string>
     <string name="no_hogs_message">Please check back in a week.\n\n
-        If your apps are behaving normally, there will be no bugs here.\n\n
+        If your apps are behaving normally, there will be no hogs here.\n\n
         When an app starts to use significantly more energy on your device than on others, it will show up here.</string>
 
     <!-- MY DEVICE -->
