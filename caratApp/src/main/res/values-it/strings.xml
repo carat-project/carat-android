@@ -188,7 +188,7 @@ Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l
     <string name="global_general_popular_title">MODELLI PIU\' POPOLARI</string>
     <string name="global_general_android">Android</string>
     <string name="well_behaved">Virtuosi</string>
-    <string name="out_of"><![CDATA[Out of ]]></string>
+    <string name="out_of"><![CDATA[Su ]]></string>
     <string name="all_installed">applicazioni installate,</string>
     <string name="hog_intensity">sono energy-intensive (Hogs in Carat) e</string>
     <string name="bug_intensity">sono anomale nel consumo (Bugs).</string>
