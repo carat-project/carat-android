@@ -77,6 +77,7 @@ import android.widget.Toast;
 
 import com.flurry.android.FlurryAgent;
 
+import edu.berkeley.cs.amplab.carat.android.BuildConfig;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
@@ -615,7 +616,8 @@ public final class SamplingLibrary {
 			for (RunningAppProcessInfo i : runningProcs) {
 				if (i != null && i.processName != null) {
 					int idx = i.processName.lastIndexOf(':');
-					if (idx <= 0)
+					if (idx <=
+							0)
 						idx = i.processName.length();
 					i.processName = i.processName.substring(0, idx);
 				}
@@ -938,7 +940,7 @@ public final class SamplingLibrary {
 	 * Returns info about an installed package. Will be called when receiving
 	 * the PACKAGE_ADDED or PACKAGE_REPLACED intent.
 	 * 
-	 * @param context
+	 * @param pm PackageManager
 	 * @param pkg package name to get info about.
 	 * @return a list of installed packages on the device.
 	 */
@@ -2345,7 +2347,7 @@ public final class SamplingLibrary {
 		mySample.setCountryCode(getCountryCode(context));
 
 		// If there are extra fields, include them into the sample.
-		List<Feature> extras = getExtras(context);
+		List<Feature> extras = getExtras();
 		if (extras != null && extras.size() > 0)
 			mySample.setExtra(extras);
 
@@ -2861,10 +2863,33 @@ public final class SamplingLibrary {
 	 * @param context the Context
 	 * @return a List<Feature> populated with extra items to collect outside of the protocol spec.
 	 */
-	private static List<Feature> getExtras(Context context) {
+	private static List<Feature> getExtras() {
 		LinkedList<Feature> res = new LinkedList<Feature>();
-		res.add(getVmVersion(context));
+		res.add(getVmVersion());
+		res.add(versionCode());
+		res.add(versionName());
 		return res;
+	}
+
+	private static Feature versionName(){
+		return feature("carat.version.name", BuildConfig.VERSION_NAME);
+	}
+
+	private static Feature versionCode(){
+		return feature("carat.version.code", BuildConfig.VERSION_CODE + "");
+	}
+
+	/**
+	 * Helper to create Feature objects for e.g. Sample Extras.
+	 * @param key Name of the field
+	 * @param value value of the field
+	 * @return
+	 */
+	public static Feature feature(String key, String value){
+		Feature f = new Feature();
+		f.setKey(key);
+		f.setValue(value);
+		return f;
 	}
 
 	//TODO: disabled for debugging
@@ -2877,17 +2902,13 @@ public final class SamplingLibrary {
 
 	/**
 	 * Get the java.vm.version system property as a Feature("vm", version).
-	 * @param context the Context.
 	 * @return a Feature instance with the key "vm" and value of the "java.vm.version" system property. 
 	 */
-	private static Feature getVmVersion(Context context) {
+	private static Feature getVmVersion() {
 		String vm = System.getProperty("java.vm.version");
 		if (vm == null)
 			vm = "";
-		Feature vmVersion = new Feature();
-		vmVersion.setKey("vm");
-		vmVersion.setValue(vm);
-		return vmVersion;
+		return feature("vm", vm);
 	}
 
 	public static List<String> getSignatures(PackageInfo pak) {

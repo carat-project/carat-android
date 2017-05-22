@@ -10,6 +10,8 @@ import java.util.List;
 import org.apache.thrift.meta_data.FieldMetaData;
 
 import android.util.Log;
+
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -234,13 +236,10 @@ public class SampleReader {
                             List<Feature> list = new LinkedList<Feature>();
                             String[] extras = m.get(k).split("\n");
                             for (String e : extras) {
-                                Feature f = new Feature();
                                 String[] feat = e.split(";");
                                 if (feat.length > 1) {
-                                    f.setKey(origStr(feat[0]));
-                                    f.setValue(origStr(feat[1]));
+                                    list.add(SamplingLibrary.feature(origStr(feat[0]), origStr(feat[1])));
                                 }
-                                list.add(f);
                             }
                             s.setExtra(list);
                         } else if (md.fieldName.equals(Sample._Fields.LOCATION_PROVIDERS.getFieldName())) {
