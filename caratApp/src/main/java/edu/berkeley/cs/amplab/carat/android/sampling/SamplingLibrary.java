@@ -2342,13 +2342,13 @@ public final class SamplingLibrary {
 		// temperature value
 		// (returned by BatteryManager) is not Centigrade, it should be divided
 		// by 10)
-		int temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10;
+		double temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10.0;
 		bd.setBatteryTemperature(temperature);
 		// otherInfo.setBatteryTemperature(temperature);
 
 		// current battery voltage in VOLTS (the unit of the returned value by
 		// BatteryManager is millivolts)
-		double voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000;
+		double voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000.0;
 		bd.setBatteryVoltage(voltage);
 		// otherInfo.setBatteryVoltage(voltage);
 		bd.setBatteryTechnology(batteryTechnology);
@@ -2468,7 +2468,7 @@ public final class SamplingLibrary {
 		if(voltage == -1){
 			return voltage;
 		}
-		return voltage / 1000; // Convert mv to V
+		return voltage / 1000.0; // Convert mv to V
 	}
 
 	/**
