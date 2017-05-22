@@ -18,11 +18,9 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,9 +49,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.Signature;
-import android.database.Cursor;
 import android.location.Criteria;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -85,7 +81,6 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
-import edu.berkeley.cs.amplab.carat.thrift.CallMonth;
 import edu.berkeley.cs.amplab.carat.thrift.CellInfo;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -103,13 +98,13 @@ import edu.berkeley.cs.amplab.carat.thrift.StorageDetails;
  */
 public final class SamplingLibrary {
 	private static final boolean collectSignatures = true;
-	public static final String SIG_SENT = "sig-sent:";
-	public static final String SIG_SENT_256 = "sigs-sent:";
-	public static final String INSTALLED = "installed:";
-	public static final String REPLACED = "replaced:";
-	public static final String UNINSTALLED = "uninstalled:";
+	static final String SIG_SENT = "sig-sent:";
+	static final String SIG_SENT_256 = "sigs-sent:";
+	static final String INSTALLED = "installed:";
+	static final String REPLACED = "replaced:";
+	static final String UNINSTALLED = "uninstalled:";
 	// Disabled or turned off applications will be scheduled for reporting using this prefix
-	public static final String DISABLED = "disabled:";
+	static final String DISABLED = "disabled:";
 
 	private static final int READ_BUFFER_SIZE = 2 * 1024;
 	// Network status constants
@@ -118,18 +113,18 @@ public final class SamplingLibrary {
 	public static String NETWORKSTATUS_CONNECTED = "connected";
 	public static String NETWORKSTATUS_CONNECTING = "connecting";
 	// Network type constants
-	public static String TYPE_UNKNOWN = "unknown";
+	static String TYPE_UNKNOWN = "unknown";
 	// Data State constants
-	public static String DATA_DISCONNECTED = NETWORKSTATUS_DISCONNECTED;
-	public static String DATA_CONNECTING = NETWORKSTATUS_CONNECTING;
-	public static String DATA_CONNECTED = NETWORKSTATUS_CONNECTED;
-	public static String DATA_SUSPENDED = "suspended";
+	static String DATA_DISCONNECTED = NETWORKSTATUS_DISCONNECTED;
+	static String DATA_CONNECTING = NETWORKSTATUS_CONNECTING;
+	static String DATA_CONNECTED = NETWORKSTATUS_CONNECTED;
+	static String DATA_SUSPENDED = "suspended";
 	// Data Activity constants
-	public static String DATA_ACTIVITY_NONE = "none";
-	public static String DATA_ACTIVITY_IN = "in";
-	public static String DATA_ACTIVITY_OUT = "out";
-	public static String DATA_ACTIVITY_INOUT = "inout";
-	public static String DATA_ACTIVITY_DORMANT = "dormant";
+	static String DATA_ACTIVITY_NONE = "none";
+	static String DATA_ACTIVITY_IN = "in";
+	static String DATA_ACTIVITY_OUT = "out";
+	static String DATA_ACTIVITY_INOUT = "inout";
+	static String DATA_ACTIVITY_DORMANT = "dormant";
 	// Wifi State constants
 	public static String WIFI_STATE_DISABLING = "disabling";
 	public static String WIFI_STATE_DISABLED = "disabled";
@@ -315,9 +310,8 @@ public final class SamplingLibrary {
 				else
 					hexString.append(hx);
 			}
-			String uuid = hexString.toString().substring(0, UUID_LENGTH);
 			// FlurryAgent.logEvent("ANDROID_ID=" + aID +" UUID=" + uuid);
-			return uuid;
+			return hexString.toString().substring(0, UUID_LENGTH);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			return aID;
@@ -407,48 +401,6 @@ public final class SamplingLibrary {
 	 */
 	public static String getBrand() {
 		return android.os.Build.BRAND;
-	}
-
-	/**
-	 * Return misc system details that we might want to use later. Currently
-	 * does nothing.
-	 * 
-	 * @return
-	 */
-	public static Map<String, String> getSystemDetails() {
-		Map<String, String> results = new HashMap<String, String>();
-		// TODO: Some of this should be added to registration to identify the
-		// device and OS.
-		// Cyanogenmod and others may have different kernels etc that affect
-		// performance.
-
-		/*
-		 * Log.d("SetModel", "board:" + android.os.Build.BOARD);
-		 * Log.d("SetModel", "bootloader:" + android.os.Build.BOOTLOADER);
-		 * Log.d("SetModel", "brand:" + android.os.Build.BRAND);
-		 * Log.d("SetModel", "CPU_ABI 1 and 2:" + android.os.Build.CPU_ABI +
-		 * ", " + android.os.Build.CPU_ABI2); Log.d("SetModel", "dev:" +
-		 * android.os.Build.DEVICE); Log.d("SetModel", "disp:" +
-		 * android.os.Build.DISPLAY); Log.d("SetModel", "FP:" +
-		 * android.os.Build.FINGERPRINT); Log.d("SetModel", "HW:" +
-		 * android.os.Build.HARDWARE); Log.d("SetModel", "host:" +
-		 * android.os.Build.HOST); Log.d("SetModel", "ID:" +
-		 * android.os.Build.ID); Log.d("SetModel", "manufacturer:" +
-		 * android.os.Build.MANUFACTURER); Log.d("SetModel", "prod:" +
-		 * android.os.Build.PRODUCT); Log.d("SetModel", "radio:" +
-		 * android.os.Build.RADIO); // FIXME: SERIAL not available on 2.2 //
-		 * Log.d("SetModel", "ser:" + android.os.Build.SERIAL);
-		 * Log.d("SetModel", "tags:" + android.os.Build.TAGS); Log.d("SetModel",
-		 * "time:" + android.os.Build.TIME); Log.d("SetModel", "type:" +
-		 * android.os.Build.TYPE); Log.d("SetModel", "unknown:" +
-		 * android.os.Build.UNKNOWN); Log.d("SetModel", "user:" +
-		 * android.os.Build.USER); Log.d("SetModel", "model:" +
-		 * android.os.Build.MODEL); Log.d("SetModel", "codename:" +
-		 * android.os.Build.VERSION.CODENAME); Log.d("SetModel", "release:" +
-		 * android.os.Build.VERSION.RELEASE);
-		 */
-
-		return results;
 	}
 
 	/**
@@ -654,7 +606,7 @@ public final class SamplingLibrary {
 	 */
 	private static List<RunningAppProcessInfo> getRunningProcessInfo(Context context) {
 		if (runningAppInfo == null || runningAppInfo.get() == null) {
-			ActivityManager pActivityManager = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
+			ActivityManager pActivityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 			List<RunningAppProcessInfo> runningProcs = pActivityManager.getRunningAppProcesses();
 			/*
 			 * TODO: Is this the right thing to do? Remove part after ":" in
@@ -682,7 +634,7 @@ public final class SamplingLibrary {
 	 */
 	public static List<RunningServiceInfo> getRunningServiceInfo(Context c) {
 		if(runningServiceInfo == null || runningServiceInfo.get() == null) {
-			ActivityManager pActivityManager = (ActivityManager) c.getSystemService(Activity.ACTIVITY_SERVICE);
+			ActivityManager pActivityManager = (ActivityManager) c.getSystemService(Context.ACTIVITY_SERVICE);
 			List<RunningServiceInfo> runningServices = pActivityManager.getRunningServices(255);
 			runningServiceInfo = new WeakReference<List<RunningServiceInfo>>(runningServices);
 			return runningServices;
@@ -856,15 +808,14 @@ public final class SamplingLibrary {
 	/**
 	 * Helper to ensure the WeakReferenced `packages` is populated.
 	 * 
-	 * @param context
+	 * @param pm PackageManager
 	 * @return The content of `packages` or null in case of failure.
 	 */
-	private static Map<String, PackageInfo> getPackages(Context context) {
+	private static Map<String, PackageInfo> getPackages(PackageManager pm) {
 		List<android.content.pm.PackageInfo> packagelist = null;
 
 		if (packages == null || packages.get() == null || packages.get().size() == 0) {
 			Map<String, PackageInfo> mp = new HashMap<String, PackageInfo>();
-			PackageManager pm = context.getPackageManager();
 			if (pm == null)
 				return null;
 
@@ -903,13 +854,14 @@ public final class SamplingLibrary {
 	/**
 	 * Get info for a single package from the WeakReferenced packagelist.
 	 * 
-	 * @param context
+	 * @param context Context
 	 * @param processName
 	 *            The package to get info for.
 	 * @return info for a single package from the WeakReferenced packagelist.
 	 */
 	public static PackageInfo getPackageInfo(Context context, String processName) {
-		Map<String, PackageInfo> mp = getPackages(context);
+		PackageManager pm = context.getPackageManager();
+		Map<String, PackageInfo> mp = getPackages(pm);
 		if (mp == null || !mp.containsKey(processName))
 			return null;
 		PackageInfo pak = mp.get(processName);
@@ -922,14 +874,14 @@ public final class SamplingLibrary {
 	 * detection project. Later on, single package information is got by
 	 * receiving the package installed intent.
 	 * 
-	 * @param context
+	 * @param pm PackageManager
 	 * @param filterSystem
 	 *            if true, exclude system packages.
 	 * @return a list of installed packages on the device.
 	 */
-	public static Map<String, ProcessInfo> getInstalledPackages(Context context, boolean filterSystem) {
-		Map<String, PackageInfo> packageMap = getPackages(context);
-		PackageManager pm = context.getPackageManager();
+	public static Map<String, ProcessInfo> getInstalledPackages(PackageManager pm, boolean filterSystem) {
+		Map<String, PackageInfo> packageMap = getPackages(pm);
+
 		if (pm == null)
 			return null;
 
@@ -987,12 +939,10 @@ public final class SamplingLibrary {
 	 * the PACKAGE_ADDED or PACKAGE_REPLACED intent.
 	 * 
 	 * @param context
-	 * @param filterSystem
-	 *            if true, exclude system packages.
+	 * @param pkg package name to get info about.
 	 * @return a list of installed packages on the device.
 	 */
-	public static ProcessInfo getInstalledPackage(Context context, String pkg) {
-		PackageManager pm = context.getPackageManager();
+	public static ProcessInfo getInstalledPackage(PackageManager pm, String pkg) {
 		if (pm == null)
 			return null;
 		PackageInfo pak;
@@ -1052,7 +1002,7 @@ public final class SamplingLibrary {
 
 		Map<String, ProcessInfo> ipkg = null;
 		if (inst)
-			ipkg = getInstalledPackages(context, false);
+			ipkg = getInstalledPackages(pm, false);
 
 		for (ProcessInfo pi : list) {
 			String pname = pi.getPName();
@@ -1133,7 +1083,7 @@ public final class SamplingLibrary {
 				boolean installed = p.getBoolean(pref, false);
 				if (installed) {
 					Log.i(STAG, "Installed:" + pname);
-					ProcessInfo i = getInstalledPackage(context, pname);
+					ProcessInfo i = getInstalledPackage(pm, pname);
 					if (i != null) {
 						i.setImportance(Constants.IMPORTANCE_INSTALLED);
 						result.add(i);
@@ -1146,7 +1096,7 @@ public final class SamplingLibrary {
 				boolean replaced = p.getBoolean(pref, false);
 				if (replaced) {
 					Log.i(STAG, "Replaced:" + pname);
-					ProcessInfo i = getInstalledPackage(context, pname);
+					ProcessInfo i = getInstalledPackage(pm, pname);
 					if (i != null) {
 						i.setImportance(Constants.IMPORTANCE_REPLACED);
 						result.add(i);
@@ -1670,7 +1620,7 @@ public final class SamplingLibrary {
 	}
 
 	/* Check the maximum number of satellites can be used in the satellite list */
-	public static int getMaxNumSatellite(Context context) {
+	/*public static int getMaxNumSatellite(Context context) {
 
 		LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 		GpsStatus gpsStatus = locationManager.getGpsStatus(null);
@@ -1679,7 +1629,7 @@ public final class SamplingLibrary {
 		// Log.v("maxNumStatellite", "Maxmium number of satellites:" +
 		// maxNumSatellite);
 		return maxNumSatellite;
-	}
+	}*/
 
 	/* Get call status */
 	public static String getCallState(Context context) {
@@ -1824,7 +1774,7 @@ public final class SamplingLibrary {
 	 * @return a long[3] with incoming call time, outgoing call time, and
 	 *         non-call time in seconds since boot.
 	 */
-	public static long[] getCalltimesSinceBoot(Context context) {
+/*	public static long[] getCalltimesSinceBoot(Context context) {
 
 		long[] result = new long[3];
 
@@ -1875,10 +1825,10 @@ public final class SamplingLibrary {
 		result[1] = callOutSeconds;
 		result[2] = nonCallTime;
 		return result;
-	}
+	}*/
 
 	/* Get a monthly call duration record */
-	public static Map<String, CallMonth> getMonthCallDur(Context context) {
+	/*public static Map<String, CallMonth> getMonthCallDur(Context context) {
 
 		Map<String, CallMonth> callMonth = new HashMap<String, CallMonth>();
 		Map<String, String> callInDur = new HashMap<String, String>();
@@ -1946,7 +1896,7 @@ public final class SamplingLibrary {
 		CallMonth call = new CallMonth();
 		call = callInfo.get(time);
 		return call;
-	}
+	}*/
 
 	private static Location lastKnownLocation = null;
 

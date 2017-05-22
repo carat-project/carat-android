@@ -370,13 +370,13 @@ public class CommunicationManager {
 			// Assume multiple invocations, do not close
 			// ProtocolClient.close();
 			if (r != null) {
-			    if (Constants.DEBUG) Log.d("CommunicationManager.refreshMainReports()",
+			    if (Constants.DEBUG) Log.d("CM.refreshMainReports()",
 						"got the main report (action list)" + ", model=" + r.getModel()
 						+ ", jscore=" + r.getJScore() + ". Storing the report in the databse");
 				CaratApplication.getStorage().writeReports(r);
 			} else {
 			    if (Constants.DEBUG)
-			        Log.d("CommunicationManager.refreshMainReports()",
+			        Log.d("CM.refreshMainReports()",
 						"the fetched MAIN report is null");
 			}
 			// Assume freshness written by caller.
@@ -404,11 +404,11 @@ public class CommunicationManager {
 			if (r != null && !r.getHbList().isEmpty()) {
 				CaratApplication.getStorage().writeBugReport(r);
 				if (Constants.DEBUG)
-				    Log.d("CommunicationManager.refreshBugReports()", 
+				    Log.d("CM.refreshBugReports()",
 						"got the bug list: " + r.getHbList().toString());
 			} else {
 			    if (Constants.DEBUG)
-			        Log.d("CommunicationManager.refreshBugReports()", 
+			        Log.d("CM.refreshBugReports()",
 						"the fetched bug report is null");
 			}
 			safeClose(instance);
@@ -435,11 +435,11 @@ public class CommunicationManager {
 			if (r != null && !r.getHbList().isEmpty()) {
 				CaratApplication.getStorage().writeHogReport(r);
 				if (Constants.DEBUG)
-				    Log.d("CommunicationManager.refreshHogReports()", 
+				    Log.d("CM.refreshHogReports()",
 						"got the hog list: " + r.getHbList().toString());
 			} else {
 			    if (Constants.DEBUG)
-			        Log.d("CommunicationManager.refreshHogReports()", 
+			        Log.d("CM.refreshHogReports()",
 						"the fetched hog report is null");
 			}
 			// Assume freshness written by caller.
