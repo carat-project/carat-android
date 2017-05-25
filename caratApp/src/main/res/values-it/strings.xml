@@ -116,7 +116,7 @@ compreso il vostro. Un semplice riavvio applicazione può aumentare la durata de
 </string>
     <string name="no_bugs_title">Non hai bug.</string>
     <string name="no_bugs_message">Per cortesia, riprova fra una settimana.\n\n
-Le tue app si stanno comportando normalmente quindi non hai bugs.\n\n
+Le tue app si stanno comportando normalmente quindi non hai bug.\n\n
 Se una applicazione incominciasse a consumare parecchia più energia sul tuo dispositivo in confronto
 agli altri, sarà elencata qui.</string>
 
@@ -125,7 +125,7 @@ agli altri, sarà elencata qui.</string>
 nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
     <string name="no_hogs_title">Non hai hog.</string>
     <string name="no_hogs_message">Per cortesia, riprova fra una settimana.\n\n
-Le tue app si stanno comportando normalmente quindi non hai bugs.\n\n
+Le tue app si stanno comportando normalmente quindi non hai hog.\n\n
 Se una applicazione incominciasse a consumare parecchia più energia sul tuo dispositivo in confronto
 agli altri, sarà elencata qui.</string>
 
@@ -188,7 +188,7 @@ Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l
     <string name="global_general_popular_title">MODELLI PIU\' POPOLARI</string>
     <string name="global_general_android">Android</string>
     <string name="well_behaved">Virtuosi</string>
-    <string name="out_of"><![CDATA[Out of ]]></string>
+    <string name="out_of"><![CDATA[Su ]]></string>
     <string name="all_installed">applicazioni installate,</string>
     <string name="hog_intensity">sono energy-intensive (Hogs in Carat) e</string>
     <string name="bug_intensity">sono anomale nel consumo (Bugs).</string>
