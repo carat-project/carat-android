@@ -174,7 +174,7 @@ Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l
 </string>
 
     <!-- GLOBAL RESULTS -->
-    <string name="global_results">WORLDWIDE - STATISTICHE</string>
+    <string name="global_results">      STATISTICHE</string>
     <string name="show_global">WORLDWIDE</string>
     <string name="all_reports">TUTTI I REPORTS</string>
     <string name="global_general_statistics">STATISTICA GENERALE</string>
