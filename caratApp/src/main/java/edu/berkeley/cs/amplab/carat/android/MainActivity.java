@@ -204,6 +204,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Logger.d(TAG, "\t" + new Gson().toJson(stats));
                 Logger.d(TAG, "\tLaunched " + UsageManager.getAppLaunchCount(stats) + " times");
             }
+
+            UsageManager.getRunningProcesses(this, System.currentTimeMillis() - 86400000);
         }
         // TODO: END TEST
 
