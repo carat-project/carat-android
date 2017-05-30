@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.0"
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         versionCode 113
@@ -12,15 +12,11 @@ android {
         //noinspection OldTargetApi
         targetSdkVersion 22
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
-
-        jackOptions {
-            enabled true
-        }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8;
-        targetCompatibility JavaVersion.VERSION_1_8;
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
     }
 
     dexOptions {

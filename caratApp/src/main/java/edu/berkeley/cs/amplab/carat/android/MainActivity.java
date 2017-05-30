@@ -1,6 +1,8 @@
 package edu.berkeley.cs.amplab.carat.android;
 
 import android.annotation.SuppressLint;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStatsManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,7 +20,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.flurry.android.FlurryAgent;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -183,6 +185,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (secretKey != null) {
             FlurryAgent.onStartSession(getApplicationContext(), secretKey);
+        }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            if(!UsageManager.isPermissionGranted(this)){
+                UsageManager.promptPermission(this);
+            }
+            for(UsageEvents.Event e : UsageManager.getEvents(this, System.currentTimeMillis() - 86400000)){
+                Logger.d(TAG, new Gson().toJson(e));
+            }
         }
 
     }
