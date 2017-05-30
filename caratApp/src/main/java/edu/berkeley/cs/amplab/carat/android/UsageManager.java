@@ -3,7 +3,6 @@ package edu.berkeley.cs.amplab.carat.android;
 import android.Manifest;
 import android.app.AppOpsManager;
 import android.app.Dialog;
-import android.app.usage.ConfigurationStats;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStats;
@@ -11,7 +10,6 @@ import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
 import android.provider.Settings;
@@ -22,15 +20,12 @@ import android.util.Pair;
 import android.widget.Toast;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
+import java.util.stream.Collectors;
 
 /**
  * Created by Jonatan Hamberg on 5/30/17.
@@ -53,13 +48,22 @@ public class UsageManager {
         return events;
     }
 
-    public static void getRunningProcesses(Context context, long beginTime){
+    public static LinkedList<String> getRunningProcesses(Context context, long beginTime){
         List<Event> events = getEvents(context, beginTime);
         HashSet<String> eventPkgs = new HashSet<>();
+        events.forEach(e -> eventPkgs.add(e.getPackageName()));
+        Log.d(TAG, "These apps were running during this period:");
+        for(String pkgName : eventPkgs){
+            Log.d(TAG, "\t"+pkgName);
+        }
+        return new LinkedList<>(eventPkgs);
+    }
+
+    public static void getEventLogs(Context context, long beginTime){
+        List<Event> events = getEvents(context, beginTime);
         HashMap<String, List<Pair<Long, String>>> eventLog = new HashMap<>();
         for(Event event : events){
             String pkg = event.getPackageName();
-            eventPkgs.add(pkg);
             List<Pair<Long, String>> log =  eventLog.getOrDefault(pkg, new LinkedList<>());
             log.add(new Pair<>(event.getTimeStamp(), getEventName(event.getEventType())));
             eventLog.put(pkg, log);
@@ -67,24 +71,9 @@ public class UsageManager {
         for(Map.Entry<String, List<Pair<Long, String>>> entry : eventLog.entrySet()){
             Log.d(TAG, "Package: " + entry.getKey());
             for(Pair<Long, String> event : entry.getValue()){
-                //Log.d(TAG, event.first + ":" + event.second);
+                Log.d(TAG, event.first + ":" + event.second);
             }
         }
-        Log.d(TAG, "These apps were running during this period:");
-        for(String pkgName : eventPkgs){
-            Log.d(TAG, "\t"+pkgName);
-        }
-
-        Log.d(TAG, "These processes were running during this period:");
-        Map<String, UsageStats> stats  = getUsageAggregate(context, beginTime);
-        for(Map.Entry<String, UsageStats> stat : stats.entrySet()){
-            UsageStats u = stat.getValue();
-            //NOTE: This gets rid of some system processes, do we want this?
-            if(u.getLastTimeUsed() > beginTime){
-                Log.d(TAG, "\t"+u.getPackageName());
-            }
-        }
-
     }
 
 

@@ -39,6 +39,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.usage.UsageStats;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -85,6 +86,7 @@ import com.flurry.android.FlurryAgent;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
@@ -630,6 +632,20 @@ public final class SamplingLibrary {
 	public static List<ProcessInfo> getRunningAppInfo(Context context) {
 		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(context);
 		List<RunningServiceInfo> runningServices = getRunningServiceInfo(context);
+
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+			Map<String, UsageStats> usageStats = UsageManager.getUsageAggregate(context, 0);
+			if(usageStats != null){
+				for(String pkgName : usageStats.keySet()){
+					UsageStats stats = usageStats.get(pkgName);
+					ProcessInfo item = new ProcessInfo();
+					// TODO: Reflection to get last event!
+					item.setImportance(null);
+					item.setPId(-1); // Unknown!
+					item.setPName(stats.getPackageName());
+				}
+			}
+		}
 
 		Set<String> packages = new HashSet<String>();
 		List<ProcessInfo> l = new ArrayList<ProcessInfo>();
