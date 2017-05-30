@@ -17,8 +17,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Jonatan Hamberg on 5/30/17.
@@ -39,6 +41,12 @@ public class UsageManager {
             }
         }
         return events;
+    }
+
+    public static Map<String, UsageStats> getUsageAggregate(Context context, long beginTime){
+        UsageStatsManager usm = getUsageStatsManager(context);
+        long now = System.currentTimeMillis();
+        return usm.queryAndAggregateUsageStats(beginTime, now);
     }
 
     public static List<UsageStats> getUsage(Context context, long beginTime){

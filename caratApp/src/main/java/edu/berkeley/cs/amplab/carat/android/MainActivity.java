@@ -2,6 +2,7 @@ package edu.berkeley.cs.amplab.carat.android;
 
 import android.annotation.SuppressLint;
 import android.app.usage.UsageEvents;
+import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -40,6 +41,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -187,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             FlurryAgent.onStartSession(getApplicationContext(), secretKey);
         }
 
+        // TODO: MOVE THIS
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
             if(!UsageManager.isPermissionGranted(this)){
                 UsageManager.promptPermission(this);
@@ -194,7 +197,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             for(UsageEvents.Event e : UsageManager.getEvents(this, System.currentTimeMillis() - 86400000)){
                 Logger.d(TAG, new Gson().toJson(e));
             }
+            Map<String, UsageStats> usage = UsageManager.getUsageAggregate(this, System.currentTimeMillis() - 86400000);
+            for(String pkgName : usage.keySet()){
+                UsageStats stats = usage.get(pkgName);
+                Logger.d(TAG, "Package: " + pkgName);
+                Logger.d(TAG, "\t" + new Gson().toJson(stats));
+                Logger.d(TAG, "\tLaunched " + UsageManager.getAppLaunchCount(stats) + " times");
+            }
         }
+        // TODO: END TEST
 
     }
 
