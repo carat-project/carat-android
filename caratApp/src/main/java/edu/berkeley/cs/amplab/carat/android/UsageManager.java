@@ -133,20 +133,6 @@ public class UsageManager {
         return (UsageStatsManager) context.getSystemService("usagestats");
     }
 
-    // Uses reflection, experimental
-    public static int getAppLaunchCount(UsageStats stats){
-        int ERR_VAL = -1;
-        Field mLaunchCount;
-        try {
-            mLaunchCount = UsageStats.class.getDeclaredField("mLaunchCount");
-            int launchCount = (Integer)mLaunchCount.get(stats);
-            return launchCount > 0 ? launchCount : ERR_VAL;
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to get launch count via reflection", e);
-            return ERR_VAL;
-        }
-    }
-
     public static String getLastImportance(Context context, UsageStats stats, long beginTime){
         String ERR_VAL = "Unknown";
         String importance = getLastEvent(stats);
@@ -169,18 +155,64 @@ public class UsageManager {
         }
     }
 
-    private static String getLastEvent(Context context, String packageName, long beginTime){
+    private static HashMap<String, TreeMap<Long, Integer>> getOrFetchEvents(Context context, long beginTime){
         HashMap<String, TreeMap<Long, Integer>> e;
         if(events == null || events.get() == null){
+            Logger.i(TAG, "Events not in memory, fetching");
             e = getEventLogs(context, beginTime);
             events = new WeakReference<>(e);
         } else {
             e = events.get();
             if(e == null){
+                Logger.i(TAG, "Events not in memory, fetching");
                 e = getEventLogs(context, beginTime);
                 events = new WeakReference<>(e);
             }
         }
+        return e;
+    }
+
+    public static int getAppLaunchCount(Context context, UsageStats stats, long beginTime){
+        // int count = launchCountFromStats(stats); // TODO: Can we trust this?
+        int count = -1;
+        if(count == -1){
+            Logger.i(TAG, "Missing mLaunchCount field, falling back to event log..");
+            count = launchCountFromEvents(context, stats, beginTime);
+        }
+        return count;
+    }
+
+    // Uses reflection, experimental
+    private static int launchCountFromStats(UsageStats stats){
+        int ERR_VAL = -1;
+        Field mLaunchCount;
+        try {
+            mLaunchCount = UsageStats.class.getDeclaredField("mLaunchCount");
+            int launchCount = (Integer)mLaunchCount.get(stats);
+            return launchCount > 0 ? launchCount : ERR_VAL;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get launch count via reflection", e);
+            return ERR_VAL;
+        }
+    }
+
+    private static int launchCountFromEvents(Context context, UsageStats stats, long beginTime){
+        HashMap<String, TreeMap<Long, Integer>> e = getOrFetchEvents(context, beginTime);
+        String pkgName = stats.getPackageName();
+        int count = 0;
+        if(e.containsKey(pkgName)){
+            TreeMap<Long, Integer> pkgEvents = e.get(pkgName);
+            for(int eventCode : pkgEvents.values()){
+                if(eventCode == Event.MOVE_TO_FOREGROUND){
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private static String getLastEvent(Context context, String packageName, long beginTime){
+        HashMap<String, TreeMap<Long, Integer>> e = getOrFetchEvents(context, beginTime);
         if(e.containsKey(packageName)){
             TreeMap<Long, Integer> pkgEvents = e.get(packageName);
             Map.Entry<Long, Integer> lastEvent = pkgEvents.lastEntry();
@@ -193,6 +225,14 @@ public class UsageManager {
             }
         }
         return "Unknown";
+    }
+
+    public static void disposeInMemoryEvents(){
+        if(events != null && events.get() != null){
+            events.clear(); // No idea if this is a stub method
+            events = null;
+            System.gc();
+        }
     }
 
     private static String priorityFromEvent(Integer eventCode){

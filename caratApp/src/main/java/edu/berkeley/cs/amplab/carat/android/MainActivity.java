@@ -203,11 +203,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 UsageStats stats = usage.get(pkgName);
                 Logger.d(TAG, "Package: " + pkgName);
                 Logger.d(TAG, "\t" + new Gson().toJson(stats));
-                Logger.d(TAG, "\tLaunched " + UsageManager.getAppLaunchCount(stats) + " times");
+                Logger.d(TAG, "\tLaunched " +
+                        UsageManager.getAppLaunchCount(this, stats, then)+ " times");
                 Logger.d(TAG, "\tLast importance: " +
                         UsageManager.getLastImportance(this, stats, then));
             }
 
+            UsageManager.disposeInMemoryEvents(); // !! This is needed
             UsageManager.getRunningProcesses(this, System.currentTimeMillis() - 86400000);
         }
         // TODO: END TEST
