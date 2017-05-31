@@ -191,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // TODO: MOVE THIS
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            long then = System.currentTimeMillis() - 86400000;
             if(!UsageManager.isPermissionGranted(this)){
                 UsageManager.promptPermission(this);
             }
@@ -203,6 +204,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Logger.d(TAG, "Package: " + pkgName);
                 Logger.d(TAG, "\t" + new Gson().toJson(stats));
                 Logger.d(TAG, "\tLaunched " + UsageManager.getAppLaunchCount(stats) + " times");
+                Logger.d(TAG, "\tLast importance: " +
+                        UsageManager.getLastImportance(this, stats, then));
             }
 
             UsageManager.getRunningProcesses(this, System.currentTimeMillis() - 86400000);

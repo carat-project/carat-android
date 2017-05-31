@@ -1,6 +1,7 @@
 package edu.berkeley.cs.amplab.carat.android;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AppOpsManager;
 import android.app.Dialog;
 import android.app.usage.UsageEvents;
@@ -19,13 +20,17 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.TreeMap;
+
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
  * Created by Jonatan Hamberg on 5/30/17.
@@ -33,6 +38,7 @@ import java.util.stream.Collectors;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class UsageManager {
     private final static String TAG = UsageManager.class.getSimpleName();
+    private static WeakReference<HashMap<String, TreeMap<Long, Integer>>> events;
 
     public static List<Event> getEvents(Context context, long beginTime){
         UsageStatsManager usm = getUsageStatsManager(context);
@@ -51,30 +57,30 @@ public class UsageManager {
     public static LinkedList<String> getRunningProcesses(Context context, long beginTime){
         List<Event> events = getEvents(context, beginTime);
         HashSet<String> eventPkgs = new HashSet<>();
-        events.forEach(e -> eventPkgs.add(e.getPackageName()));
+        for (Event e : events) {
+            eventPkgs.add(e.getPackageName());
+        }
         Log.d(TAG, "These apps were running during this period:");
         for(String pkgName : eventPkgs){
             Log.d(TAG, "\t"+pkgName);
+
         }
         return new LinkedList<>(eventPkgs);
     }
 
-    public static void getEventLogs(Context context, long beginTime){
+    public static HashMap<String, TreeMap<Long, Integer>> getEventLogs(Context context, long beginTime){
         List<Event> events = getEvents(context, beginTime);
-        HashMap<String, List<Pair<Long, String>>> eventLog = new HashMap<>();
+        HashMap<String, TreeMap<Long, Integer>> eventLog = new HashMap<>();
         for(Event event : events){
             String pkg = event.getPackageName();
-            List<Pair<Long, String>> log =  eventLog.getOrDefault(pkg, new LinkedList<>());
-            log.add(new Pair<>(event.getTimeStamp(), getEventName(event.getEventType())));
+            TreeMap<Long, Integer> log =  eventLog.containsKey(pkg) ?
+                    eventLog.get(pkg) : new TreeMap<>();
+            log.put(event.getTimeStamp(), event.getEventType());
             eventLog.put(pkg, log);
         }
-        for(Map.Entry<String, List<Pair<Long, String>>> entry : eventLog.entrySet()){
-            Log.d(TAG, "Package: " + entry.getKey());
-            for(Pair<Long, String> event : entry.getValue()){
-                Log.d(TAG, event.first + ":" + event.second);
-            }
-        }
+        return eventLog;
     }
+
 
 
     public static Map<String, UsageStats> getUsageAggregate(Context context, long beginTime){
@@ -108,7 +114,7 @@ public class UsageManager {
         builder.setTitle("Permission request");
         builder.setMessage("Allow Carat to monitor running applications by enabling usage access in settings.");
         builder.setPositiveButton("OK", (dialog, which) -> {
-            Toast.makeText(context, "Enable the permission and return with the back button", Toast.LENGTH_LONG);
+            Toast.makeText(context, "Enable the permission and return with the back button", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
             context.startActivity(intent);
         });
@@ -122,8 +128,8 @@ public class UsageManager {
         dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(Color.rgb(248, 176, 58));
     }
 
+    @SuppressLint("WrongConstant") // Usage
     public static UsageStatsManager getUsageStatsManager(Context context){
-        //noinspection ResourceType, for some reason Android studio does not recognize this
         return (UsageStatsManager) context.getSystemService("usagestats");
     }
 
@@ -139,6 +145,61 @@ public class UsageManager {
             Log.e(TAG, "Failed to get launch count via reflection", e);
             return ERR_VAL;
         }
+    }
+
+    public static String getLastImportance(Context context, UsageStats stats, long beginTime){
+        String ERR_VAL = "Unknown";
+        String importance = getLastEvent(stats);
+        if(importance.equals(ERR_VAL)){
+            Logger.i(TAG, "Missing mLastEvent field, falling back to event log..");
+            importance = getLastEvent(context, stats.getPackageName(), beginTime);
+        }
+        return importance;
+    }
+
+    private static String getLastEvent(UsageStats stats){
+        Field mLastEvent;
+        try {
+            mLastEvent = UsageStats.class.getDeclaredField("mLastEvent");
+            Integer launchCount = (Integer)mLastEvent.get(stats);
+            return priorityFromEvent(launchCount);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get last event via reflection", e);
+            return "Unknown";
+        }
+    }
+
+    private static String getLastEvent(Context context, String packageName, long beginTime){
+        HashMap<String, TreeMap<Long, Integer>> e;
+        if(events == null || events.get() == null){
+            e = getEventLogs(context, beginTime);
+            events = new WeakReference<>(e);
+        } else {
+            e = events.get();
+            if(e == null){
+                e = getEventLogs(context, beginTime);
+                events = new WeakReference<>(e);
+            }
+        }
+        if(e.containsKey(packageName)){
+            TreeMap<Long, Integer> pkgEvents = e.get(packageName);
+            Map.Entry<Long, Integer> lastEvent = pkgEvents.lastEntry();
+            if(lastEvent != null){
+                Integer eventCode = lastEvent.getValue();
+                if(eventCode != null){
+                    Logger.i(TAG, "Found the importance from event log!");
+                    return priorityFromEvent(eventCode);
+                }
+            }
+        }
+        return "Unknown";
+    }
+
+    private static String priorityFromEvent(Integer eventCode){
+        // Only these fields can be directly converted
+        if(eventCode == 1) return "Foreground app";
+        if(eventCode == 2) return "Background process";
+        return "Unknown";
     }
 
     private static String getEventName(int eventCode){
