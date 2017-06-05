@@ -72,6 +72,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
+import android.support.annotation.RequiresApi;
 import android.telephony.CellLocation;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
@@ -629,60 +630,106 @@ public final class SamplingLibrary {
 
 	private static WeakReference<List<RunningAppProcessInfo>> runningAppInfo = null;
 
-	public static List<ProcessInfo> getRunningAppInfo(Context context) {
-		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(context);
-		List<RunningServiceInfo> runningServices = getRunningServiceInfo(context);
+	/**
+	 * NOTE: This only works on older Android versions!
+	 * @param context Application context
+	 * @return List of running processes
+	 */
+	public static List<ProcessInfo> getRunningProcessesOld(Context context){
+		List<ProcessInfo> runningProcesses = new LinkedList<>();
+		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
+		List<RunningAppProcessInfo> runningAppProcesses = am.getRunningAppProcesses();
+		for (RunningAppProcessInfo pi : runningAppProcesses) {
+			if(pi != null){
+				String processName = pi.processName;
+				// TODO: String[] packageList = pi.pkgList;
 
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-			Map<String, UsageStats> usageStats = UsageManager.getUsageAggregate(context, 0);
-			if(usageStats != null){
-				for(String pkgName : usageStats.keySet()){
-					UsageStats stats = usageStats.get(pkgName);
-					ProcessInfo item = new ProcessInfo();
-					// TODO: Reflection to get last event!
-					item.setImportance(null);
-					item.setPId(-1); // Unknown!
-					item.setPName(stats.getPackageName());
+				if (processName != null) {
+					int idx = processName.lastIndexOf(':');
+					if(idx <= 0){
+						idx = processName.length();
+					}
+					processName = processName.substring(0, idx);
 				}
-			}
-		}
 
-		Set<String> packages = new HashSet<String>();
-		List<ProcessInfo> l = new ArrayList<ProcessInfo>();
-
-		if (runningProcs != null) {
-			for (RunningAppProcessInfo pi : runningProcs) {
-				if (pi == null)
-					continue;
-				if (packages.contains(pi.processName))
-				    continue;
-                packages.add(pi.processName);
 				ProcessInfo item = new ProcessInfo();
-				item.setImportance(CaratApplication.importanceString(pi.importance));
+				item.setPName(processName);
 				item.setPId(pi.pid);
-				item.setPName(pi.processName);
-				l.add(item);
+				item.setImportance(CaratApplication.importanceString(pi.pid));
+
+				runningProcesses.add(item);
 			}
 		}
+		return runningProcesses;
+	}
 
-		if (runningServices != null) {
-			for (RunningServiceInfo pi : runningServices) {
-				if (pi == null)
-					continue;
-				if (packages.contains(pi.process))
-                    continue;
-                packages.add(pi.process);
+
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+	public static List<ProcessInfo> getRunningProcesses(Context context, long lastSampleTime){
+		List<ProcessInfo> runningProcesses = new LinkedList<>();
+		Map<String, UsageStats> usageStats = UsageManager.getUsageAggregate(context, lastSampleTime);
+		if(usageStats != null){
+			for(String pkgName : usageStats.keySet()){
+				UsageStats stats = usageStats.get(pkgName);
+
 				ProcessInfo item = new ProcessInfo();
-				item.setImportance(pi.foreground ? "Foreground app" : "Service");
-				item.setPId(pi.pid);
-				//item.setApplicationLabel(pi.service.flattenToString());
-				item.setPName(pi.process);
-				
-				l.add(item);
+				item.setPName(stats.getPackageName());
+				item.setPkgName(stats.getPackageName());
+				item.setImportance(UsageManager.getLastImportance(context, stats, lastSampleTime));
+				item.setPId(-1); // We cannot get this from event log
+				item.setLaunchCount(UsageManager.getAppLaunchCount(context, stats, lastSampleTime));
+				item.setForegroundTime(stats.getTotalTimeInForeground());
+
+				runningProcesses.add(item);
 			}
 		}
+		return runningProcesses;
+	}
 
-		return l;
+	public static List<ProcessInfo> getRunningServices(Context context){
+		List<ProcessInfo> services = new LinkedList<>();
+		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
+		List<RunningServiceInfo> runningServices = am.getRunningServices(255);
+		for(RunningServiceInfo serviceInfo : runningServices){
+			if(serviceInfo != null){
+				String processName = serviceInfo.process;
+				String packageName = serviceInfo.service.getPackageName();
+
+				// Services with the android:process attribute run outside of the default process
+				// these processes are named like so package:serviceName. We need to cut out the
+				// last part since it is not relevant to our interests.
+				if (processName != null) {
+					int idx = processName.lastIndexOf(':');
+					if(idx <= 0){
+						idx = processName.length();
+					}
+					processName = processName.substring(0, idx);
+				}
+
+				ProcessInfo item = new ProcessInfo();
+				item.setPName(processName);
+				item.setPId(serviceInfo.pid);
+				item.setPkgName(packageName);
+				item.setSleeping(serviceInfo.restarting != 0);
+
+				item.setImportance(serviceInfo.foreground ? "Foreground app" : "Service");
+
+				services.add(item);
+			}
+		}
+		return services;
+	}
+
+	public static List<ProcessInfo> getRunningAppInfo(Context context, long lastSampleTime) {
+		List<ProcessInfo> processInfo = new LinkedList<>();
+		processInfo.addAll(getRunningProcessesOld(context)); // Running as of now
+
+		// Running since last sample
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+			processInfo.addAll(getRunningProcesses(context, lastSampleTime));
+		}
+		processInfo.addAll(getRunningServices(context));
+		return processInfo;
 	}
 
 	private static WeakReference<List<RunningServiceInfo>> runningServiceInfo = null;
@@ -737,22 +784,22 @@ public final class SamplingLibrary {
 	 * @return true if the application is running, false otherwise.
 	 */
 	public static boolean isRunning(Context context, String appName) {
-		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(context);
-		for (RunningAppProcessInfo i : runningProcs) {
-		   // Logger.d(TAG, "Matching process: "+i.processName +" with app: "+ appName);
-			if (i.processName.equals(appName) && i.importance != RunningAppProcessInfo.IMPORTANCE_EMPTY)
+		List<ProcessInfo> runningProcesses = getRunningProcessesOld(context);
+		for (ProcessInfo pi : runningProcesses) {
+			if ((pi.pName != null && pi.pName.equals(appName) ||
+				(pi.pkgName != null && pi.pkgName.equals(appName)))
+				&& (pi.importance == null || !pi.importance.equals("Not running"))){
 				return true;
+			}
 		}
 		
-		List<RunningServiceInfo> services = getRunningServiceInfo(context);
-		for (RunningServiceInfo service: services){
-		  //  Logger.d(TAG, "Matching service: "+service.process +" with app: "+ appName + " service pkg: " + service.clientPackage + " label: " + service.clientLabel);
-		    String pname = service.process;
-		    int idx = pname.indexOf(":");
-		    if (idx > 0)
-		        pname = pname.substring(0, idx);
-		    if (pname.equals(appName))
-		        return true;
+		List<ProcessInfo> runningServices = getRunningServices(context);
+		for (ProcessInfo pi : runningServices){
+			if(((pi.pName != null && pi.pName.equals(appName))
+				|| (pi.pkgName != null && pi.pkgName.equals(appName)))
+				&& !pi.sleeping){
+				return true;
+			}
 		}
 		
 		return false;
