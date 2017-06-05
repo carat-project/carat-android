@@ -30,6 +30,10 @@ struct ProcessInfo {
 	7: optional i32 versionCode; // Version of app, android version code.
 	8: optional list<string> appSignatures; // Signatures of the app from PackageInfo.signatures
 	9: optional string installationPkg; // Package that installed this one, e.g. com.android.vending, com.google.play, or com.amazon.venezia.
+	10: optional string pkgName; // Package that started the process
+	11: optional bool sleeping; // True if the service is not running but scheduled to do so
+	12: optional double foregroundTime;
+	13: optional double launchCount;
 }
 
 //
