@@ -58,7 +58,7 @@ public class SamplerService extends IntentService {
 		// can acquire a separate wake lock here.
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-		wl.acquire();
+		wl.acquire(10*60*1000L);
 
 		Context context = getApplicationContext();
 		alarmManager =

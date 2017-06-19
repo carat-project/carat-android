@@ -17,7 +17,6 @@ import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.util.Pair;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
@@ -135,10 +133,10 @@ public class UsageManager {
 
     public static String getLastImportance(Context context, UsageStats stats, long beginTime){
         String ERR_VAL = "Unknown";
-        String importance = getLastEvent(stats);
+        String importance = getLastEvent(context, stats.getPackageName(), beginTime);
         if(importance.equals(ERR_VAL)){
-            Logger.i(TAG, "Missing mLastEvent field, falling back to event log..");
-            importance = getLastEvent(context, stats.getPackageName(), beginTime);
+            Logger.i(TAG, "Missing log entry, falling back to usage stats..");
+            importance = getLastEvent(stats);
         }
         return importance;
     }

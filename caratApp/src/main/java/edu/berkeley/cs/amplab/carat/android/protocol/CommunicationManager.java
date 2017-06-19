@@ -21,6 +21,7 @@ import com.flurry.android.FlurryAgent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.util.TimeUtils;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
@@ -694,7 +695,9 @@ public class CommunicationManager {
 			registration.setPlatformId(model);
 			registration.setSystemVersion(os);
 			registration.setTimestamp(System.currentTimeMillis() / 1000.0);
-			List<ProcessInfo> pi = SamplingLibrary.getRunningNow(a.getApplicationContext());
+
+			long monthAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
+			List<ProcessInfo> pi = SamplingLibrary.getRunningProcessInfoForSample(a.getApplicationContext(), monthAgo);
 			List<String> processList = new ArrayList<String>();
 			for (ProcessInfo p : pi)
 				processList.add(p.pName);

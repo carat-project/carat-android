@@ -75,4 +75,15 @@ public class Util {
         }
         return false;
     }
+
+    public static String trimProcessName(String processName){
+        if (processName != null) {
+            int idx = processName.lastIndexOf(':');
+            if(idx <= 0){
+                idx = processName.length();
+            }
+            processName = processName.substring(0, idx);
+        }
+        return processName;
+    }
 }
