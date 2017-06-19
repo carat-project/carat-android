@@ -183,6 +183,7 @@ struct Sample {
 	25: optional Settings settings;
 	26: optional StorageDetails storageDetails;
 	27: optional string countryCode; // Two-letter country code from network or SIM
+	28: optional bool usageStatsEnabled; // True if user has enabled usage stats access
 }
 
 //

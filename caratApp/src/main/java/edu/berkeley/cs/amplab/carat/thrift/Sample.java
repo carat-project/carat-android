@@ -65,6 +65,7 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
   private static final org.apache.thrift.protocol.TField SETTINGS_FIELD_DESC = new org.apache.thrift.protocol.TField("settings", org.apache.thrift.protocol.TType.STRUCT, (short)25);
   private static final org.apache.thrift.protocol.TField STORAGE_DETAILS_FIELD_DESC = new org.apache.thrift.protocol.TField("storageDetails", org.apache.thrift.protocol.TType.STRUCT, (short)26);
   private static final org.apache.thrift.protocol.TField COUNTRY_CODE_FIELD_DESC = new org.apache.thrift.protocol.TField("countryCode", org.apache.thrift.protocol.TType.STRING, (short)27);
+  private static final org.apache.thrift.protocol.TField USAGE_STATS_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("usageStatsEnabled", org.apache.thrift.protocol.TType.BOOL, (short)28);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -99,6 +100,7 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
   public Settings settings; // optional
   public StorageDetails storageDetails; // optional
   public String countryCode; // optional
+  public boolean usageStatsEnabled; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -128,7 +130,8 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
     EXTRA((short)24, "extra"),
     SETTINGS((short)25, "settings"),
     STORAGE_DETAILS((short)26, "storageDetails"),
-    COUNTRY_CODE((short)27, "countryCode");
+    COUNTRY_CODE((short)27, "countryCode"),
+    USAGE_STATS_ENABLED((short)28, "usageStatsEnabled");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -197,6 +200,8 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
           return STORAGE_DETAILS;
         case 27: // COUNTRY_CODE
           return COUNTRY_CODE;
+        case 28: // USAGE_STATS_ENABLED
+          return USAGE_STATS_ENABLED;
         default:
           return null;
       }
@@ -249,8 +254,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
   private static final int __SCREENON_ISSET_ID = 9;
   private static final int __UNKNOWNSOURCES_ISSET_ID = 10;
   private static final int __DEVELOPERMODE_ISSET_ID = 11;
+  private static final int __USAGESTATSENABLED_ISSET_ID = 12;
   private short __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TIMESTAMP,_Fields.PI_LIST,_Fields.BATTERY_STATE,_Fields.BATTERY_LEVEL,_Fields.MEMORY_WIRED,_Fields.MEMORY_ACTIVE,_Fields.MEMORY_INACTIVE,_Fields.MEMORY_FREE,_Fields.MEMORY_USER,_Fields.TRIGGERED_BY,_Fields.NETWORK_STATUS,_Fields.DISTANCE_TRAVELED,_Fields.SCREEN_BRIGHTNESS,_Fields.NETWORK_DETAILS,_Fields.BATTERY_DETAILS,_Fields.CPU_STATUS,_Fields.LOCATION_PROVIDERS,_Fields.CALL_INFO,_Fields.SCREEN_ON,_Fields.TIME_ZONE,_Fields.UNKNOWN_SOURCES,_Fields.DEVELOPER_MODE,_Fields.EXTRA,_Fields.SETTINGS,_Fields.STORAGE_DETAILS,_Fields.COUNTRY_CODE};
+  private static final _Fields optionals[] = {_Fields.TIMESTAMP,_Fields.PI_LIST,_Fields.BATTERY_STATE,_Fields.BATTERY_LEVEL,_Fields.MEMORY_WIRED,_Fields.MEMORY_ACTIVE,_Fields.MEMORY_INACTIVE,_Fields.MEMORY_FREE,_Fields.MEMORY_USER,_Fields.TRIGGERED_BY,_Fields.NETWORK_STATUS,_Fields.DISTANCE_TRAVELED,_Fields.SCREEN_BRIGHTNESS,_Fields.NETWORK_DETAILS,_Fields.BATTERY_DETAILS,_Fields.CPU_STATUS,_Fields.LOCATION_PROVIDERS,_Fields.CALL_INFO,_Fields.SCREEN_ON,_Fields.TIME_ZONE,_Fields.UNKNOWN_SOURCES,_Fields.DEVELOPER_MODE,_Fields.EXTRA,_Fields.SETTINGS,_Fields.STORAGE_DETAILS,_Fields.COUNTRY_CODE,_Fields.USAGE_STATS_ENABLED};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -310,6 +316,8 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StorageDetails.class)));
     tmpMap.put(_Fields.COUNTRY_CODE, new org.apache.thrift.meta_data.FieldMetaData("countryCode", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.USAGE_STATS_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("usageStatsEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Sample.class, metaDataMap);
   }
@@ -391,6 +399,7 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
     if (other.isSetCountryCode()) {
       this.countryCode = other.countryCode;
     }
+    this.usageStatsEnabled = other.usageStatsEnabled;
   }
 
   public Sample deepCopy() {
@@ -438,6 +447,8 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
     this.settings = null;
     this.storageDetails = null;
     this.countryCode = null;
+    setUsageStatsEnabledIsSet(false);
+    this.usageStatsEnabled = false;
   }
 
   public String getUuId() {
@@ -1121,6 +1132,29 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
     }
   }
 
+  public boolean isUsageStatsEnabled() {
+    return this.usageStatsEnabled;
+  }
+
+  public Sample setUsageStatsEnabled(boolean usageStatsEnabled) {
+    this.usageStatsEnabled = usageStatsEnabled;
+    setUsageStatsEnabledIsSet(true);
+    return this;
+  }
+
+  public void unsetUsageStatsEnabled() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __USAGESTATSENABLED_ISSET_ID);
+  }
+
+  /** Returns true if field usageStatsEnabled is set (has been assigned a value) and false otherwise */
+  public boolean isSetUsageStatsEnabled() {
+    return EncodingUtils.testBit(__isset_bitfield, __USAGESTATSENABLED_ISSET_ID);
+  }
+
+  public void setUsageStatsEnabledIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __USAGESTATSENABLED_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case UU_ID:
@@ -1339,6 +1373,14 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       }
       break;
 
+    case USAGE_STATS_ENABLED:
+      if (value == null) {
+        unsetUsageStatsEnabled();
+      } else {
+        setUsageStatsEnabled((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -1425,6 +1467,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
     case COUNTRY_CODE:
       return getCountryCode();
 
+    case USAGE_STATS_ENABLED:
+      return Boolean.valueOf(isUsageStatsEnabled());
+
     }
     throw new IllegalStateException();
   }
@@ -1490,6 +1535,8 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       return isSetStorageDetails();
     case COUNTRY_CODE:
       return isSetCountryCode();
+    case USAGE_STATS_ENABLED:
+      return isSetUsageStatsEnabled();
     }
     throw new IllegalStateException();
   }
@@ -1750,6 +1797,15 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
         return false;
     }
 
+    boolean this_present_usageStatsEnabled = true && this.isSetUsageStatsEnabled();
+    boolean that_present_usageStatsEnabled = true && that.isSetUsageStatsEnabled();
+    if (this_present_usageStatsEnabled || that_present_usageStatsEnabled) {
+      if (!(this_present_usageStatsEnabled && that_present_usageStatsEnabled))
+        return false;
+      if (this.usageStatsEnabled != that.usageStatsEnabled)
+        return false;
+    }
+
     return true;
   }
 
@@ -1891,6 +1947,11 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
     list.add(present_countryCode);
     if (present_countryCode)
       list.add(countryCode);
+
+    boolean present_usageStatsEnabled = true && (isSetUsageStatsEnabled());
+    list.add(present_usageStatsEnabled);
+    if (present_usageStatsEnabled)
+      list.add(usageStatsEnabled);
 
     return list.hashCode();
   }
@@ -2173,6 +2234,16 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetUsageStatsEnabled()).compareTo(other.isSetUsageStatsEnabled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUsageStatsEnabled()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.usageStatsEnabled, other.usageStatsEnabled);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -2410,6 +2481,12 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       } else {
         sb.append(this.countryCode);
       }
+      first = false;
+    }
+    if (isSetUsageStatsEnabled()) {
+      if (!first) sb.append(", ");
+      sb.append("usageStatsEnabled:");
+      sb.append(this.usageStatsEnabled);
       first = false;
     }
     sb.append(")");
@@ -2732,6 +2809,14 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 28: // USAGE_STATS_ENABLED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.usageStatsEnabled = iprot.readBool();
+              struct.setUsageStatsEnabledIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -2931,6 +3016,11 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetUsageStatsEnabled()) {
+        oprot.writeFieldBegin(USAGE_STATS_ENABLED_FIELD_DESC);
+        oprot.writeBool(struct.usageStatsEnabled);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -3028,7 +3118,10 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       if (struct.isSetCountryCode()) {
         optionals.set(25);
       }
-      oprot.writeBitSet(optionals, 26);
+      if (struct.isSetUsageStatsEnabled()) {
+        optionals.set(26);
+      }
+      oprot.writeBitSet(optionals, 27);
       if (struct.isSetTimestamp()) {
         oprot.writeDouble(struct.timestamp);
       }
@@ -3125,6 +3218,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       if (struct.isSetCountryCode()) {
         oprot.writeString(struct.countryCode);
       }
+      if (struct.isSetUsageStatsEnabled()) {
+        oprot.writeBool(struct.usageStatsEnabled);
+      }
     }
 
     @Override
@@ -3132,7 +3228,7 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.uuId = iprot.readString();
       struct.setUuIdIsSet(true);
-      BitSet incoming = iprot.readBitSet(26);
+      BitSet incoming = iprot.readBitSet(27);
       if (incoming.get(0)) {
         struct.timestamp = iprot.readDouble();
         struct.setTimestampIsSet(true);
@@ -3271,6 +3367,10 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       if (incoming.get(25)) {
         struct.countryCode = iprot.readString();
         struct.setCountryCodeIsSet(true);
+      }
+      if (incoming.get(26)) {
+        struct.usageStatsEnabled = iprot.readBool();
+        struct.setUsageStatsEnabledIsSet(true);
       }
     }
   }
