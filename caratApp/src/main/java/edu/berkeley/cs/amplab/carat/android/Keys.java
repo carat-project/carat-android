@@ -10,4 +10,5 @@ public class Keys {
     public static String distanceTraveled = "distanceTraveled";
     public static String lastBatteryStatus = "lastBatteryStatus";
     public static String lastKnownLocation = "lastKnownLocation";
+    public static String sendInstalledPackages = "carat.sample.send.installed";
 }

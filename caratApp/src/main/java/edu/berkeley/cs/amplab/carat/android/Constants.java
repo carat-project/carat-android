@@ -52,7 +52,7 @@ public class Constants {
     public static final String SCHEDULED_SAMPLE = "edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE";
     public static final String RAPID_SAMPLING = "edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING";
     // If true, install Sampling events to occur at boot. Currently not used.
-    public static final String PREFERENCE_SEND_INSTALLED_PACKAGES = "carat.sample.send.installed";
+
 
     // default icon and Carat package name:
     public static final String CARAT_PACKAGE_NAME = "edu.berkeley.cs.amplab.carat.android";

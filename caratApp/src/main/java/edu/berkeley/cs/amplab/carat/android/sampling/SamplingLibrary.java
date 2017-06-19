@@ -18,11 +18,9 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,9 +50,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.Signature;
-import android.database.Cursor;
 import android.location.Criteria;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -72,13 +68,9 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
-import android.support.annotation.RequiresApi;
-import android.telephony.CellLocation;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
-import android.telephony.cdma.CdmaCellLocation;
-import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -86,6 +78,7 @@ import com.flurry.android.FlurryAgent;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
@@ -93,8 +86,6 @@ import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
-import edu.berkeley.cs.amplab.carat.thrift.CallMonth;
-import edu.berkeley.cs.amplab.carat.thrift.CellInfo;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
 import edu.berkeley.cs.amplab.carat.thrift.NetworkDetails;
@@ -635,7 +626,7 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return List of running processes
 	 */
-	public static List<ProcessInfo> getRunningProcessesOld(Context context){
+	public static List<ProcessInfo> getRunningNow(Context context){
 		List<ProcessInfo> runningProcesses = new LinkedList<>();
 		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
 		List<RunningAppProcessInfo> runningAppProcesses = am.getRunningAppProcesses();
@@ -664,23 +655,24 @@ public final class SamplingLibrary {
 	}
 
 
-	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-	public static List<ProcessInfo> getRunningProcesses(Context context, long lastSampleTime){
+	public static List<ProcessInfo> getRunningSince(Context context, long lastSampleTime){
 		List<ProcessInfo> runningProcesses = new LinkedList<>();
-		Map<String, UsageStats> usageStats = UsageManager.getUsageAggregate(context, lastSampleTime);
-		if(usageStats != null){
-			for(String pkgName : usageStats.keySet()){
-				UsageStats stats = usageStats.get(pkgName);
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+			Map<String, UsageStats> usageStats = UsageManager.getUsageAggregate(context, lastSampleTime);
+			if(usageStats != null){
+				for(String pkgName : usageStats.keySet()){
+					UsageStats stats = usageStats.get(pkgName);
 
-				ProcessInfo item = new ProcessInfo();
-				item.setPName(stats.getPackageName());
-				item.setPkgName(stats.getPackageName());
-				item.setImportance(UsageManager.getLastImportance(context, stats, lastSampleTime));
-				item.setPId(-1); // We cannot get this from event log
-				item.setLaunchCount(UsageManager.getAppLaunchCount(context, stats, lastSampleTime));
-				item.setForegroundTime(stats.getTotalTimeInForeground());
+					ProcessInfo item = new ProcessInfo();
+					item.setPName(stats.getPackageName());
+					item.setPkgName(stats.getPackageName());
+					item.setImportance(UsageManager.getLastImportance(context, stats, lastSampleTime));
+					item.setPId(-1); // We cannot get this from event log
+					item.setLaunchCount(UsageManager.getAppLaunchCount(context, stats, lastSampleTime));
+					item.setForegroundTime(stats.getTotalTimeInForeground());
 
-				runningProcesses.add(item);
+					runningProcesses.add(item);
+				}
 			}
 		}
 		return runningProcesses;
@@ -720,13 +712,12 @@ public final class SamplingLibrary {
 		return services;
 	}
 
-	public static List<ProcessInfo> getRunningAppInfo(Context context, long lastSampleTime) {
+	public static List<ProcessInfo> getRunningProcesses(Context context, long lastSampleTime) {
 		List<ProcessInfo> processInfo = new LinkedList<>();
-		processInfo.addAll(getRunningProcessesOld(context)); // Running as of now
-
+		processInfo.addAll(getRunningNow(context)); // Running as of now
 		// Running since last sample
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-			processInfo.addAll(getRunningProcesses(context, lastSampleTime));
+			processInfo.addAll(getRunningSince(context, lastSampleTime));
 		}
 		processInfo.addAll(getRunningServices(context));
 		return processInfo;
@@ -784,7 +775,7 @@ public final class SamplingLibrary {
 	 * @return true if the application is running, false otherwise.
 	 */
 	public static boolean isRunning(Context context, String appName) {
-		List<ProcessInfo> runningProcesses = getRunningProcessesOld(context);
+		List<ProcessInfo> runningProcesses = getRunningNow(context);
 		for (ProcessInfo pi : runningProcesses) {
 			if ((pi.pName != null && pi.pName.equals(appName) ||
 				(pi.pkgName != null && pi.pkgName.equals(appName)))
@@ -1031,16 +1022,8 @@ public final class SamplingLibrary {
 					int vc = pak.versionCode;
 					ApplicationInfo appInfo = pak.applicationInfo;
 					String label = pm.getApplicationLabel(appInfo).toString();
-					// we need application UID to be able to use Android's
-					// TrafficStat API
-					// in order to get the traffic info of a particular app:
-					int appUid = appInfo.uid;
-					// get the amount of transmitted and received bytes by an
-					// app
-					// TODO: disabled for debugging
-//					TrafficRecord trafficRecord = getAppTraffic(appUid);
-
 					int flags = pak.applicationInfo.flags;
+
 					// Check if it is a system app
 					boolean isSystemApp = (flags & ApplicationInfo.FLAG_SYSTEM) > 0;
 					isSystemApp = isSystemApp || (flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) > 0;
@@ -1058,8 +1041,6 @@ public final class SamplingLibrary {
 						pi.setImportance(Constants.IMPORTANCE_NOT_RUNNING);
 						pi.setInstallationPkg(pm.getInstallerPackageName(pkg));
 						pi.setVersionName(pak.versionName);
-						//TODO: disbaled for debugging
-//						pi.setTrafficRecord(trafficRecord);
 						result.put(pkg, pi);
 					}
 				}
@@ -1116,34 +1097,48 @@ public final class SamplingLibrary {
 		return pi;
 	}
 
-	/**
-	 * Returns a List of ProcessInfo objects, helper for sample.
-	 *
-	 * @return a List of ProcessInfo objects, helper for sample.
-	 */
-	public static List<ProcessInfo> getRunningProcessInfoForSample(Context context) {
+	public static List<ProcessInfo> getProcessHistorySince(Context context, long since){
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
 
-		// Reset list for each sample
-		runningAppInfo = null;
-		List<ProcessInfo> list = getRunningAppInfo(context);
-		List<ProcessInfo> result = new ArrayList<ProcessInfo>();
+	}
 
+	/**
+	 * NOTE: This method returns a list of currently running processes for devices running on
+	 * older versions of Android. Starting from version 5.0, a list of processes that have been
+	 * observed running since last sample is returned instead.
+	 *
+	 * Information sources are prioritized as follows: Event log > Currently running > Installed.
+	 * This is to make sure the highest level of accuracy and amount of information is obtained.
+	 * Installed applications are only returned when this method is first used.
+	 *
+	 * @param context application context
+	 * @param lastSampleTime timestamp in milliseconds
+	 * @return list of process information for all running processes.
+	 */
+	public static List<ProcessInfo> getRunningProcessInfoForSample(Context context, long lastSampleTime) {
 		PackageManager pm = context.getPackageManager();
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		boolean sendInstalled = preferences.getBoolean(Keys.sendInstalledPackages, true);
 
-		Set<String> procs = new HashSet<String>();
+		Map<String, ProcessInfo> result = new HashMap<>();
+		if(sendInstalled){
+			result = getInstalledPackages(context, false);
+		}
+		List<ProcessInfo> sources = new LinkedList<>();
+		sources.addAll(getRunningNow(context)); // Only works on older devices
+		sources.addAll(getRunningSince(context, lastSampleTime));
 
-		boolean inst = p.getBoolean(Constants.PREFERENCE_SEND_INSTALLED_PACKAGES, true);
+		for(ProcessInfo info : sources){
+			String processName = info.getPName();
+			if(result != null && result.containsKey(processName)){
+				result.remove(processName);
+			}
+		}
 
-		Map<String, ProcessInfo> ipkg = null;
-		if (inst)
-			ipkg = getInstalledPackages(context, false);
-
-		for (ProcessInfo pi : list) {
+		for (ProcessInfo pi : sources) {
 			String pname = pi.getPName();
-			if (ipkg != null && ipkg.containsKey(pname))
-				ipkg.remove(pname);
-			procs.add(pname);
+			if (result != null && result.containsKey(pname))
+				result.remove(pname);
 			ProcessInfo item = new ProcessInfo();
 			PackageInfo pak = getPackageInfo(context, pname);
 			if (pak != null) {
@@ -1179,61 +1174,61 @@ public final class SamplingLibrary {
 			if (installationSource == null)
 				installationSource = "null";
 			item.setInstallationPkg(installationSource);
-			result.add(item);
+			sources.add(item);
 		}
 
 		// Send installed packages if we were to do so.
-		if (ipkg != null && ipkg.size() > 0) {
-			result.addAll(ipkg.values());
-			p.edit().putBoolean(Constants.PREFERENCE_SEND_INSTALLED_PACKAGES, false).commit();
+		if (result != null && result.size() > 0) {
+			sources.addAll(result.values());
+			preferences.edit().putBoolean(Constants.PREFERENCE_SEND_INSTALLED_PACKAGES, false).commit();
 		}
 
 		// Go through the preferences and look for UNINSTALL, INSTALL and
 		// REPLACE keys set by InstallReceiver.
-		Set<String> ap = p.getAll().keySet();
-		SharedPreferences.Editor e = p.edit();
+		Set<String> ap = preferences.getAll().keySet();
+		SharedPreferences.Editor e = preferences.edit();
 		boolean edited = false;
 		for (String pref : ap) {
 			if (pref.startsWith(INSTALLED)) {
 				String pname = pref.substring(INSTALLED.length());
-				boolean installed = p.getBoolean(pref, false);
+				boolean installed = preferences.getBoolean(pref, false);
 				if (installed) {
 					Logger.i(STAG, "Installed:" + pname);
 					ProcessInfo i = getInstalledPackage(context, pname);
 					if (i != null) {
 						i.setImportance(Constants.IMPORTANCE_INSTALLED);
-						result.add(i);
+						sources.add(i);
 						e.remove(pref);
 						edited = true;
 					}
 				}
 			} else if (pref.startsWith(REPLACED)) {
 				String pname = pref.substring(REPLACED.length());
-				boolean replaced = p.getBoolean(pref, false);
+				boolean replaced = preferences.getBoolean(pref, false);
 				if (replaced) {
 					Logger.i(STAG, "Replaced:" + pname);
 					ProcessInfo i = getInstalledPackage(context, pname);
 					if (i != null) {
 						i.setImportance(Constants.IMPORTANCE_REPLACED);
-						result.add(i);
+						sources.add(i);
 						e.remove(pref);
 						edited = true;
 					}
 				}
 			} else if (pref.startsWith(UNINSTALLED)) {
 				String pname = pref.substring(UNINSTALLED.length());
-				boolean uninstalled = p.getBoolean(pref, false);
+				boolean uninstalled = preferences.getBoolean(pref, false);
 				if (uninstalled) {
 					Logger.i(STAG, "Uninstalled:" + pname);
-					result.add(uninstalledItem(pname, pref, e));
+					sources.add(uninstalledItem(pname, pref, e));
 					edited = true;
 				}
 			} else if (pref.startsWith(DISABLED)) {
                 String pname = pref.substring(DISABLED.length());
-                boolean disabled = p.getBoolean(pref, false);
+                boolean disabled = preferences.getBoolean(pref, false);
                 if (disabled) {
                     Logger.i(STAG, "Disabled app:" + pname);
-                    result.add(disabledItem(pname, pref, e));
+                    sources.add(disabledItem(pname, pref, e));
                     edited = true;
                 }
             }
@@ -1241,7 +1236,7 @@ public final class SamplingLibrary {
 		if (edited)
 			e.commit();
 
-		return result;
+		return sources;
 	}
 
 	/**
@@ -1813,6 +1808,12 @@ public final class SamplingLibrary {
 		return adb;
 	}
 
+	// TODO: Should this call be in Sampler directly?
+	public static boolean isUsageAccessGranted(Context context) {
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+				&& UsageManager.isPermissionGranted(context);
+	}
+
 	/*
 	 * TODO: Make the app running when the system reboots, and provide a stop
 	 * button. CPU and Memory info per application CPU core/ frequency, CPU
@@ -1961,7 +1962,7 @@ public final class SamplingLibrary {
 
 		// Record first data point for CPU usage
 		long[] idleAndCpu1 = readUsagePoint();
-		List<ProcessInfo> processes = getRunningProcessInfoForSample(context);
+		List<ProcessInfo> processes = getRunningProcessInfoForSample(context, 0);
 		mySample.setPiList(processes);
 		// }
 

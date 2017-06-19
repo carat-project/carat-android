@@ -25,26 +25,24 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
 public class Sampler2 {
     private static String TAG = Sampler2.class.getSimpleName();
 
-    public static void sample(Context context, String trigger, Runnable callback){
-        Sample sample = constructSample(context, trigger);
-
+    public static void sample(Context context, String trigger, Runnable releaseWl){
         SampleDB db = SampleDB.getInstance(context);
         Sample lastSample = db.getLastSample(context);
+        long lastSampleTime = (long)lastSample.getTimestamp();
+
+        Sample sample = constructSample(context, trigger, lastSampleTime);
         if(sample != null && !essentiallyIdentical(sample, lastSample)){
             long id = db.putSample(sample);
             Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
         }
-
         int sampleCount = SampleDB.getInstance(context).countSamples();
         if(sampleCount >= Sampler.MAX_SAMPLES){
             CaratApplication.postSamplesNotification(sampleCount);
         }
-
-        // Release the wakelock
-        callback.run();
+        releaseWl.run();
     }
 
-    private static Sample constructSample(Context context, String trigger){
+    private static Sample constructSample(Context context, String trigger, long lastSampleTime){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SystemLoadPoint load1 = SamplingLibrary.getSystemLoad();
         Intent batteryIntent = SamplingLibrary.getLastBatteryIntent(context);
@@ -59,7 +57,7 @@ public class Sampler2 {
         sample.setBatteryState(getBatteryStatusString(prefs, batteryIntent));
 
         sample.setTimestamp(System.currentTimeMillis()/1000.0);
-        sample.setPiList(SamplingLibrary.getRunningProcessInfoForSample(context));
+        sample.setPiList(SamplingLibrary.getRunningProcessInfoForSample(context, lastSampleTime));
         sample.setScreenBrightness(SamplingLibrary.getScreenBrightness(context));
         sample.setLocationProviders(SamplingLibrary.getEnabledLocationProviders(context));
         sample.setDistanceTraveled(SamplingLibrary.getDistanceTraveled(context));
@@ -74,10 +72,11 @@ public class Sampler2 {
         sample.setTimeZone(SamplingLibrary.getTimeZone(context));
         sample.setCountryCode(SamplingLibrary.getCountryCode(context));
         sample.setExtra(SamplingLibrary.getExtras(context));
+        sample.setUsageStatsEnabled(SamplingLibrary.isUsageAccessGranted(context));
 
 
         int[] memoryInfo = SamplingLibrary.readMeminfo();
-        if(memoryInfo != null && memoryInfo.length == 4){
+        if(memoryInfo.length == 4){
             sample.setMemoryUser(memoryInfo[0]);
             sample.setMemoryFree(memoryInfo[1]);
             sample.setMemoryActive(memoryInfo[2]);
@@ -85,6 +84,7 @@ public class Sampler2 {
         }
 
         // Take as much time between cpu measurements as possible
+        // TODO: Use the time between samples instead.
         SystemLoadPoint load2 = SamplingLibrary.getSystemLoad();
         sample.setCpuStatus(constructCpuStatus(load1, load2));
         return sample;

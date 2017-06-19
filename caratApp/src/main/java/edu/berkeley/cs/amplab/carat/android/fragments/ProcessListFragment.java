@@ -63,7 +63,7 @@ public class ProcessListFragment extends Fragment {
         CaratApplication app = (CaratApplication) getActivity().getApplication();
         SamplingLibrary.resetRunningProcessInfo();
         List<ProcessInfo> searchResults = SamplingLibrary
-                .getRunningAppInfo(getActivity());
+                .getRunningNow(getActivity());
         expandableListView.setAdapter(new ProcessExpandListAdapter((MainActivity) getActivity(),
                 expandableListView, app, searchResults));
     }

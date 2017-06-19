@@ -18,7 +18,6 @@ import org.apache.thrift.transport.TTransport;
 
 import com.flurry.android.FlurryAgent;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -695,7 +694,7 @@ public class CommunicationManager {
 			registration.setPlatformId(model);
 			registration.setSystemVersion(os);
 			registration.setTimestamp(System.currentTimeMillis() / 1000.0);
-			List<ProcessInfo> pi = SamplingLibrary.getRunningAppInfo(a.getApplicationContext());
+			List<ProcessInfo> pi = SamplingLibrary.getRunningNow(a.getApplicationContext());
 			List<String> processList = new ArrayList<String>();
 			for (ProcessInfo p : pi)
 				processList.add(p.pName);
