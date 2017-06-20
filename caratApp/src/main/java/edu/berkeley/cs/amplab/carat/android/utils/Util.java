@@ -2,6 +2,7 @@ package edu.berkeley.cs.amplab.carat.android.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -85,5 +86,14 @@ public class Util {
             processName = processName.substring(0, idx);
         }
         return processName;
+    }
+
+    public static boolean isNullOrEmpty(String string){
+        return string == null || string.trim().isEmpty();
+    }
+
+    public static boolean isSystemApp(int flags){
+        return (flags & ApplicationInfo.FLAG_SYSTEM) > 0
+                || (flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) > 0;
     }
 }
