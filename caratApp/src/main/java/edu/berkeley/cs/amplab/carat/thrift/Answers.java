@@ -712,14 +712,14 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
           case 5: // ANSWERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list144 = iprot.readListBegin();
-                struct.answers = new ArrayList<QuestionnaireAnswer>(_list144.size);
-                QuestionnaireAnswer _elem145;
-                for (int _i146 = 0; _i146 < _list144.size; ++_i146)
+                org.apache.thrift.protocol.TList _list136 = iprot.readListBegin();
+                struct.answers = new ArrayList<QuestionnaireAnswer>(_list136.size);
+                QuestionnaireAnswer _elem137;
+                for (int _i138 = 0; _i138 < _list136.size; ++_i138)
                 {
-                  _elem145 = new QuestionnaireAnswer();
-                  _elem145.read(iprot);
-                  struct.answers.add(_elem145);
+                  _elem137 = new QuestionnaireAnswer();
+                  _elem137.read(iprot);
+                  struct.answers.add(_elem137);
                 }
                 iprot.readListEnd();
               }
@@ -770,9 +770,9 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
         oprot.writeFieldBegin(ANSWERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.answers.size()));
-          for (QuestionnaireAnswer _iter147 : struct.answers)
+          for (QuestionnaireAnswer _iter139 : struct.answers)
           {
-            _iter147.write(oprot);
+            _iter139.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -801,9 +801,9 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       oprot.writeBool(struct.complete);
       {
         oprot.writeI32(struct.answers.size());
-        for (QuestionnaireAnswer _iter148 : struct.answers)
+        for (QuestionnaireAnswer _iter140 : struct.answers)
         {
-          _iter148.write(oprot);
+          _iter140.write(oprot);
         }
       }
     }
@@ -820,14 +820,14 @@ public class Answers implements org.apache.thrift.TBase<Answers, Answers._Fields
       struct.complete = iprot.readBool();
       struct.setCompleteIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list149 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.answers = new ArrayList<QuestionnaireAnswer>(_list149.size);
-        QuestionnaireAnswer _elem150;
-        for (int _i151 = 0; _i151 < _list149.size; ++_i151)
+        org.apache.thrift.protocol.TList _list141 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.answers = new ArrayList<QuestionnaireAnswer>(_list141.size);
+        QuestionnaireAnswer _elem142;
+        for (int _i143 = 0; _i143 < _list141.size; ++_i143)
         {
-          _elem150 = new QuestionnaireAnswer();
-          _elem150.read(iprot);
-          struct.answers.add(_elem150);
+          _elem142 = new QuestionnaireAnswer();
+          _elem142.read(iprot);
+          struct.answers.add(_elem142);
         }
       }
       struct.setAnswersIsSet(true);

@@ -440,14 +440,14 @@ public class HogBugReport implements org.apache.thrift.TBase<HogBugReport, HogBu
           case 2: // HB_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
-                struct.hbList = new ArrayList<HogsBugs>(_list96.size);
-                HogsBugs _elem97;
-                for (int _i98 = 0; _i98 < _list96.size; ++_i98)
+                org.apache.thrift.protocol.TList _list88 = iprot.readListBegin();
+                struct.hbList = new ArrayList<HogsBugs>(_list88.size);
+                HogsBugs _elem89;
+                for (int _i90 = 0; _i90 < _list88.size; ++_i90)
                 {
-                  _elem97 = new HogsBugs();
-                  _elem97.read(iprot);
-                  struct.hbList.add(_elem97);
+                  _elem89 = new HogsBugs();
+                  _elem89.read(iprot);
+                  struct.hbList.add(_elem89);
                 }
                 iprot.readListEnd();
               }
@@ -481,9 +481,9 @@ public class HogBugReport implements org.apache.thrift.TBase<HogBugReport, HogBu
           oprot.writeFieldBegin(HB_LIST_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.hbList.size()));
-            for (HogsBugs _iter99 : struct.hbList)
+            for (HogsBugs _iter91 : struct.hbList)
             {
-              _iter99.write(oprot);
+              _iter91.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -516,9 +516,9 @@ public class HogBugReport implements org.apache.thrift.TBase<HogBugReport, HogBu
       if (struct.isSetHbList()) {
         {
           oprot.writeI32(struct.hbList.size());
-          for (HogsBugs _iter100 : struct.hbList)
+          for (HogsBugs _iter92 : struct.hbList)
           {
-            _iter100.write(oprot);
+            _iter92.write(oprot);
           }
         }
       }
@@ -532,14 +532,14 @@ public class HogBugReport implements org.apache.thrift.TBase<HogBugReport, HogBu
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list101 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.hbList = new ArrayList<HogsBugs>(_list101.size);
-          HogsBugs _elem102;
-          for (int _i103 = 0; _i103 < _list101.size; ++_i103)
+          org.apache.thrift.protocol.TList _list93 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.hbList = new ArrayList<HogsBugs>(_list93.size);
+          HogsBugs _elem94;
+          for (int _i95 = 0; _i95 < _list93.size; ++_i95)
           {
-            _elem102 = new HogsBugs();
-            _elem102.read(iprot);
-            struct.hbList.add(_elem102);
+            _elem94 = new HogsBugs();
+            _elem94.read(iprot);
+            struct.hbList.add(_elem94);
           }
         }
         struct.setHbListIsSet(true);

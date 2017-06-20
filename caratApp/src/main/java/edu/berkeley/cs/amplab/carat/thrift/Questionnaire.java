@@ -1248,13 +1248,13 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
           case 2: // PREREQUISITES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list120 = iprot.readListBegin();
-                struct.prerequisites = new ArrayList<Integer>(_list120.size);
-                int _elem121;
-                for (int _i122 = 0; _i122 < _list120.size; ++_i122)
+                org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
+                struct.prerequisites = new ArrayList<Integer>(_list112.size);
+                int _elem113;
+                for (int _i114 = 0; _i114 < _list112.size; ++_i114)
                 {
-                  _elem121 = iprot.readI32();
-                  struct.prerequisites.add(_elem121);
+                  _elem113 = iprot.readI32();
+                  struct.prerequisites.add(_elem113);
                 }
                 iprot.readListEnd();
               }
@@ -1338,14 +1338,14 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
           case 12: // ITEMS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list123 = iprot.readListBegin();
-                struct.items = new ArrayList<QuestionnaireItem>(_list123.size);
-                QuestionnaireItem _elem124;
-                for (int _i125 = 0; _i125 < _list123.size; ++_i125)
+                org.apache.thrift.protocol.TList _list115 = iprot.readListBegin();
+                struct.items = new ArrayList<QuestionnaireItem>(_list115.size);
+                QuestionnaireItem _elem116;
+                for (int _i117 = 0; _i117 < _list115.size; ++_i117)
                 {
-                  _elem124 = new QuestionnaireItem();
-                  _elem124.read(iprot);
-                  struct.items.add(_elem124);
+                  _elem116 = new QuestionnaireItem();
+                  _elem116.read(iprot);
+                  struct.items.add(_elem116);
                 }
                 iprot.readListEnd();
               }
@@ -1380,9 +1380,9 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
           oprot.writeFieldBegin(PREREQUISITES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.prerequisites.size()));
-            for (int _iter126 : struct.prerequisites)
+            for (int _iter118 : struct.prerequisites)
             {
-              oprot.writeI32(_iter126);
+              oprot.writeI32(_iter118);
             }
             oprot.writeListEnd();
           }
@@ -1442,9 +1442,9 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
         oprot.writeFieldBegin(ITEMS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.items.size()));
-          for (QuestionnaireItem _iter127 : struct.items)
+          for (QuestionnaireItem _iter119 : struct.items)
           {
-            _iter127.write(oprot);
+            _iter119.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1470,9 +1470,9 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       oprot.writeI32(struct.id);
       {
         oprot.writeI32(struct.items.size());
-        for (QuestionnaireItem _iter128 : struct.items)
+        for (QuestionnaireItem _iter120 : struct.items)
         {
-          _iter128.write(oprot);
+          _iter120.write(oprot);
         }
       }
       BitSet optionals = new BitSet();
@@ -1510,9 +1510,9 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       if (struct.isSetPrerequisites()) {
         {
           oprot.writeI32(struct.prerequisites.size());
-          for (int _iter129 : struct.prerequisites)
+          for (int _iter121 : struct.prerequisites)
           {
-            oprot.writeI32(_iter129);
+            oprot.writeI32(_iter121);
           }
         }
       }
@@ -1551,27 +1551,27 @@ public class Questionnaire implements org.apache.thrift.TBase<Questionnaire, Que
       struct.id = iprot.readI32();
       struct.setIdIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list130 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.items = new ArrayList<QuestionnaireItem>(_list130.size);
-        QuestionnaireItem _elem131;
-        for (int _i132 = 0; _i132 < _list130.size; ++_i132)
+        org.apache.thrift.protocol.TList _list122 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.items = new ArrayList<QuestionnaireItem>(_list122.size);
+        QuestionnaireItem _elem123;
+        for (int _i124 = 0; _i124 < _list122.size; ++_i124)
         {
-          _elem131 = new QuestionnaireItem();
-          _elem131.read(iprot);
-          struct.items.add(_elem131);
+          _elem123 = new QuestionnaireItem();
+          _elem123.read(iprot);
+          struct.items.add(_elem123);
         }
       }
       struct.setItemsIsSet(true);
       BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list133 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
-          struct.prerequisites = new ArrayList<Integer>(_list133.size);
-          int _elem134;
-          for (int _i135 = 0; _i135 < _list133.size; ++_i135)
+          org.apache.thrift.protocol.TList _list125 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+          struct.prerequisites = new ArrayList<Integer>(_list125.size);
+          int _elem126;
+          for (int _i127 = 0; _i127 < _list125.size; ++_i127)
           {
-            _elem134 = iprot.readI32();
-            struct.prerequisites.add(_elem134);
+            _elem126 = iprot.readI32();
+            struct.prerequisites.add(_elem126);
           }
         }
         struct.setPrerequisitesIsSet(true);

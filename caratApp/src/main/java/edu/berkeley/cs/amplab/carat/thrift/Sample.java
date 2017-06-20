@@ -2574,14 +2574,14 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
           case 3: // PI_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                struct.piList = new ArrayList<ProcessInfo>(_list24.size);
-                ProcessInfo _elem25;
-                for (int _i26 = 0; _i26 < _list24.size; ++_i26)
+                org.apache.thrift.protocol.TList _list16 = iprot.readListBegin();
+                struct.piList = new ArrayList<ProcessInfo>(_list16.size);
+                ProcessInfo _elem17;
+                for (int _i18 = 0; _i18 < _list16.size; ++_i18)
                 {
-                  _elem25 = new ProcessInfo();
-                  _elem25.read(iprot);
-                  struct.piList.add(_elem25);
+                  _elem17 = new ProcessInfo();
+                  _elem17.read(iprot);
+                  struct.piList.add(_elem17);
                 }
                 iprot.readListEnd();
               }
@@ -2708,13 +2708,13 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
           case 18: // LOCATION_PROVIDERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list27 = iprot.readListBegin();
-                struct.locationProviders = new ArrayList<String>(_list27.size);
-                String _elem28;
-                for (int _i29 = 0; _i29 < _list27.size; ++_i29)
+                org.apache.thrift.protocol.TList _list19 = iprot.readListBegin();
+                struct.locationProviders = new ArrayList<String>(_list19.size);
+                String _elem20;
+                for (int _i21 = 0; _i21 < _list19.size; ++_i21)
                 {
-                  _elem28 = iprot.readString();
-                  struct.locationProviders.add(_elem28);
+                  _elem20 = iprot.readString();
+                  struct.locationProviders.add(_elem20);
                 }
                 iprot.readListEnd();
               }
@@ -2767,14 +2767,14 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
           case 24: // EXTRA
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list30 = iprot.readListBegin();
-                struct.extra = new ArrayList<Feature>(_list30.size);
-                Feature _elem31;
-                for (int _i32 = 0; _i32 < _list30.size; ++_i32)
+                org.apache.thrift.protocol.TList _list22 = iprot.readListBegin();
+                struct.extra = new ArrayList<Feature>(_list22.size);
+                Feature _elem23;
+                for (int _i24 = 0; _i24 < _list22.size; ++_i24)
                 {
-                  _elem31 = new Feature();
-                  _elem31.read(iprot);
-                  struct.extra.add(_elem31);
+                  _elem23 = new Feature();
+                  _elem23.read(iprot);
+                  struct.extra.add(_elem23);
                 }
                 iprot.readListEnd();
               }
@@ -2847,9 +2847,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
           oprot.writeFieldBegin(PI_LIST_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.piList.size()));
-            for (ProcessInfo _iter33 : struct.piList)
+            for (ProcessInfo _iter25 : struct.piList)
             {
-              _iter33.write(oprot);
+              _iter25.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -2943,9 +2943,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
           oprot.writeFieldBegin(LOCATION_PROVIDERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.locationProviders.size()));
-            for (String _iter34 : struct.locationProviders)
+            for (String _iter26 : struct.locationProviders)
             {
-              oprot.writeString(_iter34);
+              oprot.writeString(_iter26);
             }
             oprot.writeListEnd();
           }
@@ -2986,9 +2986,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
           oprot.writeFieldBegin(EXTRA_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.extra.size()));
-            for (Feature _iter35 : struct.extra)
+            for (Feature _iter27 : struct.extra)
             {
-              _iter35.write(oprot);
+              _iter27.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -3128,9 +3128,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       if (struct.isSetPiList()) {
         {
           oprot.writeI32(struct.piList.size());
-          for (ProcessInfo _iter36 : struct.piList)
+          for (ProcessInfo _iter28 : struct.piList)
           {
-            _iter36.write(oprot);
+            _iter28.write(oprot);
           }
         }
       }
@@ -3179,9 +3179,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       if (struct.isSetLocationProviders()) {
         {
           oprot.writeI32(struct.locationProviders.size());
-          for (String _iter37 : struct.locationProviders)
+          for (String _iter29 : struct.locationProviders)
           {
-            oprot.writeString(_iter37);
+            oprot.writeString(_iter29);
           }
         }
       }
@@ -3203,9 +3203,9 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       if (struct.isSetExtra()) {
         {
           oprot.writeI32(struct.extra.size());
-          for (Feature _iter38 : struct.extra)
+          for (Feature _iter30 : struct.extra)
           {
-            _iter38.write(oprot);
+            _iter30.write(oprot);
           }
         }
       }
@@ -3235,14 +3235,14 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list39 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.piList = new ArrayList<ProcessInfo>(_list39.size);
-          ProcessInfo _elem40;
-          for (int _i41 = 0; _i41 < _list39.size; ++_i41)
+          org.apache.thrift.protocol.TList _list31 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.piList = new ArrayList<ProcessInfo>(_list31.size);
+          ProcessInfo _elem32;
+          for (int _i33 = 0; _i33 < _list31.size; ++_i33)
           {
-            _elem40 = new ProcessInfo();
-            _elem40.read(iprot);
-            struct.piList.add(_elem40);
+            _elem32 = new ProcessInfo();
+            _elem32.read(iprot);
+            struct.piList.add(_elem32);
           }
         }
         struct.setPiListIsSet(true);
@@ -3308,13 +3308,13 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       }
       if (incoming.get(16)) {
         {
-          org.apache.thrift.protocol.TList _list42 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.locationProviders = new ArrayList<String>(_list42.size);
-          String _elem43;
-          for (int _i44 = 0; _i44 < _list42.size; ++_i44)
+          org.apache.thrift.protocol.TList _list34 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.locationProviders = new ArrayList<String>(_list34.size);
+          String _elem35;
+          for (int _i36 = 0; _i36 < _list34.size; ++_i36)
           {
-            _elem43 = iprot.readString();
-            struct.locationProviders.add(_elem43);
+            _elem35 = iprot.readString();
+            struct.locationProviders.add(_elem35);
           }
         }
         struct.setLocationProvidersIsSet(true);
@@ -3342,14 +3342,14 @@ public class Sample implements org.apache.thrift.TBase<Sample, Sample._Fields>, 
       }
       if (incoming.get(22)) {
         {
-          org.apache.thrift.protocol.TList _list45 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.extra = new ArrayList<Feature>(_list45.size);
-          Feature _elem46;
-          for (int _i47 = 0; _i47 < _list45.size; ++_i47)
+          org.apache.thrift.protocol.TList _list37 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.extra = new ArrayList<Feature>(_list37.size);
+          Feature _elem38;
+          for (int _i39 = 0; _i39 < _list37.size; ++_i39)
           {
-            _elem46 = new Feature();
-            _elem46.read(iprot);
-            struct.extra.add(_elem46);
+            _elem38 = new Feature();
+            _elem38.read(iprot);
+            struct.extra.add(_elem38);
           }
         }
         struct.setExtraIsSet(true);

@@ -964,13 +964,13 @@ public class QuestionnaireItem implements org.apache.thrift.TBase<QuestionnaireI
           case 5: // CHOICES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
-                struct.choices = new ArrayList<String>(_list104.size);
-                String _elem105;
-                for (int _i106 = 0; _i106 < _list104.size; ++_i106)
+                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
+                struct.choices = new ArrayList<String>(_list96.size);
+                String _elem97;
+                for (int _i98 = 0; _i98 < _list96.size; ++_i98)
                 {
-                  _elem105 = iprot.readString();
-                  struct.choices.add(_elem105);
+                  _elem97 = iprot.readString();
+                  struct.choices.add(_elem97);
                 }
                 iprot.readListEnd();
               }
@@ -998,13 +998,13 @@ public class QuestionnaireItem implements org.apache.thrift.TBase<QuestionnaireI
           case 8: // LOCATION
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list107 = iprot.readListBegin();
-                struct.location = new ArrayList<Integer>(_list107.size);
-                int _elem108;
-                for (int _i109 = 0; _i109 < _list107.size; ++_i109)
+                org.apache.thrift.protocol.TList _list99 = iprot.readListBegin();
+                struct.location = new ArrayList<Integer>(_list99.size);
+                int _elem100;
+                for (int _i101 = 0; _i101 < _list99.size; ++_i101)
                 {
-                  _elem108 = iprot.readI32();
-                  struct.location.add(_elem108);
+                  _elem100 = iprot.readI32();
+                  struct.location.add(_elem100);
                 }
                 iprot.readListEnd();
               }
@@ -1057,9 +1057,9 @@ public class QuestionnaireItem implements org.apache.thrift.TBase<QuestionnaireI
           oprot.writeFieldBegin(CHOICES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.choices.size()));
-            for (String _iter110 : struct.choices)
+            for (String _iter102 : struct.choices)
             {
-              oprot.writeString(_iter110);
+              oprot.writeString(_iter102);
             }
             oprot.writeListEnd();
           }
@@ -1081,9 +1081,9 @@ public class QuestionnaireItem implements org.apache.thrift.TBase<QuestionnaireI
           oprot.writeFieldBegin(LOCATION_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.location.size()));
-            for (int _iter111 : struct.location)
+            for (int _iter103 : struct.location)
             {
-              oprot.writeI32(_iter111);
+              oprot.writeI32(_iter103);
             }
             oprot.writeListEnd();
           }
@@ -1143,9 +1143,9 @@ public class QuestionnaireItem implements org.apache.thrift.TBase<QuestionnaireI
       if (struct.isSetChoices()) {
         {
           oprot.writeI32(struct.choices.size());
-          for (String _iter112 : struct.choices)
+          for (String _iter104 : struct.choices)
           {
-            oprot.writeString(_iter112);
+            oprot.writeString(_iter104);
           }
         }
       }
@@ -1158,9 +1158,9 @@ public class QuestionnaireItem implements org.apache.thrift.TBase<QuestionnaireI
       if (struct.isSetLocation()) {
         {
           oprot.writeI32(struct.location.size());
-          for (int _iter113 : struct.location)
+          for (int _iter105 : struct.location)
           {
-            oprot.writeI32(_iter113);
+            oprot.writeI32(_iter105);
           }
         }
       }
@@ -1186,13 +1186,13 @@ public class QuestionnaireItem implements org.apache.thrift.TBase<QuestionnaireI
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list114 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.choices = new ArrayList<String>(_list114.size);
-          String _elem115;
-          for (int _i116 = 0; _i116 < _list114.size; ++_i116)
+          org.apache.thrift.protocol.TList _list106 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.choices = new ArrayList<String>(_list106.size);
+          String _elem107;
+          for (int _i108 = 0; _i108 < _list106.size; ++_i108)
           {
-            _elem115 = iprot.readString();
-            struct.choices.add(_elem115);
+            _elem107 = iprot.readString();
+            struct.choices.add(_elem107);
           }
         }
         struct.setChoicesIsSet(true);
@@ -1207,13 +1207,13 @@ public class QuestionnaireItem implements org.apache.thrift.TBase<QuestionnaireI
       }
       if (incoming.get(6)) {
         {
-          org.apache.thrift.protocol.TList _list117 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
-          struct.location = new ArrayList<Integer>(_list117.size);
-          int _elem118;
-          for (int _i119 = 0; _i119 < _list117.size; ++_i119)
+          org.apache.thrift.protocol.TList _list109 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+          struct.location = new ArrayList<Integer>(_list109.size);
+          int _elem110;
+          for (int _i111 = 0; _i111 < _list109.size; ++_i111)
           {
-            _elem118 = iprot.readI32();
-            struct.location.add(_elem118);
+            _elem110 = iprot.readI32();
+            struct.location.add(_elem110);
           }
         }
         struct.setLocationIsSet(true);

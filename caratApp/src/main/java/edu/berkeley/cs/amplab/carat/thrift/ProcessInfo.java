@@ -47,8 +47,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
   private static final org.apache.thrift.protocol.TField VERSION_CODE_FIELD_DESC = new org.apache.thrift.protocol.TField("versionCode", org.apache.thrift.protocol.TType.I32, (short)7);
   private static final org.apache.thrift.protocol.TField APP_SIGNATURES_FIELD_DESC = new org.apache.thrift.protocol.TField("appSignatures", org.apache.thrift.protocol.TType.LIST, (short)8);
   private static final org.apache.thrift.protocol.TField INSTALLATION_PKG_FIELD_DESC = new org.apache.thrift.protocol.TField("installationPkg", org.apache.thrift.protocol.TType.STRING, (short)9);
-  private static final org.apache.thrift.protocol.TField APPS_FIELD_DESC = new org.apache.thrift.protocol.TField("apps", org.apache.thrift.protocol.TType.LIST, (short)10);
-  private static final org.apache.thrift.protocol.TField SERVICES_FIELD_DESC = new org.apache.thrift.protocol.TField("services", org.apache.thrift.protocol.TType.LIST, (short)11);
+  private static final org.apache.thrift.protocol.TField PROCESSES_FIELD_DESC = new org.apache.thrift.protocol.TField("processes", org.apache.thrift.protocol.TType.LIST, (short)10);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -65,8 +64,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
   public int versionCode; // optional
   public List<String> appSignatures; // optional
   public String installationPkg; // optional
-  public List<AppProcess> apps; // optional
-  public List<RunningService> services; // optional
+  public List<PackageProcess> processes; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -79,8 +77,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     VERSION_CODE((short)7, "versionCode"),
     APP_SIGNATURES((short)8, "appSignatures"),
     INSTALLATION_PKG((short)9, "installationPkg"),
-    APPS((short)10, "apps"),
-    SERVICES((short)11, "services");
+    PROCESSES((short)10, "processes");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -113,10 +110,8 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
           return APP_SIGNATURES;
         case 9: // INSTALLATION_PKG
           return INSTALLATION_PKG;
-        case 10: // APPS
-          return APPS;
-        case 11: // SERVICES
-          return SERVICES;
+        case 10: // PROCESSES
+          return PROCESSES;
         default:
           return null;
       }
@@ -161,7 +156,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
   private static final int __ISSYSTEMAPP_ISSET_ID = 1;
   private static final int __VERSIONCODE_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.P_ID,_Fields.P_NAME,_Fields.APPLICATION_LABEL,_Fields.IS_SYSTEM_APP,_Fields.IMPORTANCE,_Fields.VERSION_NAME,_Fields.VERSION_CODE,_Fields.APP_SIGNATURES,_Fields.INSTALLATION_PKG,_Fields.APPS,_Fields.SERVICES};
+  private static final _Fields optionals[] = {_Fields.P_ID,_Fields.P_NAME,_Fields.APPLICATION_LABEL,_Fields.IS_SYSTEM_APP,_Fields.IMPORTANCE,_Fields.VERSION_NAME,_Fields.VERSION_CODE,_Fields.APP_SIGNATURES,_Fields.INSTALLATION_PKG,_Fields.PROCESSES};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -184,12 +179,9 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.INSTALLATION_PKG, new org.apache.thrift.meta_data.FieldMetaData("installationPkg", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.APPS, new org.apache.thrift.meta_data.FieldMetaData("apps", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.PROCESSES, new org.apache.thrift.meta_data.FieldMetaData("processes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "AppProcess"))));
-    tmpMap.put(_Fields.SERVICES, new org.apache.thrift.meta_data.FieldMetaData("services", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "RunningService"))));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "PackageProcess"))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ProcessInfo.class, metaDataMap);
   }
@@ -224,19 +216,12 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     if (other.isSetInstallationPkg()) {
       this.installationPkg = other.installationPkg;
     }
-    if (other.isSetApps()) {
-      List<AppProcess> __this__apps = new ArrayList<AppProcess>(other.apps.size());
-      for (AppProcess other_element : other.apps) {
-        __this__apps.add(other_element);
+    if (other.isSetProcesses()) {
+      List<PackageProcess> __this__processes = new ArrayList<PackageProcess>(other.processes.size());
+      for (PackageProcess other_element : other.processes) {
+        __this__processes.add(other_element);
       }
-      this.apps = __this__apps;
-    }
-    if (other.isSetServices()) {
-      List<RunningService> __this__services = new ArrayList<RunningService>(other.services.size());
-      for (RunningService other_element : other.services) {
-        __this__services.add(other_element);
-      }
-      this.services = __this__services;
+      this.processes = __this__processes;
     }
   }
 
@@ -258,8 +243,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     this.versionCode = 0;
     this.appSignatures = null;
     this.installationPkg = null;
-    this.apps = null;
-    this.services = null;
+    this.processes = null;
   }
 
   public int getPId() {
@@ -490,81 +474,42 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     }
   }
 
-  public int getAppsSize() {
-    return (this.apps == null) ? 0 : this.apps.size();
+  public int getProcessesSize() {
+    return (this.processes == null) ? 0 : this.processes.size();
   }
 
-  public java.util.Iterator<AppProcess> getAppsIterator() {
-    return (this.apps == null) ? null : this.apps.iterator();
+  public java.util.Iterator<PackageProcess> getProcessesIterator() {
+    return (this.processes == null) ? null : this.processes.iterator();
   }
 
-  public void addToApps(AppProcess elem) {
-    if (this.apps == null) {
-      this.apps = new ArrayList<AppProcess>();
+  public void addToProcesses(PackageProcess elem) {
+    if (this.processes == null) {
+      this.processes = new ArrayList<PackageProcess>();
     }
-    this.apps.add(elem);
+    this.processes.add(elem);
   }
 
-  public List<AppProcess> getApps() {
-    return this.apps;
+  public List<PackageProcess> getProcesses() {
+    return this.processes;
   }
 
-  public ProcessInfo setApps(List<AppProcess> apps) {
-    this.apps = apps;
+  public ProcessInfo setProcesses(List<PackageProcess> processes) {
+    this.processes = processes;
     return this;
   }
 
-  public void unsetApps() {
-    this.apps = null;
+  public void unsetProcesses() {
+    this.processes = null;
   }
 
-  /** Returns true if field apps is set (has been assigned a value) and false otherwise */
-  public boolean isSetApps() {
-    return this.apps != null;
+  /** Returns true if field processes is set (has been assigned a value) and false otherwise */
+  public boolean isSetProcesses() {
+    return this.processes != null;
   }
 
-  public void setAppsIsSet(boolean value) {
+  public void setProcessesIsSet(boolean value) {
     if (!value) {
-      this.apps = null;
-    }
-  }
-
-  public int getServicesSize() {
-    return (this.services == null) ? 0 : this.services.size();
-  }
-
-  public java.util.Iterator<RunningService> getServicesIterator() {
-    return (this.services == null) ? null : this.services.iterator();
-  }
-
-  public void addToServices(RunningService elem) {
-    if (this.services == null) {
-      this.services = new ArrayList<RunningService>();
-    }
-    this.services.add(elem);
-  }
-
-  public List<RunningService> getServices() {
-    return this.services;
-  }
-
-  public ProcessInfo setServices(List<RunningService> services) {
-    this.services = services;
-    return this;
-  }
-
-  public void unsetServices() {
-    this.services = null;
-  }
-
-  /** Returns true if field services is set (has been assigned a value) and false otherwise */
-  public boolean isSetServices() {
-    return this.services != null;
-  }
-
-  public void setServicesIsSet(boolean value) {
-    if (!value) {
-      this.services = null;
+      this.processes = null;
     }
   }
 
@@ -642,19 +587,11 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       }
       break;
 
-    case APPS:
+    case PROCESSES:
       if (value == null) {
-        unsetApps();
+        unsetProcesses();
       } else {
-        setApps((List<AppProcess>)value);
-      }
-      break;
-
-    case SERVICES:
-      if (value == null) {
-        unsetServices();
-      } else {
-        setServices((List<RunningService>)value);
+        setProcesses((List<PackageProcess>)value);
       }
       break;
 
@@ -690,11 +627,8 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     case INSTALLATION_PKG:
       return getInstallationPkg();
 
-    case APPS:
-      return getApps();
-
-    case SERVICES:
-      return getServices();
+    case PROCESSES:
+      return getProcesses();
 
     }
     throw new IllegalStateException();
@@ -725,10 +659,8 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       return isSetAppSignatures();
     case INSTALLATION_PKG:
       return isSetInstallationPkg();
-    case APPS:
-      return isSetApps();
-    case SERVICES:
-      return isSetServices();
+    case PROCESSES:
+      return isSetProcesses();
     }
     throw new IllegalStateException();
   }
@@ -827,21 +759,12 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
         return false;
     }
 
-    boolean this_present_apps = true && this.isSetApps();
-    boolean that_present_apps = true && that.isSetApps();
-    if (this_present_apps || that_present_apps) {
-      if (!(this_present_apps && that_present_apps))
+    boolean this_present_processes = true && this.isSetProcesses();
+    boolean that_present_processes = true && that.isSetProcesses();
+    if (this_present_processes || that_present_processes) {
+      if (!(this_present_processes && that_present_processes))
         return false;
-      if (!this.apps.equals(that.apps))
-        return false;
-    }
-
-    boolean this_present_services = true && this.isSetServices();
-    boolean that_present_services = true && that.isSetServices();
-    if (this_present_services || that_present_services) {
-      if (!(this_present_services && that_present_services))
-        return false;
-      if (!this.services.equals(that.services))
+      if (!this.processes.equals(that.processes))
         return false;
     }
 
@@ -897,15 +820,10 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     if (present_installationPkg)
       list.add(installationPkg);
 
-    boolean present_apps = true && (isSetApps());
-    list.add(present_apps);
-    if (present_apps)
-      list.add(apps);
-
-    boolean present_services = true && (isSetServices());
-    list.add(present_services);
-    if (present_services)
-      list.add(services);
+    boolean present_processes = true && (isSetProcesses());
+    list.add(present_processes);
+    if (present_processes)
+      list.add(processes);
 
     return list.hashCode();
   }
@@ -1008,22 +926,12 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetApps()).compareTo(other.isSetApps());
+    lastComparison = Boolean.valueOf(isSetProcesses()).compareTo(other.isSetProcesses());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetApps()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.apps, other.apps);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetServices()).compareTo(other.isSetServices());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetServices()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.services, other.services);
+    if (isSetProcesses()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.processes, other.processes);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1125,23 +1033,13 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       }
       first = false;
     }
-    if (isSetApps()) {
+    if (isSetProcesses()) {
       if (!first) sb.append(", ");
-      sb.append("apps:");
-      if (this.apps == null) {
+      sb.append("processes:");
+      if (this.processes == null) {
         sb.append("null");
       } else {
-        sb.append(this.apps);
-      }
-      first = false;
-    }
-    if (isSetServices()) {
-      if (!first) sb.append(", ");
-      sb.append("services:");
-      if (this.services == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.services);
+        sb.append(this.processes);
       }
       first = false;
     }
@@ -1272,40 +1170,21 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 10: // APPS
+          case 10: // PROCESSES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list3 = iprot.readListBegin();
-                struct.apps = new ArrayList<AppProcess>(_list3.size);
-                AppProcess _elem4;
+                struct.processes = new ArrayList<PackageProcess>(_list3.size);
+                PackageProcess _elem4;
                 for (int _i5 = 0; _i5 < _list3.size; ++_i5)
                 {
-                  _elem4 = new AppProcess();
+                  _elem4 = new PackageProcess();
                   _elem4.read(iprot);
-                  struct.apps.add(_elem4);
+                  struct.processes.add(_elem4);
                 }
                 iprot.readListEnd();
               }
-              struct.setAppsIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 11: // SERVICES
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list6 = iprot.readListBegin();
-                struct.services = new ArrayList<RunningService>(_list6.size);
-                RunningService _elem7;
-                for (int _i8 = 0; _i8 < _list6.size; ++_i8)
-                {
-                  _elem7 = new RunningService();
-                  _elem7.read(iprot);
-                  struct.services.add(_elem7);
-                }
-                iprot.readListEnd();
-              }
-              struct.setServicesIsSet(true);
+              struct.setProcessesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1373,9 +1252,9 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
           oprot.writeFieldBegin(APP_SIGNATURES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.appSignatures.size()));
-            for (String _iter9 : struct.appSignatures)
+            for (String _iter6 : struct.appSignatures)
             {
-              oprot.writeString(_iter9);
+              oprot.writeString(_iter6);
             }
             oprot.writeListEnd();
           }
@@ -1389,28 +1268,14 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
           oprot.writeFieldEnd();
         }
       }
-      if (struct.apps != null) {
-        if (struct.isSetApps()) {
-          oprot.writeFieldBegin(APPS_FIELD_DESC);
+      if (struct.processes != null) {
+        if (struct.isSetProcesses()) {
+          oprot.writeFieldBegin(PROCESSES_FIELD_DESC);
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.apps.size()));
-            for (AppProcess _iter10 : struct.apps)
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.processes.size()));
+            for (PackageProcess _iter7 : struct.processes)
             {
-              _iter10.write(oprot);
-            }
-            oprot.writeListEnd();
-          }
-          oprot.writeFieldEnd();
-        }
-      }
-      if (struct.services != null) {
-        if (struct.isSetServices()) {
-          oprot.writeFieldBegin(SERVICES_FIELD_DESC);
-          {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.services.size()));
-            for (RunningService _iter11 : struct.services)
-            {
-              _iter11.write(oprot);
+              _iter7.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -1462,13 +1327,10 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       if (struct.isSetInstallationPkg()) {
         optionals.set(8);
       }
-      if (struct.isSetApps()) {
+      if (struct.isSetProcesses()) {
         optionals.set(9);
       }
-      if (struct.isSetServices()) {
-        optionals.set(10);
-      }
-      oprot.writeBitSet(optionals, 11);
+      oprot.writeBitSet(optionals, 10);
       if (struct.isSetPId()) {
         oprot.writeI32(struct.pId);
       }
@@ -1493,30 +1355,21 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       if (struct.isSetAppSignatures()) {
         {
           oprot.writeI32(struct.appSignatures.size());
-          for (String _iter12 : struct.appSignatures)
+          for (String _iter8 : struct.appSignatures)
           {
-            oprot.writeString(_iter12);
+            oprot.writeString(_iter8);
           }
         }
       }
       if (struct.isSetInstallationPkg()) {
         oprot.writeString(struct.installationPkg);
       }
-      if (struct.isSetApps()) {
+      if (struct.isSetProcesses()) {
         {
-          oprot.writeI32(struct.apps.size());
-          for (AppProcess _iter13 : struct.apps)
+          oprot.writeI32(struct.processes.size());
+          for (PackageProcess _iter9 : struct.processes)
           {
-            _iter13.write(oprot);
-          }
-        }
-      }
-      if (struct.isSetServices()) {
-        {
-          oprot.writeI32(struct.services.size());
-          for (RunningService _iter14 : struct.services)
-          {
-            _iter14.write(oprot);
+            _iter9.write(oprot);
           }
         }
       }
@@ -1525,7 +1378,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ProcessInfo struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(11);
+      BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
         struct.pId = iprot.readI32();
         struct.setPIdIsSet(true);
@@ -1556,13 +1409,13 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list15 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.appSignatures = new ArrayList<String>(_list15.size);
-          String _elem16;
-          for (int _i17 = 0; _i17 < _list15.size; ++_i17)
+          org.apache.thrift.protocol.TList _list10 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.appSignatures = new ArrayList<String>(_list10.size);
+          String _elem11;
+          for (int _i12 = 0; _i12 < _list10.size; ++_i12)
           {
-            _elem16 = iprot.readString();
-            struct.appSignatures.add(_elem16);
+            _elem11 = iprot.readString();
+            struct.appSignatures.add(_elem11);
           }
         }
         struct.setAppSignaturesIsSet(true);
@@ -1573,31 +1426,17 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       }
       if (incoming.get(9)) {
         {
-          org.apache.thrift.protocol.TList _list18 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.apps = new ArrayList<AppProcess>(_list18.size);
-          AppProcess _elem19;
-          for (int _i20 = 0; _i20 < _list18.size; ++_i20)
+          org.apache.thrift.protocol.TList _list13 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.processes = new ArrayList<PackageProcess>(_list13.size);
+          PackageProcess _elem14;
+          for (int _i15 = 0; _i15 < _list13.size; ++_i15)
           {
-            _elem19 = new AppProcess();
-            _elem19.read(iprot);
-            struct.apps.add(_elem19);
+            _elem14 = new PackageProcess();
+            _elem14.read(iprot);
+            struct.processes.add(_elem14);
           }
         }
-        struct.setAppsIsSet(true);
-      }
-      if (incoming.get(10)) {
-        {
-          org.apache.thrift.protocol.TList _list21 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.services = new ArrayList<RunningService>(_list21.size);
-          RunningService _elem22;
-          for (int _i23 = 0; _i23 < _list21.size; ++_i23)
-          {
-            _elem22 = new RunningService();
-            _elem22.read(iprot);
-            struct.services.add(_elem22);
-          }
-        }
-        struct.setServicesIsSet(true);
+        struct.setProcessesIsSet(true);
       }
     }
   }
