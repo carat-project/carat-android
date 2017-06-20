@@ -77,6 +77,8 @@ import android.widget.Toast;
 
 import com.flurry.android.FlurryAgent;
 
+import org.bouncycastle.crypto.util.Pack;
+
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
@@ -92,6 +94,7 @@ import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
 import edu.berkeley.cs.amplab.carat.thrift.NetworkDetails;
+import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 import edu.berkeley.cs.amplab.carat.thrift.RunningService;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
@@ -631,44 +634,63 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return List of running processes
 	 */
-	public static Map<String, List<AppProcess>> getRunningNow(Context context){
-		Map<String, List<AppProcess>> result = new HashMap<>();
+	public static Map<String, List<PackageProcess>> getRunningNow(Context context){
+		Map<String, List<PackageProcess>> result = new HashMap<>();
+		Map<String, HashMap<String, PackageProcess>> processes = new HashMap<>();
 		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
 		List<RunningAppProcessInfo> runningAppProcesses = am.getRunningAppProcesses();
 		for (RunningAppProcessInfo pi : runningAppProcesses) {
 			if(pi != null){
-				// Services with the android:process attribute run outside of the default process
-				// these processes are named like so package:serviceName. We need to cut out the
-				// last part since it is not relevant to our interests.
-				String processName = Util.trimProcessName(pi.processName);
-				List<AppProcess> items = new ArrayList<>();
-				if(result.containsKey(processName)){
-					items = result.get(processName);
+				String processName = pi.processName;
+				String packageName = Util.trimProcessName(processName)[0];
+				HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
+						processes.get(packageName) : new HashMap<>();
+				PackageProcess process;
+				if(p.containsKey(processName)){
+					process = p.get(processName);
+					process.setProcessCount(process.getProcessCount()+1);
+				} else {
+					process = new PackageProcess()
+							.setProcessName(processName)
+							.setProcessCount(-1)
+							.setUId(-1)
+							.setSleeping(false)
+							.setForeground(false)
+							.setForegroundTime(-1)
+							.setLaunchCount(-1)
+							.setImportance(pi.importance)
+							.setCrashCount(-1)
+							.setLastActivityTime(-1);
 				}
-
-				AppProcess item = new AppProcess()
-						.setPId(pi.pid)
-						.setProcessName(processName)
-						.setImportance(pi.importance)
-						.setForegroundTime(-1)
-						.setLaunchCount(-1);
-				items.add(item);
-				result.put(processName, items);
+				p.put(processName, process);
+				processes.put(packageName, p);
 			}
+		}
+		for(String packageName : processes.keySet()){
+			List<PackageProcess> list = new ArrayList<>(processes.get(packageName).values());
+			result.put(packageName, list);
 		}
 		return result;
 	}
 
 
-	public static Map<String, AppProcess> getAppProcessesSince(Context context, long lastSampleTime){
-		Map<String, AppProcess> activities = new HashMap<>();
+	public static Map<String, PackageProcess> getAppProcessesSince(Context context, long lastSampleTime){
+		Map<String, PackageProcess> activities = new HashMap<>();
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
 			Map<String, UsageStats> usageStats = UsageManager.getUsageAggregate(context, lastSampleTime);
 			if(usageStats != null){
 				for(String packageName : usageStats.keySet()){
 					UsageStats stats = usageStats.get(packageName);
 
-					AppProcess appProcess = new AppProcess()
+					PackageProcess appProcess = new PackageProcess()
+							.setUId(-1)
+							.setProcessCount(1)
+							.setForeground(false)
+							.setSleeping(false)
+							.setLastActivityTime(-1)
+							.setForegroundTime(-1)
+							.setImportance(-1)
+							.setCrashCount(-1)
 							.setProcessName(packageName)
 							.setForegroundTime(stats.getTotalTimeInForeground())
 							.setLaunchCount(UsageManager.getAppLaunchCount(context, stats, lastSampleTime));
@@ -680,34 +702,70 @@ public final class SamplingLibrary {
 		return activities;
 	}
 
-	public static Map<String, List<RunningService>> getRunningServices(Context context){
-		Map<String, List<RunningService>> services = new HashMap<>();
+	public static Map<String, List<PackageProcess>> getRunningServices(Context context){
+		Map<String, List<PackageProcess>> result = new HashMap<>();
+		Map<String, HashMap<String, PackageProcess>> services = new HashMap<>();
 		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
 		List<RunningServiceInfo> runningServices = am.getRunningServices(255);
 		for(RunningServiceInfo serviceInfo : runningServices){
-			if(serviceInfo != null){
-				RunningService item = new RunningService();
+			if(serviceInfo != null) {
 				ComponentName component = serviceInfo.service;
-				String packageName = Util.trimProcessName(serviceInfo.process);
-				if(component != null && !Util.isNullOrEmpty(component.getPackageName())){
+				String packageName;
+				if (component != null && !Util.isNullOrEmpty(component.getPackageName())) {
 					packageName = component.getPackageName();
+				} else {
+					packageName = Util.trimProcessName(serviceInfo.process)[0];
 				}
 
-				item.setProcessName(serviceInfo.process);
-				item.setPId(serviceInfo.pid);
-				item.setSleeping(serviceInfo.restarting != 0);
-				item.setForeground(serviceInfo.foreground);
-				item.setUId(serviceInfo.uid);
-				item.setCrashCount(serviceInfo.crashCount);
-				item.setLastActivityTime(serviceInfo.lastActivityTime);
+				HashMap<String, PackageProcess> processes = services.containsKey(packageName) ?
+						services.get(packageName) : new HashMap<>();
+				PackageProcess process;
+				if (processes.containsKey(serviceInfo.process)) {
+					// Multiple processes with the same name -> Aggregate
+					process = processes.get(serviceInfo.process);
+					int prevCrashes = process.getCrashCount();
+					int prevCount = process.getProcessCount();
+					double prevLastActivity = process.getLastActivityTime();
 
-				List<RunningService> items = services.containsKey(packageName) ?
-						services.get(packageName) : new LinkedList<>();
-				items.add(item);
-				services.put(packageName, items);
+					process.setProcessCount(prevCount + 1);
+					process.setCrashCount(prevCrashes + serviceInfo.crashCount);
+					if (serviceInfo.lastActivityTime < prevLastActivity) {
+						process.setLastActivityTime(serviceInfo.lastActivityTime);
+					}
+					processes.put(serviceInfo.process, process);
+					services.put(packageName, processes);
+				} else {
+					// Process name never seen before -> Create entry
+					process = new PackageProcess();
+					process.setProcessName(serviceInfo.process);
+					process.setProcessCount(1);
+					process.setUId(serviceInfo.uid);
+					process.setSleeping(serviceInfo.restarting != 0);
+					process.setForeground(serviceInfo.foreground);
+					process.setForegroundTime(-1);
+					process.setLaunchCount(-1);
+					process.setImportance(-1);
+					process.setCrashCount(serviceInfo.crashCount);
+					process.setLastActivityTime(serviceInfo.lastActivityTime);
+				}
+				processes.put(serviceInfo.process, process);
+				services.put(packageName, processes);
 			}
 		}
-		return services;
+
+		for(String packageName : services.keySet()){
+			List<PackageProcess> list = new ArrayList<>(services.get(packageName).values());
+			result.put(packageName, list);
+		}
+		return result;
+	}
+
+	private static String serviceToProcessName(String serviceName){
+		String[] split = Util.trimProcessName(serviceName);
+		if(split.length >= 2){
+			return split[0] + "@" + split[1];
+		}
+		return split[0] + "@service";
 	}
 
 	private static WeakReference<List<RunningServiceInfo>> runningServiceInfo = null;
@@ -762,10 +820,10 @@ public final class SamplingLibrary {
 	 * @return true if the application is running, false otherwise.
 	 */
 	public static boolean isRunning(Context context, String appName) {
-		Map<String, List<AppProcess>> runningProcesses = getRunningNow(context);
+		Map<String, List<PackageProcess>> runningProcesses = getRunningNow(context);
 		for (String pkg  : runningProcesses.keySet()) {
-			for(AppProcess process : runningProcesses.get(pkg)) {
-				String processName = Util.trimProcessName(process.getProcessName());
+			for(PackageProcess process : runningProcesses.get(pkg)) {
+				String processName = Util.trimProcessName(process.getProcessName())[0];
 				int importance = process.getImportance();
 				if(importance != RunningAppProcessInfo.IMPORTANCE_EMPTY &&
 						(((processName != null) && processName.equals(appName))
@@ -773,13 +831,12 @@ public final class SamplingLibrary {
 					return true;
 				}
 			}
-
 		}
 		
-		Map<String, List<RunningService>> runningServices = getRunningServices(context);
+		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
 		for (String pkg : runningServices.keySet()){
-			for(RunningService service : runningServices.get(pkg)){
-				String processName = Util.trimProcessName(service.processName);
+			for(PackageProcess service : runningServices.get(pkg)){
+				String processName = Util.trimProcessName(service.processName)[0];
 				if(!service.sleeping && (pkg.equals(appName) || pkg.equals(processName))){
 					return true;
 				}
@@ -1089,11 +1146,6 @@ public final class SamplingLibrary {
 		return pi;
 	}
 
-	public static List<ProcessInfo> getProcessHistorySince(Context context, long since){
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
-
-	}
-
 	/**
 	 * NOTE: This method returns a list of currently running processes for devices running on
 	 * older versions of Android. Starting from version 5.0, a list of processes that have been
@@ -1114,9 +1166,9 @@ public final class SamplingLibrary {
 		boolean sendInstalled = preferences.getBoolean(Keys.sendInstalledPackages, true);
 
 		Map<String, ProcessInfo> installedPackages = getInstalledPackages(context, false);
-		Map<String, List<AppProcess>> runningApps = getRunningNow(context);
-		Map<String, List<RunningService>> runningServices = getRunningServices(context);
-		Map<String, AppProcess> runningAppsSince = getAppProcessesSince(context, lastSample);
+		Map<String, List<PackageProcess>> runningApps = getRunningNow(context);
+		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
+		Map<String, PackageProcess> runningAppsSince = getAppProcessesSince(context, lastSample);
 
 		// These end up being all packages with active code
 		Set<String> packageNames = new HashSet<>();
@@ -1129,12 +1181,12 @@ public final class SamplingLibrary {
 		}
 
 		for(String pkgName : packageNames){
-			String packageName = Util.trimProcessName(pkgName); // Just in case
+			String packageName = Util.trimProcessName(pkgName)[0]; // Just in case
 			ProcessInfo processInfo = new ProcessInfo();
 			processInfo.setPName(packageName);
 			processInfo.setPId(-1); // Default values are expected to change during method
 			processInfo.setImportance(CaratApplication.importanceString(-1));
-			List<AppProcess> applications = new ArrayList<>();
+			List<PackageProcess> applications = new ArrayList<>();
 			boolean accurateCurrentlyRunning = false;
 
 			// Add installed package information first since we want running processes and/or
@@ -1150,9 +1202,13 @@ public final class SamplingLibrary {
 			// Add services belonging to this package. Also set the pid which might get replaced
 			// on older devices, where foreground process PIDs are available.
 			if(runningServices.containsKey(packageName)){
-				List<RunningService> services = runningServices.get(packageName);
-				processInfo.setPId(services.get(0).pId);
-				processInfo.setServices(services);
+				List<PackageProcess> services = runningServices.get(packageName);
+				List<PackageProcess> renamed = new ArrayList<>();
+				for(PackageProcess process : services){
+					process.setProcessName(serviceToProcessName(process.processName));
+					renamed.add(process);
+				}
+				processInfo.setProcesses(renamed);
 			}
 
 			// Add currently running activities belonging to this package. These are mostly less
@@ -1162,12 +1218,10 @@ public final class SamplingLibrary {
 			// named process. This to my knowledge requires the field android:process to be set
 			// so most of the time we will not catch anything. Worth fishing anyways.
 			if(runningApps.containsKey(packageName)){
-				List<AppProcess> processes = runningApps.get(packageName);
+				List<PackageProcess> processes = runningApps.get(packageName);
 
-				// This PID takes priority over service, as actual apps are more interesting.
-				processInfo.setPId(processes.get(0).getPId());
 				int lowestImportance = Integer.MAX_VALUE;
-				for(AppProcess application : processes){
+				for(PackageProcess application : processes){
 					String processName = application.getProcessName();
 
 					// Keep track of the lowest importance which is the most important one.
@@ -1178,7 +1232,7 @@ public final class SamplingLibrary {
 					// If we find a running process which also has the more accurate UsageStats
 					// variant available, we combine these entries. This should happen rarely.
 					if(runningAppsSince.containsKey(processName)){
-						AppProcess accurate = runningAppsSince.get(processName);
+						PackageProcess accurate = runningAppsSince.get(processName);
 						application.setForegroundTime(accurate.getForegroundTime());
 						application.setLaunchCount(accurate.getLaunchCount());
 						accurateCurrentlyRunning = true;
@@ -1195,7 +1249,7 @@ public final class SamplingLibrary {
 			if(!accurateCurrentlyRunning && runningAppsSince.containsKey(packageName)){
 				applications.add(runningAppsSince.get(packageName));
 			}
-			processInfo.setApps(applications);
+			processInfo.setProcesses(applications);
 
 			// Add package properties.
 			PackageInfo packageInfo = getPackageInfo(context, packageName);

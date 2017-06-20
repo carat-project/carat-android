@@ -77,15 +77,18 @@ public class Util {
         return false;
     }
 
-    public static String trimProcessName(String processName){
+
+    public static String[] trimProcessName(String processName){
         if (processName != null) {
             int idx = processName.lastIndexOf(':');
             if(idx <= 0){
-                idx = processName.length();
+                return new String[]{processName};
             }
-            processName = processName.substring(0, idx);
+            String packageName = processName.substring(0, idx);
+            String serviceName = processName.substring(idx, processName.length());
+            return new String[]{packageName, serviceName};
         }
-        return processName;
+        return new String[]{null};
     }
 
     public static boolean isNullOrEmpty(String string){

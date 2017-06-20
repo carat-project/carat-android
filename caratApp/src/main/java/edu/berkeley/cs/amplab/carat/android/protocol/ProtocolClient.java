@@ -6,6 +6,7 @@ import java.security.Security;
 import java.util.Properties;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSocket;
@@ -59,6 +60,7 @@ public class ProtocolClient {
         }
 
         TTransport transport = null;
+        TProtocol protocol = null;
         if(location == ServerLocation.GLOBAL){
             if(SERVER_ADDRESS_GLOBAL == null || SERVER_PORT_GLOBAL == 0) return null;
             // TODO: Remove to go live
@@ -73,13 +75,16 @@ public class ProtocolClient {
                 String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
                 params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
                 transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_GLOBAL, 8443, Constants.THRIFT_CONNECTION_TIMEOUT, params);
+                protocol = new TCompactProtocol(transport, Long.MAX_VALUE, Long.MAX_VALUE);
             } else {
                 transport = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
+                protocol = new TBinaryProtocol(transport, true, true);
             }
         }
         else if(location == ServerLocation.EU){
             if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null){
                 if(!loadSSLProperties(c)){
+                    Logger.e(TAG,"Failed loading SSL properties!");
                     return null; // Failed to load SSL properties
                 }
             }
@@ -88,10 +93,10 @@ public class ProtocolClient {
             String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
             params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
             transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_EU, SERVER_PORT_EU, Constants.THRIFT_CONNECTION_TIMEOUT, params);
+            protocol = new TBinaryProtocol(transport, true, true);
         }
 
-        TProtocol p = new TBinaryProtocol(transport, true, true);
-        CaratService.Client instance = new CaratService.Client(p);
+        CaratService.Client instance = new CaratService.Client(protocol);
         if (transport != null && !transport.isOpen()){
             transport.open();
         }
