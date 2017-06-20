@@ -31,12 +31,14 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
@@ -702,6 +704,35 @@ public final class SamplingLibrary {
 		return activities;
 	}
 
+	public static void getRunningProcessesFromEventLog(Context context, long begin){
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			Map<String, TreeMap<Long, Integer>> log = UsageManager.getEventLogs(context, System.currentTimeMillis()-TimeUnit.MINUTES.toMillis(20));
+			for(String packageName : log.keySet()){
+				TreeMap<Long, Integer> events = log.get(packageName);
+				long lastForeground = -1;
+				long foreground = 0;
+				long launchCount = 0;
+				for(long timestamp : events.keySet()){
+					switch(events.get(timestamp)){
+						case UsageEvents.Event.MOVE_TO_BACKGROUND:
+							if(lastForeground != -1){
+								long session = timestamp - lastForeground;
+								foreground += session;
+								if(session >= 1000){
+									launchCount++;
+								}
+							}
+							break;
+						case UsageEvents.Event.MOVE_TO_FOREGROUND:
+							lastForeground = timestamp;
+							break;
+					}
+				}
+				Logger.d(TAG, packageName + " was launched " + launchCount + " times and spent " + foreground + "ms on foreground");
+			}
+		}
+	}
+
 	public static Map<String, List<PackageProcess>> getRunningServices(Context context){
 		Map<String, List<PackageProcess>> result = new HashMap<>();
 		Map<String, HashMap<String, PackageProcess>> services = new HashMap<>();
@@ -1208,7 +1239,7 @@ public final class SamplingLibrary {
 					process.setProcessName(serviceToProcessName(process.processName));
 					renamed.add(process);
 				}
-				processInfo.setProcesses(renamed);
+				applications.addAll(renamed);
 			}
 
 			// Add currently running activities belonging to this package. These are mostly less

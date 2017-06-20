@@ -42,6 +42,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
@@ -161,6 +162,10 @@ public class CaratApplication extends Application {
         }.start();
 
         super.onCreate();
+        /*for(ProcessInfo pi : SamplingLibrary.getRunningProcessInfoForSample(getApplicationContext(), System.currentTimeMillis()-600000)){
+            Logger.d(TAG, pi.toString());
+        }*/
+        SamplingLibrary.getRunningProcessesFromEventLog(getApplicationContext(), System.currentTimeMillis()-600000);
     }
 
     // Utility methods

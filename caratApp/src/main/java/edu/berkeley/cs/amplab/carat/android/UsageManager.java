@@ -240,7 +240,7 @@ public class UsageManager {
         return "Unknown";
     }
 
-    private static String getEventName(int eventCode){
+    public static String getEventName(int eventCode){
         switch(eventCode){
             case 0: return "NONE";
             case 1: return "MOVE_TO_FOREGROUND";
