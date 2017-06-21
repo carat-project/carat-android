@@ -5,8 +5,10 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +30,7 @@ public class IntentRouter extends IntentService {
     private Context context;
     private AlarmManager alarmManager;
     private PowerManager powerManager;
+    private SharedPreferences preferences;
 
     public IntentRouter(){
         super(TAG);
@@ -38,6 +41,7 @@ public class IntentRouter extends IntentService {
             context = getApplicationContext();
             alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            preferences = PreferenceManager.getDefaultSharedPreferences(context);
         }
     }
 
@@ -48,7 +52,7 @@ public class IntentRouter extends IntentService {
         // This is a bit hacky, intent service should handle the wakelock by itself but
         // we are enforcing our own lock here just in case.
         PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-        wl.acquire();
+        wl.acquire(10*60*1000L /*10 minutes*/);
 
         // Start up a location receiver in case it has died, it should stay up long enough
         // to get at least one update, which is enough for the coarse location sampling
@@ -65,41 +69,42 @@ public class IntentRouter extends IntentService {
                     // TODO: Foreground notification and sampling
                     break;
                 case Constants.SCHEDULED_SAMPLE:
-                    scheduleNextSample(SAMPLING_INTERVAL);
+                    // TODO: OK
                     break;
                 case Intent.ACTION_BATTERY_CHANGED:
                     // TODO: Do something here?
                     break;
                 default: Logger.d(TAG, "Implement me: " + action + "!");
             }
-            checkSchedule();
+            scheduleNextSample(SAMPLING_INTERVAL);
             Sampler2.sample(context, action, wl::release);
             ActionReceiver.completeWakefulIntent(intent);
         }
-    }
-
-    private void checkSchedule(){
-        // TODO: See if the schedule still holds and reschedule if not.
     }
 
     private boolean isAlreadyScheduled(Intent intent){
         return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_NO_CREATE) != null;
     }
 
-    private void scheduleNextSample(long interval){
+    private Intent getScheduleIntent(){
         Intent scheduleIntent = new Intent(context, IntentRouter.class);
         scheduleIntent.setAction(Constants.SCHEDULED_SAMPLE);
-        if(!isAlreadyScheduled(scheduleIntent)){
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, scheduleIntent, 0);
-            long then = Util.timeAfterTime(interval);
+        return scheduleIntent;
+    }
 
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, then, pendingIntent);
-            } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, then, pendingIntent);
-            } else {
-                alarmManager.set(AlarmManager.RTC_WAKEUP, then, pendingIntent);
-            }
+    private void scheduleNextSample(long interval){
+        Intent scheduleIntent = getScheduleIntent();
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, scheduleIntent, 0);
+        alarmManager.cancel(pendingIntent); // Cancel previously scheduled sample
+        long then = Util.timeAfterTime(interval);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, then, pendingIntent);
+        } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, then, pendingIntent);
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, then, pendingIntent);
         }
+        preferences.edit().putLong(Keys.lastScheduledSample, then).apply();
+
     }
 }

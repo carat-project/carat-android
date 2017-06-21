@@ -37,7 +37,6 @@ import edu.berkeley.cs.amplab.carat.android.models.MyDeviceData;
 import edu.berkeley.cs.amplab.carat.android.models.CustomAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.android.protocol.SampleSender;
-import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
@@ -98,7 +97,6 @@ public class CaratApplication extends Application {
     // to CaratApplication
     static MainActivity main = null;
     // The Sampler samples the battery level when it changes.
-    private static Sampler sampler = null;
 
     public static MyDeviceData myDeviceData = new MyDeviceData();
 

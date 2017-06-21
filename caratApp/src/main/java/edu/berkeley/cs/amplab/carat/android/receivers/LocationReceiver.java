@@ -80,7 +80,7 @@ public class LocationReceiver extends Service implements LocationListener{
         wl.release();
 
         // Enable for maximum energy efficiency
-        // stopSelf();
+        stopSelf();
     }
 
     @Override

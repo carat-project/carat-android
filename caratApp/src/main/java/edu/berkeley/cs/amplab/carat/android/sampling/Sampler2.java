@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.BatteryManager;
 import android.preference.PreferenceManager;
 
+import java.util.concurrent.TimeUnit;
+
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
@@ -28,7 +30,8 @@ public class Sampler2 {
     public static void sample(Context context, String trigger, Runnable releaseWl){
         SampleDB db = SampleDB.getInstance(context);
         Sample lastSample = db.getLastSample(context);
-        long lastSampleTime = (long)lastSample.getTimestamp();
+        long monthAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
+        long lastSampleTime = lastSample == null ? monthAgo : (long)lastSample.getTimestamp();
 
         Sample sample = constructSample(context, trigger, lastSampleTime);
         if(sample != null && !essentiallyIdentical(sample, lastSample)){
@@ -36,7 +39,7 @@ public class Sampler2 {
             Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
         }
         int sampleCount = SampleDB.getInstance(context).countSamples();
-        if(sampleCount >= Sampler.MAX_SAMPLES){
+        if(sampleCount >= Constants.SAMPLES_MAX_BACKLOG /* 250 */) {
             CaratApplication.postSamplesNotification(sampleCount);
         }
         releaseWl.run();
