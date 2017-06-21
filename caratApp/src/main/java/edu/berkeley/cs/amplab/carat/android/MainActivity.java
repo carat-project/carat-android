@@ -188,32 +188,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (secretKey != null) {
             FlurryAgent.onStartSession(getApplicationContext(), secretKey);
         }
-
-        // TODO: MOVE THIS
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-            long then = System.currentTimeMillis() - 86400000;
-            if(!UsageManager.isPermissionGranted(this)){
-                UsageManager.promptPermission(this);
-            }
-            for(UsageEvents.Event e : UsageManager.getEvents(this, System.currentTimeMillis() - 86400000)){
-                Logger.d(TAG, new Gson().toJson(e));
-            }
-            Map<String, UsageStats> usage = UsageManager.getUsageAggregate(this, System.currentTimeMillis() - 86400000);
-            for(String pkgName : usage.keySet()){
-                UsageStats stats = usage.get(pkgName);
-                Logger.d(TAG, "Package: " + pkgName);
-                Logger.d(TAG, "\t" + new Gson().toJson(stats));
-                Logger.d(TAG, "\tLaunched " +
-                        UsageManager.getAppLaunchCount(this, stats, then)+ " times");
-                Logger.d(TAG, "\tLast importance: " +
-                        UsageManager.getLastImportance(this, stats, then));
-            }
-
-            UsageManager.disposeInMemoryEvents(); // !! This is needed
-            UsageManager.getRunningProcesses(this, System.currentTimeMillis() - 86400000);
-        }
-        // TODO: END TEST
-
     }
 
     @Override

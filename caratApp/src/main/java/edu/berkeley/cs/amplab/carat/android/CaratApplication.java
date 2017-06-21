@@ -74,6 +74,7 @@ public class CaratApplication extends Application {
         importanceToString.put(RunningAppProcessInfo.IMPORTANCE_SERVICE, "Service");
         importanceToString.put(RunningAppProcessInfo.IMPORTANCE_VISIBLE, "Visible task");
         importanceToString.put(RunningAppProcessInfo.IMPORTANCE_FOREGROUND, "Foreground app");
+        importanceToString.put(Constants.IMPORTANCE_FOREGROUND_SERVICE, "Foreground service");
 
         importanceToString.put(Constants.IMPORTANCE_PERCEPTIBLE, "Perceptible task");
         importanceToString.put(Constants.IMPORTANCE_SUGGESTION, "Suggestion");
@@ -162,10 +163,10 @@ public class CaratApplication extends Application {
         }.start();
 
         super.onCreate();
-        /*for(ProcessInfo pi : SamplingLibrary.getRunningProcessInfoForSample(getApplicationContext(), System.currentTimeMillis()-600000)){
+        for(ProcessInfo pi : SamplingLibrary.getRunningProcessInfoForSample(getApplicationContext(), System.currentTimeMillis()-3600000)){
             Logger.d(TAG, pi.toString());
-        }*/
-        SamplingLibrary.getRunningProcessesFromEventLog(getApplicationContext(), System.currentTimeMillis()-600000);
+        }
+        // SamplingLibrary.getRunningProcessesFromEventLog(getApplicationContext(), System.currentTimeMillis()-600000);
     }
 
     // Utility methods

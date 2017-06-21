@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
+
 /**
  * General utilities for handling different data types.
  * Created by Jonatan Hamberg on 1.2.2017.
@@ -85,8 +87,13 @@ public class Util {
                 return new String[]{processName};
             }
             String packageName = processName.substring(0, idx);
-            String serviceName = processName.substring(idx, processName.length());
-            return new String[]{packageName, serviceName};
+            if(processName.length() == idx + 1){
+                // Rare case where process name simply ends in :
+                return new String[]{packageName};
+            } else {
+                String serviceName = processName.substring(idx+1, processName.length());
+                return new String[]{packageName, serviceName};
+            }
         }
         return new String[]{null};
     }
@@ -98,5 +105,21 @@ public class Util {
     public static boolean isSystemApp(int flags){
         return (flags & ApplicationInfo.FLAG_SYSTEM) > 0
                 || (flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) > 0;
+    }
+
+    public static PackageProcess getDefaultPackageProcess(){
+        int ERR_VAL = -1;
+        return new PackageProcess()
+                .setProcessName("Unknown")
+                .setProcessCount(ERR_VAL)
+                .setUId(ERR_VAL)
+                .setSleeping(false)
+                .setForeground(false)
+                .setForegroundTime(ERR_VAL)
+                .setLaunchCount(ERR_VAL)
+                .setImportance(ERR_VAL)
+                .setCrashCount(ERR_VAL)
+                .setLastStartSinceBoot(ERR_VAL)
+                .setLastStartTimestamp(ERR_VAL);
     }
 }

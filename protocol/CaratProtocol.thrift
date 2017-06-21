@@ -43,7 +43,8 @@ struct PackageProcess {
 	7: optional double launchCount; // Time activity has been launched
 	8: optional i32 importance; // Running activity importance
 	9: optional i32 crashCount; // Number of times the service has crashed
-	10: optional double lastActivityTime; // Last time service was started or bound to
+	10: optional double lastStartSinceBoot; // Time since boot (elapsed) the service was last started  
+	11: optional double lastStartTimestamp; // Timestamp of the last start
 }
 
 //

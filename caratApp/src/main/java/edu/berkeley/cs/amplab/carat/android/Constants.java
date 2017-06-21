@@ -63,6 +63,7 @@ public class Constants {
     public static final int IMPORTANCE_PERCEPTIBLE = 130;
     // Used for non-app suggestions
     public static final int IMPORTANCE_SUGGESTION = 123456789;
+    public static final int IMPORTANCE_FOREGROUND_SERVICE = 125; // Not in 2.2 as well
 
     public static final String IMPORTANCE_NOT_RUNNING = "Not Running";
     public static final String IMPORTANCE_UNINSTALLED = "uninstalled";
@@ -91,6 +92,8 @@ public class Constants {
     };
 
     public static final int REQUESTCODE_ACCEPT_EULA = 16401;
+
+    public static final long MIN_FOREGROUND_SESSION = 1000;
 
     // FRAGMENT TAGS
     public static final String FRAGMENT_BUGS_TAG = "fragment_bugs";

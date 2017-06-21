@@ -652,17 +652,14 @@ public final class SamplingLibrary {
 					process = p.get(processName);
 					process.setProcessCount(process.getProcessCount()+1);
 				} else {
-					process = new PackageProcess()
+				    if(pi.importance == RunningAppProcessInfo.IMPORTANCE_SERVICE){
+				        processName = serviceToProcessName(processName);
+                    } else if(pi.importance == Constants.IMPORTANCE_FOREGROUND_SERVICE){
+				        processName = serviceToProcessName(processName);
+                    }
+					process = Util.getDefaultPackageProcess()
 							.setProcessName(processName)
-							.setProcessCount(-1)
-							.setUId(-1)
-							.setSleeping(false)
-							.setForeground(false)
-							.setForegroundTime(-1)
-							.setLaunchCount(-1)
-							.setImportance(pi.importance)
-							.setCrashCount(-1)
-							.setLastActivityTime(-1);
+							.setImportance(pi.importance);
 				}
 				p.put(processName, process);
 				processes.put(packageName, p);
@@ -676,49 +673,35 @@ public final class SamplingLibrary {
 	}
 
 
-	public static Map<String, PackageProcess> getAppProcessesSince(Context context, long lastSampleTime){
-		Map<String, PackageProcess> activities = new HashMap<>();
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-			Map<String, UsageStats> usageStats = UsageManager.getUsageAggregate(context, lastSampleTime);
-			if(usageStats != null){
-				for(String packageName : usageStats.keySet()){
-					UsageStats stats = usageStats.get(packageName);
-
-					PackageProcess appProcess = new PackageProcess()
-							.setUId(-1)
-							.setProcessCount(1)
-							.setForeground(false)
-							.setSleeping(false)
-							.setLastActivityTime(-1)
-							.setForegroundTime(-1)
-							.setImportance(-1)
-							.setCrashCount(-1)
-							.setProcessName(packageName)
-							.setForegroundTime(stats.getTotalTimeInForeground())
-							.setLaunchCount(UsageManager.getAppLaunchCount(context, stats, lastSampleTime));
-
-					activities.put(packageName, appProcess);
-				}
-			}
-		}
-		return activities;
-	}
-
-	public static void getRunningProcessesFromEventLog(Context context, long begin){
+	/**
+	 * Get running processes starting from given date. Note that this method relies on UsageStats
+	 * and therefore requires a special permission as well as Android version LOLLIPOP or newer.
+     * On older versions an empty map will be returned instead.
+	 * @param context context needed to obtain UsageStats system service
+	 * @param begin starting point in milliseconds since epoch
+	 * @return map with package names as keys and process descriptions as values
+	 */
+	public static Map<String, PackageProcess> getRunningProcessesFromEventLog(Context context, long begin){
+		Map<String, PackageProcess> result = new HashMap<>();
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			Map<String, TreeMap<Long, Integer>> log = UsageManager.getEventLogs(context, System.currentTimeMillis()-TimeUnit.MINUTES.toMillis(20));
+			Map<String, TreeMap<Long, Integer>> log = UsageManager.getEventLogs(context, begin);
+
+			// Loop through every package and its events
 			for(String packageName : log.keySet()){
+				PackageProcess process = Util.getDefaultPackageProcess();
 				TreeMap<Long, Integer> events = log.get(packageName);
-				long lastForeground = -1;
-				long foreground = 0;
-				long launchCount = 0;
+				long lastForeground = -1, foreground = 0, launchCount = 0;
+
+				// Track time between going foreground and moving to background.
 				for(long timestamp : events.keySet()){
 					switch(events.get(timestamp)){
 						case UsageEvents.Event.MOVE_TO_BACKGROUND:
 							if(lastForeground != -1){
 								long session = timestamp - lastForeground;
 								foreground += session;
-								if(session >= 1000){
+
+								// Switches shorter than 1 seconds are most likely not human.
+								if(session >= Constants.MIN_FOREGROUND_SESSION){
 									launchCount++;
 								}
 							}
@@ -728,9 +711,16 @@ public final class SamplingLibrary {
 							break;
 					}
 				}
-				Logger.d(TAG, packageName + " was launched " + launchCount + " times and spent " + foreground + "ms on foreground");
+				if(foreground == 0 || launchCount == 0) continue;
+                process.setProcessName(packageName);
+				process.setForegroundTime(foreground);
+				process.setLaunchCount(launchCount);
+				process.setImportance(RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
+				process.setLastStartTimestamp(lastForeground);
+				result.put(packageName, process);
 			}
 		}
+		return result;
 	}
 
 	public static Map<String, List<PackageProcess>> getRunningServices(Context context){
@@ -756,12 +746,12 @@ public final class SamplingLibrary {
 					process = processes.get(serviceInfo.process);
 					int prevCrashes = process.getCrashCount();
 					int prevCount = process.getProcessCount();
-					double prevLastActivity = process.getLastActivityTime();
+					double prevLastActivity = process.getLastStartSinceBoot();
 
 					process.setProcessCount(prevCount + 1);
 					process.setCrashCount(prevCrashes + serviceInfo.crashCount);
 					if (serviceInfo.lastActivityTime < prevLastActivity) {
-						process.setLastActivityTime(serviceInfo.lastActivityTime);
+						process.setLastStartSinceBoot(serviceInfo.activeSince);
 					}
 					processes.put(serviceInfo.process, process);
 					services.put(packageName, processes);
@@ -775,9 +765,11 @@ public final class SamplingLibrary {
 					process.setForeground(serviceInfo.foreground);
 					process.setForegroundTime(-1);
 					process.setLaunchCount(-1);
-					process.setImportance(-1);
+					process.setImportance(serviceInfo.foreground ?
+                            Constants.IMPORTANCE_FOREGROUND_SERVICE :
+                            RunningAppProcessInfo.IMPORTANCE_SERVICE);
 					process.setCrashCount(serviceInfo.crashCount);
-					process.setLastActivityTime(serviceInfo.lastActivityTime);
+					process.setLastStartSinceBoot(serviceInfo.activeSince);
 				}
 				processes.put(serviceInfo.process, process);
 				services.put(packageName, processes);
@@ -1199,7 +1191,7 @@ public final class SamplingLibrary {
 		Map<String, ProcessInfo> installedPackages = getInstalledPackages(context, false);
 		Map<String, List<PackageProcess>> runningApps = getRunningNow(context);
 		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
-		Map<String, PackageProcess> runningAppsSince = getAppProcessesSince(context, lastSample);
+		Map<String, PackageProcess> runningAppsSince = getRunningProcessesFromEventLog(context, lastSample);
 
 		// These end up being all packages with active code
 		Set<String> packageNames = new HashSet<>();
@@ -1237,6 +1229,10 @@ public final class SamplingLibrary {
 				List<PackageProcess> renamed = new ArrayList<>();
 				for(PackageProcess process : services){
 					process.setProcessName(serviceToProcessName(process.processName));
+                    int importance = process.isForeground() ?
+                            Constants.IMPORTANCE_FOREGROUND_SERVICE :
+                            RunningAppProcessInfo.IMPORTANCE_SERVICE;
+                    processInfo.setImportance(CaratApplication.importanceString(importance));
 					renamed.add(process);
 				}
 				applications.addAll(renamed);
@@ -1266,7 +1262,9 @@ public final class SamplingLibrary {
 						PackageProcess accurate = runningAppsSince.get(processName);
 						application.setForegroundTime(accurate.getForegroundTime());
 						application.setLaunchCount(accurate.getLaunchCount());
+						application.setImportance(accurate.getImportance());
 						accurateCurrentlyRunning = true;
+						lowestImportance = RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 					}
 					applications.add(application);
 				}
@@ -1278,7 +1276,9 @@ public final class SamplingLibrary {
 			// as the process will not be found from the (empty) currently running processes
 			// list. Naturally we want to include this valuable information regardless.
 			if(!accurateCurrentlyRunning && runningAppsSince.containsKey(packageName)){
-				applications.add(runningAppsSince.get(packageName));
+                PackageProcess accurate = runningAppsSince.get(packageName);
+				applications.add(accurate);
+				processInfo.setImportance(CaratApplication.importanceString(accurate.getImportance()));
 			}
 			processInfo.setProcesses(applications);
 
