@@ -108,13 +108,15 @@
                 <action android:name="android.intent.action.PACKAGE_ADDED" />
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.INPUT_METHOD_CHANGED"/>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.CONFIGURATION_CHANGED"/>
+                <action android:name="android.intent.action.DOCK_EVENT"/>
 
                 <!-- Custom actions -->
                 <action android:name="edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE" />
                 <action android:name="edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING" />
                 <action android:name="edu.berkeley.cs.amplab.carat.android.CHECK_SCHEDULE" />
-                <data android:scheme="package" />
             </intent-filter>
         </receiver>
 
