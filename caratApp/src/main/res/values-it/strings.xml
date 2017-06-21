@@ -61,8 +61,7 @@ e diagnosticare i problemi legati alla batteria, dando indicazioni personalizzat
     <string name="tutorial_fragment_bugs_message">Bugs sono quelle app che usano molta energia in pochi dispositivi,
 compreso il vostro. Un semplice riavvio dell\'applicazione può aumentare la durata della batteria.</string>
     <string name="tutorial_fragment_hogs_title">HOGS</string>
-    <string name="tutorial_fragment_hogs_message">Hogs sono le app che usano molta batteria, come di norma si riscontra
-nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
+    <string name="tutorial_fragment_hogs_message">Hogs sono le app che usano molta batteria, come di norma si riscontra nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
     <string name="tutorial_fragment_eula_title">EULA</string>
     <string name="tutorial_fragment_eula_message">
 Carat raccoglie periodicamente informazioni generiche sul vostro dispositivo e su come lo usate.
