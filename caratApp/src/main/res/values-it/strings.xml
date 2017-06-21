@@ -61,8 +61,7 @@ e diagnosticare i problemi legati alla batteria, dando indicazioni personalizzat
     <string name="tutorial_fragment_bugs_message">Bugs sono quelle app che usano molta energia in pochi dispositivi,
 compreso il vostro. Un semplice riavvio dell\'applicazione può aumentare la durata della batteria.</string>
     <string name="tutorial_fragment_hogs_title">HOGS</string>
-    <string name="tutorial_fragment_hogs_message">Hogs sono le app che abitualmente usano molta batteria, come si riscontra
-nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
+    <string name="tutorial_fragment_hogs_message">Hogs sono le app che usano molta batteria, come di norma si riscontra nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
     <string name="tutorial_fragment_eula_title">EULA</string>
     <string name="tutorial_fragment_eula_message">
 Carat raccoglie periodicamente informazioni generiche sul vostro dispositivo e su come lo usate.
@@ -121,7 +120,7 @@ Se una applicazione incominciasse a consumare parecchia più energia sul tuo dis
 agli altri, sarà elencata qui.</string>
 
     <!-- HOGS -->
-    <string name="hog_list_message">Hogs sono le app che abitualmente usano molta batteria, come si riscontra
+    <string name="hog_list_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra
 nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
     <string name="no_hogs_title">Non hai hog.</string>
     <string name="no_hogs_message">Per cortesia, riprova fra una settimana.\n\n
@@ -174,7 +173,7 @@ Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l
 </string>
 
     <!-- GLOBAL RESULTS -->
-    <string name="global_results">WORLDWIDE - STATISTICHE</string>
+    <string name="global_results">      STATISTICHE</string>
     <string name="show_global">WORLDWIDE</string>
     <string name="all_reports">TUTTI I REPORTS</string>
     <string name="global_general_statistics">STATISTICA GENERALE</string>
@@ -297,7 +296,7 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
     </string-array>
     <!-- Updating etc -->
     <string name="samplesreported">Invio dei campioni</string>
-    <string name="updating">Aggiornamento</string>
+    <string name="updating">Aggiorno</string>
     <string name="updated">Aggiornato </string>
     <string name="neverupdated">Non aggiornato</string>
     <string name="updatedjustnow">Appena aggiornato</string>
