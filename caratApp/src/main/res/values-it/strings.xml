@@ -61,7 +61,7 @@ e diagnosticare i problemi legati alla batteria, dando indicazioni personalizzat
     <string name="tutorial_fragment_bugs_message">Bugs sono quelle app che usano molta energia in pochi dispositivi,
 compreso il vostro. Un semplice riavvio dell\'applicazione può aumentare la durata della batteria.</string>
     <string name="tutorial_fragment_hogs_title">HOGS</string>
-    <string name="tutorial_fragment_hogs_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra
+    <string name="tutorial_fragment_hogs_message">Hogs sono le app che abitualmente usano molta batteria, come si riscontra
 nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
     <string name="tutorial_fragment_eula_title">EULA</string>
     <string name="tutorial_fragment_eula_message">
@@ -121,7 +121,7 @@ Se una applicazione incominciasse a consumare parecchia più energia sul tuo dis
 agli altri, sarà elencata qui.</string>
 
     <!-- HOGS -->
-    <string name="hog_list_message">Hogs sono le app che usualmente usano molta batteria, come si riscontra
+    <string name="hog_list_message">Hogs sono le app che abitualmente usano molta batteria, come si riscontra
 nella maggior parte dei dispositivi. Terminarle può migliorare la durata della batteria.</string>
     <string name="no_hogs_title">Non hai hog.</string>
     <string name="no_hogs_message">Per cortesia, riprova fra una settimana.\n\n
@@ -157,7 +157,7 @@ Carat è in divenire, perciò controlla spesso se ci sono nuovi risultati. Più 
 compreso il tuo. Un semplice riavvio dell\'applicazione può aumentare la durata della batteria.</string>
     <string name="about_hogs_title">Hogs</string>
     <string name="about_hogs_message">Guarda i tuoi hogs</string>
-    <string name="about_hogs_child_message">Hogs sono le app che usualmente usano molta batteria nella maggior
+    <string name="about_hogs_child_message">Hogs sono le app che abitualmente usano molta batteria nella maggior
 parte dei dispositivi. Terminarle può migliorare la durata della batteria. </string>
     <string name="about_collect_title">Raccolta dati</string>
     <string name="about_collect_message">Informazioni su come e quali dati raccoglie Carat.</string>
@@ -296,7 +296,7 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
         <item>Descrizione</item>
     </string-array>
     <!-- Updating etc -->
-    <string name="samplesreported">Inviando i campioni</string>
+    <string name="samplesreported">Invio dei campioni</string>
     <string name="updating">Aggiornamento</string>
     <string name="updated">Aggiornato </string>
     <string name="neverupdated">Non aggiornato</string>
@@ -305,7 +305,7 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
     <string name="blacklist">Blacklist</string>
     <string name="finishing">Sto finendo</string>
     <!--- Time quantity strings -->
-    <string name="ago">fà</string>
+    <string name="ago">fa</string>
     <plurals name="weeks">
         <item quantity="one">alla settimana</item>
         <item quantity="other">%d settimane</item>
