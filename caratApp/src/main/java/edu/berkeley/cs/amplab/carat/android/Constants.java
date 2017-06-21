@@ -9,7 +9,7 @@ public class Constants {
     // Whether to output debug messages.
     public static final boolean DEBUG = true;
 
-    public static final long DUPLICATE_INTERVAL = 1;
+    public static final long DUPLICATE_INTERVAL = 60;
 
     public static final long FRESHNESS_TIMEOUT = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
     public static final long FRESHNESS_TIMEOUT_BLACKLIST = 24 * 3600 * 1000;

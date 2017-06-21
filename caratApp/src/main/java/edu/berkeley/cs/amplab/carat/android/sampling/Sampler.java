@@ -18,6 +18,7 @@ import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.NetworkDetails;
+import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 import edu.berkeley.cs.amplab.carat.thrift.Settings;
 
@@ -27,7 +28,9 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
 public class Sampler {
     private static String TAG = Sampler.class.getSimpleName();
 
-    public static void sample(Context context, String trigger, Runnable releaseWl){
+    public static boolean sample(Context context, String trigger, Runnable releaseWl){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean success = false;
         SampleDB db = SampleDB.getInstance(context);
         Sample lastSample = db.getLastSample(context);
         long monthAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
@@ -37,12 +40,15 @@ public class Sampler {
         if(sample != null && !essentiallyIdentical(sample, lastSample)){
             long id = db.putSample(sample);
             Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
+            preferences.edit().putLong(Keys.lastSampleTimestamp, (long)sample.getTimestamp()).apply();
+            success = true;
         }
         int sampleCount = SampleDB.getInstance(context).countSamples();
         if(sampleCount >= Constants.SAMPLES_MAX_BACKLOG /* 250 */) {
             CaratApplication.postSamplesNotification(sampleCount);
         }
         releaseWl.run();
+        return success;
     }
 
     private static Sample constructSample(Context context, String trigger, long lastSampleTime){
@@ -202,6 +208,16 @@ public class Sampler {
                                 && 	bd1.getBatteryTechnology().equals(bd2.getBatteryTechnology())
                                 && 	bd1.getBatteryCharger().equals(bd2.getBatteryCharger())
                                 && 	bd1.getBatteryHealth().equals(bd2.getBatteryHealth());
+
+                for(ProcessInfo pi : s1.getPiList()){
+                    if(pi.importance.equals(Constants.IMPORTANCE_INSTALLED)
+                            || pi.importance.equals(Constants.IMPORTANCE_DISABLED)
+                            || pi.importance.equals(Constants.IMPORTANCE_REPLACED)
+                            || pi.importance.equals(Constants.IMPORTANCE_UNINSTALLED)){
+                        Logger.i(TAG, "Installs changes, cannot discard as duplicate");
+                        return false;
+                    }
+                }
 
                 Logger.d(TAG, isDuplicate ? "Discarding as a duplicate.." : "Not a duplicate, proceeding..");
                 return isDuplicate;

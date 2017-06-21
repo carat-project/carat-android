@@ -11,5 +11,6 @@ public class Keys {
     public static String lastBatteryStatus = "lastBatteryStatus";
     public static String lastKnownLocation = "lastKnownLocation";
     public static String sendInstalledPackages = "carat.sample.send.installed";
-    public static String lastScheduledSample = "lastScheduledSample";
+    public static String nextSamplingTime = "nextSamplingTime";
+    public static String lastSampleTimestamp =  "lastSampleTimestamp";
 }

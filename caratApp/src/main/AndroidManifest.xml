@@ -102,10 +102,15 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
                 <action android:name="android.net.wifi.STATE_CHANGE" />
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
 
                 <!-- Custom actions -->
                 <action android:name="edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE" />
                 <action android:name="edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING" />
+                <data android:scheme="package" />
             </intent-filter>
         </receiver>
 

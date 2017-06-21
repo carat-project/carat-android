@@ -68,17 +68,43 @@ public class IntentRouter extends IntentService {
                     // TODO: Foreground notification and sampling
                     break;
                 case Constants.SCHEDULED_SAMPLE:
-                    // TODO: OK
                     break;
                 case Intent.ACTION_BATTERY_CHANGED:
                     // TODO: Do something here?
                     break;
-                default: Logger.d(TAG, "Implement me: " + action + "!");
+                default:
+                    Logger.i(TAG, "Waken up by " + action + " to check schedule");
+                    long now = System.currentTimeMillis();
+                    long future = preferences.getLong(Keys.nextSamplingTime, 0);
+                    long lastSample = preferences.getLong(Keys.lastSampleTimestamp, 0);
+
+                    // First condition takes care of the scenario where we have woken up to check
+                    // schedule but found out that the time is either really soon or already passed.
+                    // If the time is really soon, we might not get an alarm for that since we woke
+                    // up now, and if it's already due, might as well do it now.
+                    if(isAlreadyScheduled(getScheduleIntent()) && (future - now < SAMPLING_INTERVAL/4.0 || now > future)){
+                        cancelScheduledSample();
+                        Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                        scheduleNextSample(SAMPLING_INTERVAL);
+                    }
+
+                    // Second condition means that the scheduler is dead for some reason. In this
+                    // case we always want to reschedule, but if over 15 minutes have elapsed since
+                    // the last sample, we've been dead for a good while and want to sample right
+                    // away before rescheduling.
+                    else if(!isAlreadyScheduled(getScheduleIntent())){
+                        if(now - lastSample >= SAMPLING_INTERVAL){
+                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                        }
+                        scheduleNextSample(SAMPLING_INTERVAL);
+                    }
             }
-            scheduleNextSample(SAMPLING_INTERVAL);
-            Sampler.sample(context, action, wl::release);
             ActionReceiver.completeWakefulIntent(intent);
         }
+    }
+
+    private boolean isAlreadyScheduled(Intent intent){
+        return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_NO_CREATE) != null;
     }
 
     private Intent getScheduleIntent(){
@@ -87,7 +113,16 @@ public class IntentRouter extends IntentService {
         return scheduleIntent;
     }
 
-    private void scheduleNextSample(long interval){
+    private boolean shouldSampleNow(){
+        if(!isAlreadyScheduled(getScheduleIntent())){
+            return true;
+        }
+        long now = System.currentTimeMillis();
+        long last = preferences.getLong(Keys.nextSamplingTime, 0);
+        return now - last < SAMPLING_INTERVAL/2.0;
+    }
+
+    private void cancelScheduledSample(){
         Intent scheduleIntent = getScheduleIntent();
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, scheduleIntent, 0);
         try {
@@ -95,6 +130,11 @@ public class IntentRouter extends IntentService {
         } catch(Exception e){
             Logger.i(TAG, "No alarm to cancel when rescheduling sample");
         }
+    }
+
+    private void scheduleNextSample(long interval){
+        Intent scheduleIntent = getScheduleIntent();
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, scheduleIntent, 0);
         long then = Util.timeAfterTime(interval);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, then, pendingIntent);
@@ -103,7 +143,6 @@ public class IntentRouter extends IntentService {
         } else {
             alarmManager.set(AlarmManager.RTC_WAKEUP, then, pendingIntent);
         }
-        preferences.edit().putLong(Keys.lastScheduledSample, then).apply();
-
+        preferences.edit().putLong(Keys.nextSamplingTime, then).apply();
     }
 }
