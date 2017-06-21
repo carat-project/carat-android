@@ -76,8 +76,19 @@ dependencies {
     compile 'org.apache.thrift:libthrift:0.9.2'
     // Because Thrift likes to do logging with slf4j
     compile 'org.slf4j:slf4j-android:1.6.1-RC1'
+    // For JSON form data (questionnaire, stats)
+    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
+    // For testing
+    compile 'junit:junit:4.12'
+    // Annotation support
+    compile 'javax.annotation:javax.annotation-api:1.3'
+    // For supporting animations on older android versions.
+    compile 'com.nineoldandroids:library:2.4.0'
+    // Async image loading for better user experience
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 
     compile 'org.apache.commons:commons-math3:3.0'
+    // Bouncy Castle Crypto API (for e.g. self-signed SSL certificates)
     compile 'org.bouncycastle:bcprov-jdk16:1.45'
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.1'
     compile 'com.android.support:support-v4:25.4.0'
