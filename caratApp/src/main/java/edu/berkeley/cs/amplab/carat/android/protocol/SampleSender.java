@@ -84,7 +84,6 @@ public class SampleSender {
                                     int success = app.commManager.uploadSamples(map.values());
     
                                     tries = 2;
-                                    // FlurryAgent.logEvent("UploadSamples");
                                     if (Constants.DEBUG)
                                         Logger.d(TAG, "Uploaded " + success
                                             + " samples out of " + map.size());

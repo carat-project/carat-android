@@ -77,10 +77,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.flurry.android.FlurryAgent;
-
-import org.bouncycastle.crypto.util.Pack;
-
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
@@ -324,7 +320,6 @@ public final class SamplingLibrary {
 					hexString.append(hx);
 			}
 			String uuid = hexString.toString().substring(0, UUID_LENGTH);
-			// FlurryAgent.logEvent("ANDROID_ID=" + aID +" UUID=" + uuid);
 			return uuid;
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
@@ -951,7 +946,6 @@ public final class SamplingLibrary {
 			return true;
 		}
 
-		// FlurryAgent.logEvent("Whitelisted "+processName + " \""+ label+"\"");
 		return false;
 	}
 
@@ -1980,8 +1974,8 @@ public final class SamplingLibrary {
 				PackageInfo p = getPackageInfo(context, packageName);
 				// Log.v(STAG, "Trying to kill proc=" + packageName + " pak=" +
 				// p.packageName);
-				FlurryAgent.logEvent("Killing app=" + (label == null ? "null" : label) + " proc=" + packageName
-						+ " pak=" + (p == null ? "null" : p.packageName));
+				//FlurryAgent.logEvent("Killing app=" + (label == null ? "null" : label) + " proc=" + packageName
+				//		+ " pak=" + (p == null ? "null" : p.packageName));
 				am.killBackgroundProcesses(packageName);
 				/*Toast.makeText(context, context.getResources().getString(R.string.stopping) + ((label == null) ? "" : " "+label),
 						Toast.LENGTH_SHORT).show();*/

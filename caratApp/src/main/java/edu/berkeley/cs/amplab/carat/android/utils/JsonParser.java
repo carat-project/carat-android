@@ -1,80 +1,48 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-
-import edu.berkeley.cs.amplab.carat.android.Constants;
-import android.util.Log;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 
 
 public class JsonParser {
 	
 	public static String getJSONFromUrl(String url) {
-		InputStream inputStream = null;
-	    String result = null; 
-	    
-		ArrayList<NameValuePair> param = new ArrayList<NameValuePair>();
+	    String result = null;
 		
 		try {
             // Set up HTTP post
+            HttpURLConnection httpPost = (HttpURLConnection) new URL(url).openConnection();
+            httpPost.setRequestMethod("POST");
+            httpPost.setDoInput(true);
 
-            HttpClient httpClient = new DefaultHttpClient();
-
-            HttpPost httpPost = new HttpPost(url);
-            httpPost.setEntity(new UrlEncodedFormEntity(param));
-            HttpResponse httpResponse = httpClient.execute(httpPost);
-            HttpEntity httpEntity = httpResponse.getEntity();
-
-            // Read content & Log
-            inputStream = httpEntity.getContent();
-        } catch (UnknownHostException e0) {
-            if (Constants.DEBUG)
-                Logger.d("JsonParser", "Unable to connect to the statstics server (no Internet on the device! is Wifi or mobile data on?), " + e0.toString());
-        	return "";
-        } catch (UnsupportedEncodingException e1) {
-            Logger.e("UnsupportedEncodingException", e1.toString());
-            return "";
-        } catch (ClientProtocolException e2) {
-            Logger.e("ClientProtocolException", e2.toString());
-            return "";
-        } catch (IllegalStateException e3) {
-            Logger.e("IllegalStateException", e3.toString());
-            return "";
-        } catch (IOException e4) {
-            Logger.e("IOException", e4.toString());
-            return "";
-        }
-        // Convert response to string using String Builder
-        try {
-            BufferedReader bReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"), 8);
-            StringBuilder sBuilder = new StringBuilder();
-
-            String line = null;
-            while ((line = bReader.readLine()) != null) {
-                sBuilder.append(line + "\n");
+            final int bufferSize = 1024;
+            final char[] buffer = new char[bufferSize];
+            final StringBuilder out = new StringBuilder();
+            Reader in = new InputStreamReader(httpPost.getInputStream(), "UTF-8");
+            while (true) {
+                int rsz = in.read(buffer, 0, buffer.length);
+                if (rsz < 0)
+                    break;
+                out.append(buffer, 0, rsz);
             }
-
-            inputStream.close();
-            result = sBuilder.toString();
-
-        } catch (Exception e) {
-            Logger.e("StringBuilding & BufferedReader", "Error converting result " + e.toString());
+            in.close();
+            result = out.toString();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        
+
         return result;
 	}
 }

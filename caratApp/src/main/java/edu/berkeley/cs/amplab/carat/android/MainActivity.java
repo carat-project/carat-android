@@ -33,16 +33,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.flurry.android.FlurryAgent;
-import com.google.gson.Gson;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
@@ -62,7 +55,6 @@ import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static final String FLURRY_KEYFILE = "flurry.properties";
     private static final String TAG = "CaratMainActivity";
 
     private SharedPreferences p;
@@ -170,24 +162,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStart() {
         super.onStart();
 
-        String secretKey = null;
-        Properties properties = new Properties();
-        try {
-            InputStream raw = MainActivity.this.getAssets().open(FLURRY_KEYFILE);
-            if (raw != null) {
-                properties.load(raw);
-                if (properties.containsKey("secretkey"))
-                    secretKey = properties.getProperty("secretkey", "secretkey");
-                // Logger.d(TAG, "Set Flurry secret key.");
-            } else {
-                // Logger.e(TAG, "Could not open Flurry key file!");
-            }
-        } catch (IOException e) {
-            // Logger.e(TAG, "Could not open Flurry key file: " + e.toString());
-        }
-        if (secretKey != null) {
-            FlurryAgent.onStartSession(getApplicationContext(), secretKey);
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if(!UsageManager.isPermissionGranted(this)){
                 UsageManager.promptPermission(this);
@@ -198,7 +172,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStop() {
         super.onStop();
-        FlurryAgent.onEndSession(getApplicationContext());
     }
 
     // This needs to be in a separate method so it can be called
