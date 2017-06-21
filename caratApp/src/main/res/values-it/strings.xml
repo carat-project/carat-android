@@ -288,7 +288,7 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
     <string-array name="drawer_items">
         <item>Sommario</item>
         <item>Azioni</item>
-        <item>Il mio dispositivo</item>
+        <item>dispositivo</item>
         <item>Bugs</item>
         <item>Hogs</item>
         <item>Impostazioni</item>
