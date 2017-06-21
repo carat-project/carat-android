@@ -188,6 +188,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (secretKey != null) {
             FlurryAgent.onStartSession(getApplicationContext(), secretKey);
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if(!UsageManager.isPermissionGranted(this)){
+                UsageManager.promptPermission(this);
+            }
+        }
     }
 
     @Override
