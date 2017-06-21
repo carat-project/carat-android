@@ -81,10 +81,6 @@ public class IntentRouter extends IntentService {
         }
     }
 
-    private boolean isAlreadyScheduled(Intent intent){
-        return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_NO_CREATE) != null;
-    }
-
     private Intent getScheduleIntent(){
         Intent scheduleIntent = new Intent(context, IntentRouter.class);
         scheduleIntent.setAction(Constants.SCHEDULED_SAMPLE);
@@ -94,7 +90,11 @@ public class IntentRouter extends IntentService {
     private void scheduleNextSample(long interval){
         Intent scheduleIntent = getScheduleIntent();
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, scheduleIntent, 0);
-        alarmManager.cancel(pendingIntent); // Cancel previously scheduled sample
+        try {
+            alarmManager.cancel(pendingIntent); // Cancel previously scheduled sample
+        } catch(Exception e){
+            Logger.i(TAG, "No alarm to cancel when rescheduling sample");
+        }
         long then = Util.timeAfterTime(interval);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, then, pendingIntent);
