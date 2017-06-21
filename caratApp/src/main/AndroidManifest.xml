@@ -76,6 +76,9 @@
             android:label="Location receiver"
             android:process=":location"/>
 
+        <!-- Testing class -->
+        <service android:name=".receivers.ImmortalService" />
+
         <!-- Receivers -->
         <receiver
             android:name=".receivers.BootReceiver"
@@ -110,6 +113,7 @@
                 <!-- Custom actions -->
                 <action android:name="edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE" />
                 <action android:name="edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING" />
+                <action android:name="edu.berkeley.cs.amplab.carat.android.CHECK_SCHEDULE" />
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>

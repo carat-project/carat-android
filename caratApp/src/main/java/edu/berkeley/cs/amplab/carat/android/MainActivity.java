@@ -43,6 +43,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.GlobalFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.SettingsFragment;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
+import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefetchData;
@@ -194,6 +195,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onResume() {
+        Intent intent = new Intent(getApplicationContext(), ActionReceiver.class);
+        intent.setAction(Constants.CHECK_SCHEDULE);
+        sendBroadcast(intent);
         resumeTasksAndUpdate();
         super.onResume();
     }

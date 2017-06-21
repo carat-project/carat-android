@@ -23,7 +23,7 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
  */
 public class IntentRouter extends IntentService {
     private final static String TAG = IntentRouter.class.getSimpleName();
-    private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(15);
+    private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(2);
     private final static int REQUEST_CODE = 67294580;
 
     private Context context;
@@ -65,12 +65,18 @@ public class IntentRouter extends IntentService {
             Logger.d(TAG, "Routing intent for " + action);
             switch(action){
                 case Constants.RAPID_SAMPLING:
-                    // TODO: Foreground notification and sampling
+                    // TODO: Implement me, old code in version history
                     break;
                 case Constants.SCHEDULED_SAMPLE:
+                    Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                    scheduleNextSample(SAMPLING_INTERVAL);
                     break;
                 case Intent.ACTION_BATTERY_CHANGED:
-                    // TODO: Do something here?
+                case Intent.ACTION_POWER_CONNECTED:
+                case Intent.ACTION_POWER_DISCONNECTED:
+                    cancelScheduledSample();
+                    Sampler.sample(context, action, wl::release);
+                    scheduleNextSample(SAMPLING_INTERVAL);
                     break;
                 default:
                     Logger.i(TAG, "Waken up by " + action + " to check schedule");
@@ -83,6 +89,7 @@ public class IntentRouter extends IntentService {
                     // If the time is really soon, we might not get an alarm for that since we woke
                     // up now, and if it's already due, might as well do it now.
                     if(isAlreadyScheduled(getScheduleIntent()) && (future - now < SAMPLING_INTERVAL/4.0 || now > future)){
+                        Logger.d(TAG, "Next scheduled sampling time either soon or already passed, sampling now");
                         cancelScheduledSample();
                         Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
                         scheduleNextSample(SAMPLING_INTERVAL);
@@ -94,9 +101,17 @@ public class IntentRouter extends IntentService {
                     // away before rescheduling.
                     else if(!isAlreadyScheduled(getScheduleIntent())){
                         if(now - lastSample >= SAMPLING_INTERVAL){
+                            Logger.d(TAG, "Sampler has been dead for a long while, sampling now");
                             Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
                         }
+                        Logger.d(TAG, "Revived sampler");
                         scheduleNextSample(SAMPLING_INTERVAL);
+                    }
+
+                    // Unless the first two conditions are met, we can just happily wait for the next
+                    // scheduled sampling to happen.
+                    else {
+                        Logger.d(TAG, "Everything was fine with scheduling");
                     }
             }
             ActionReceiver.completeWakefulIntent(intent);
@@ -108,7 +123,7 @@ public class IntentRouter extends IntentService {
     }
 
     private Intent getScheduleIntent(){
-        Intent scheduleIntent = new Intent(context, IntentRouter.class);
+        Intent scheduleIntent = new Intent(context, ActionReceiver.class);
         scheduleIntent.setAction(Constants.SCHEDULED_SAMPLE);
         return scheduleIntent;
     }
@@ -143,6 +158,8 @@ public class IntentRouter extends IntentService {
         } else {
             alarmManager.set(AlarmManager.RTC_WAKEUP, then, pendingIntent);
         }
+        Logger.d(TAG, "Next sampling scheduled in " +
+                ((then-System.currentTimeMillis())/1000) +  " seconds");
         preferences.edit().putLong(Keys.nextSamplingTime, then).apply();
     }
 }
