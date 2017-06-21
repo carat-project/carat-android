@@ -1,4 +1,4 @@
-package edu.berkeley.cs.amplab.carat.android.sampling;
+package edu.berkeley.cs.amplab.carat.android.receivers;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
@@ -14,8 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
-import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
-import edu.berkeley.cs.amplab.carat.android.receivers.LocationReceiver;
+import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
@@ -77,7 +76,7 @@ public class IntentRouter extends IntentService {
                 default: Logger.d(TAG, "Implement me: " + action + "!");
             }
             scheduleNextSample(SAMPLING_INTERVAL);
-            Sampler2.sample(context, action, wl::release);
+            Sampler.sample(context, action, wl::release);
             ActionReceiver.completeWakefulIntent(intent);
         }
     }

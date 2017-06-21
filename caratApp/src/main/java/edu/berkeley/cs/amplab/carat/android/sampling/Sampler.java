@@ -24,8 +24,8 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
 /**
  * Created by Jonatan Hamberg on 2.2.2017.
  */
-public class Sampler2 {
-    private static String TAG = Sampler2.class.getSimpleName();
+public class Sampler {
+    private static String TAG = Sampler.class.getSimpleName();
 
     public static void sample(Context context, String trigger, Runnable releaseWl){
         SampleDB db = SampleDB.getInstance(context);

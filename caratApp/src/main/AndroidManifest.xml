@@ -68,7 +68,7 @@
 
         <!--- Services -->
         <service
-            android:name=".sampling.IntentRouter"
+            android:name=".receivers.IntentRouter"
             android:label="Intent router" />
 
         <service
