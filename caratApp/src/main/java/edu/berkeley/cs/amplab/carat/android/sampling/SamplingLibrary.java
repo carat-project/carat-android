@@ -659,7 +659,8 @@ public final class SamplingLibrary {
                     }
 					process = Util.getDefaultPackageProcess()
 							.setProcessName(processName)
-							.setImportance(pi.importance);
+							.setImportance(pi.importance)
+                            .setProcessCount(1);
 				}
 				p.put(processName, process);
 				processes.put(packageName, p);
@@ -1187,6 +1188,7 @@ public final class SamplingLibrary {
 		PackageManager pm = context.getPackageManager();
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		boolean sendInstalled = preferences.getBoolean(Keys.sendInstalledPackages, true);
+		HashSet<String> addedServices = new HashSet<>();
 
 		Map<String, ProcessInfo> installedPackages = getInstalledPackages(context, false);
 		Map<String, List<PackageProcess>> runningApps = getRunningNow(context);
@@ -1228,7 +1230,9 @@ public final class SamplingLibrary {
 				List<PackageProcess> services = runningServices.get(packageName);
 				List<PackageProcess> renamed = new ArrayList<>();
 				for(PackageProcess process : services){
-					process.setProcessName(serviceToProcessName(process.processName));
+				    String processName = serviceToProcessName(process.processName);
+					process.setProcessName(processName);
+					addedServices.add(processName);
                     int importance = process.isForeground() ?
                             Constants.IMPORTANCE_FOREGROUND_SERVICE :
                             RunningAppProcessInfo.IMPORTANCE_SERVICE;
@@ -1250,6 +1254,9 @@ public final class SamplingLibrary {
 				int lowestImportance = Integer.MAX_VALUE;
 				for(PackageProcess application : processes){
 					String processName = application.getProcessName();
+					if(addedServices.contains(processName)){
+					    continue;
+                    }
 
 					// Keep track of the lowest importance which is the most important one.
 					if(lowestImportance != -1) {
