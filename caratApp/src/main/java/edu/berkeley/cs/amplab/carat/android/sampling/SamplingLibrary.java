@@ -86,15 +86,12 @@ import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
-import edu.berkeley.cs.amplab.carat.thrift.AppProcess;
-import edu.berkeley.cs.amplab.carat.thrift.Application;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
 import edu.berkeley.cs.amplab.carat.thrift.NetworkDetails;
 import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
-import edu.berkeley.cs.amplab.carat.thrift.RunningService;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 import edu.berkeley.cs.amplab.carat.thrift.StorageDetails;
 

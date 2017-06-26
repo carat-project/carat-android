@@ -249,6 +249,13 @@ public class CaratApplication extends Application {
     public static void postSamplesNotification(int samples){
         Context context = getAppContext();
         final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
+
+        long since = System.currentTimeMillis() - p.getLong(Keys.lastSampleNotify, 0);
+        if(since < Constants.FRESHNESS_TIMEOUT_SAMPLE_REMINDER){
+            Logger.i(TAG, "Not enough time ("
+                    + since + ") passed since sample last reminder.");
+            return;
+        }
         if(!p.getBoolean(context.getString(R.string.disable_notifications), false)){
             PendingIntent launchCarat = PendingIntent.getActivity(context, 0,
                     new Intent(context, MainActivity.class), 0);
@@ -257,14 +264,14 @@ public class CaratApplication extends Application {
                     context)
                     .setSmallIcon(R.drawable.carat_notif_icon)
                     .setContentTitle("Please open Carat")
-                    .setContentText("Please open Carat. Samples to send:")
-                    .setNumber(samples);
+                    .setContentText("There are " + samples + " samples to send.");
             mBuilder.setContentIntent(launchCarat);
             mBuilder.setAutoCancel(true);
 
             NotificationManager mNotificationManager = (NotificationManager) context
                     .getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.notify(1, mBuilder.build());
+            p.edit().putLong(Keys.lastSampleNotify, System.currentTimeMillis()).apply();
         } else {
             Logger.d(TAG, "Notifications are disabled, skipping sample notification");
         }

@@ -13,4 +13,5 @@ public class Keys {
     public static String sendInstalledPackages = "carat.sample.send.installed";
     public static String nextSamplingTime = "nextSamplingTime";
     public static String lastSampleTimestamp =  "lastSampleTimestamp";
+    public static String lastSampleNotify = "lastSampleNotify";
 }

@@ -13,7 +13,8 @@ public class Constants {
 
     public static final long FRESHNESS_TIMEOUT = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
     public static final long FRESHNESS_TIMEOUT_BLACKLIST = 24 * 3600 * 1000;
-    public static final long FRESHNESS_TIMEOUT_QUICKHOGS = 2 * 24 * 3600 * 1000;
+    public static final long FRESHNESS_TIMEOUT_QUICKHOGS = TimeUnit.DAYS.toMillis(2);
+    public static final long FRESHNESS_TIMEOUT_SAMPLE_REMINDER = TimeUnit.DAYS.toMillis(2);
     public static final long FRESHNESS_TIMEOUT_HOGSTATS = TimeUnit.DAYS.toMillis(1);
     public static final long FRESHNESS_TIMEOUT_QUESTIONNAIRE = TimeUnit.DAYS.toMillis(1);
     public static final long DASHBOARD_REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1);
