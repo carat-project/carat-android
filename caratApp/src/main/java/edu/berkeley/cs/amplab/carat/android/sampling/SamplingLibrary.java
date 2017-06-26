@@ -750,14 +750,12 @@ public final class SamplingLibrary {
 					services.put(packageName, processes);
 				} else {
 					// Process name never seen before -> Create entry
-					process = new PackageProcess();
+					process = Util.getDefaultPackageProcess();
 					process.setProcessName(serviceInfo.process);
 					process.setProcessCount(1);
 					process.setUId(serviceInfo.uid);
 					process.setSleeping(serviceInfo.restarting != 0);
 					process.setForeground(serviceInfo.foreground);
-					process.setForegroundTime(-1);
-					process.setLaunchCount(-1);
 					process.setImportance(serviceInfo.foreground ?
                             Constants.IMPORTANCE_FOREGROUND_SERVICE :
                             RunningAppProcessInfo.IMPORTANCE_SERVICE);
