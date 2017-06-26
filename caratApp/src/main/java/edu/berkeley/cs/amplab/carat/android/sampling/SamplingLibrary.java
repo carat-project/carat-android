@@ -638,7 +638,7 @@ public final class SamplingLibrary {
 				String processName = pi.processName;
 				String packageName = Util.trimProcessName(processName)[0];
 				HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
-						processes.get(packageName) : new HashMap<>();
+						processes.get(packageName) : new HashMap<String, PackageProcess>();
 				PackageProcess process;
 				if(p.containsKey(processName)){
 					process = p.get(processName);
@@ -732,7 +732,7 @@ public final class SamplingLibrary {
 				}
 
 				HashMap<String, PackageProcess> processes = services.containsKey(packageName) ?
-						services.get(packageName) : new HashMap<>();
+						services.get(packageName) : new HashMap<String, PackageProcess>();
 				PackageProcess process;
 				if (processes.containsKey(serviceInfo.process)) {
 					// Multiple processes with the same name -> Aggregate
