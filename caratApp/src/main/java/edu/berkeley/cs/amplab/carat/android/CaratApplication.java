@@ -263,8 +263,8 @@ public class CaratApplication extends Application {
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
                     context)
                     .setSmallIcon(R.drawable.carat_notif_icon)
-                    .setContentTitle("Please open Carat")
-                    .setContentText("There are " + samples + " samples to send.");
+                    .setContentTitle("Tap to open Carat")
+                    .setContentText(samples + " samples to send.");
             mBuilder.setContentIntent(launchCarat);
             mBuilder.setAutoCancel(true);
 

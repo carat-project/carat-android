@@ -34,6 +34,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
@@ -2075,244 +2076,36 @@ public final class SamplingLibrary {
 		return buf.toString();
 	}
 
-	// TODO: This should be removed in favor of Sampler2.sample()
-	public static Sample sample(Context context, String action, String lastBatteryState) {
-		final String TAG = "SamplingLibrary.sample";
-		if (Constants.DEBUG)
-		    Logger.d(TAG, "sample() was invoked.");
-
-		if (Constants.DEBUG)
-		    Logger.d(TAG, "action = " + action);
-
-		// Construct sample and return it in the end
-		Sample mySample = new Sample();
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
-		String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
-		mySample.setUuId(uuId);
-		mySample.setTriggeredBy(action);
-		// required always
-		long now = System.currentTimeMillis();
-		mySample.setTimestamp(now / 1000.0);
-
-		// Record first data point for CPU usage
-		long[] idleAndCpu1 = readUsagePoint();
-		List<ProcessInfo> processes = getRunningProcessInfoForSample(context, 0);
-		mySample.setPiList(processes);
-		// }
-
-		int screenBrightness = SamplingLibrary.getScreenBrightness(context);
-		mySample.setScreenBrightness(screenBrightness);
-		boolean autoScreenBrightness = SamplingLibrary.isAutoBrightness(context);
-		if (autoScreenBrightness)
-			mySample.setScreenBrightness(-1); // Auto
-		// boolean gpsEnabled = SamplingLibrary.getGpsEnabled(context);
-		// Location providers
-		List<String> enabledLocationProviders = SamplingLibrary.getEnabledLocationProviders(context);
-		mySample.setLocationProviders(enabledLocationProviders);
-
-		// TODO: not in Sample yet
-		// int maxNumSatellite = SamplingLibrary.getMaxNumSatellite(context);
-
-		String network = SamplingLibrary.getNetworkStatus(context);
-		String networkType = SamplingLibrary.getNetworkType(context);
-		String mobileNetworkType = SamplingLibrary.getMobileNetworkType(context);
-
-		// Required in new Carat protocol
-		if (network.equals(NETWORKSTATUS_CONNECTED)) {
-			if (networkType.equals("WIFI"))
-				mySample.setNetworkStatus(networkType);
-			else
-				mySample.setNetworkStatus(mobileNetworkType);
-		} else
-			mySample.setNetworkStatus(network);
-
-		// String ns = mySample.getNetworkStatus();
-		// Logger.d(STAG, "Set networkStatus="+ns);
-
-		// Network details
-		NetworkDetails nd = new NetworkDetails();
-
-		// Network type
-		nd.setNetworkType(networkType);
-		nd.setMobileNetworkType(mobileNetworkType);
-		boolean roamStatus = SamplingLibrary.getRoamingStatus(context);
-		nd.setRoamingEnabled(roamStatus);
-		String dataState = SamplingLibrary.getDataState(context);
-		nd.setMobileDataStatus(dataState);
-		String dataActivity = SamplingLibrary.getDataActivity(context);
-		nd.setMobileDataActivity(dataActivity);
-		String simOperator = SamplingLibrary.getSIMOperator(context);
-		nd.setSimOperator(simOperator);
-		String networkOperator = SamplingLibrary.getNetworkOperator(context);
-		nd.setNetworkOperator(networkOperator);
-		String mcc = SamplingLibrary.getMcc(context);
-		nd.setMcc(mcc);
-		String mnc = SamplingLibrary.getMnc(context);
-		nd.setMnc(mnc);
-
-		// Wifi stuff
-		String wifiState = SamplingLibrary.getWifiState(context);
-		nd.setWifiStatus(wifiState);
-		int wifiSignalStrength = SamplingLibrary.getWifiSignalStrength(context);
-		nd.setWifiSignalStrength(wifiSignalStrength);
-		int wifiLinkSpeed = SamplingLibrary.getWifiLinkSpeed(context);
-		nd.setWifiLinkSpeed(wifiLinkSpeed);
-		String wifiApStatus = SamplingLibrary.getWifiHotspotState(context);
-		nd.setWifiApStatus(wifiApStatus);
-
-		mySample.setNetworkDetails(nd);
-
-		// Battery details
-		Intent intent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-		if(intent == null){
-			return null;
-		}
-
-		int health = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0);
-		int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
-		int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
-		int temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10;
-		double batteryLevel = BatteryUtils.getBatteryLevel(intent) / 100.0;
-		double voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000;
-		String batteryTechnology = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
-
-		// FIXED: Not used yet, Sample needs more fields
-		String batteryHealth = "Unknown";
-		String batteryStatus;
-
-		switch (health) {
-			case BatteryManager.BATTERY_HEALTH_DEAD:
-				batteryHealth = "Dead";
-				break;
-			case BatteryManager.BATTERY_HEALTH_GOOD:
-				batteryHealth = "Good";
-				break;
-			case BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE:
-				batteryHealth = "Over voltage";
-				break;
-			case BatteryManager.BATTERY_HEALTH_OVERHEAT:
-				batteryHealth = "Overheat";
-				break;
-			case BatteryManager.BATTERY_HEALTH_UNKNOWN:
-				batteryHealth = "Unknown";
-				break;
-			case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE:
-				batteryHealth = "Unspecified failure";
-				break;
-		}
-
-		switch (status) {
-			case BatteryManager.BATTERY_STATUS_CHARGING:
-				batteryStatus = "Charging";
-				break;
-			case BatteryManager.BATTERY_STATUS_DISCHARGING:
-				batteryStatus = "Discharging";
-				break;
-			case BatteryManager.BATTERY_STATUS_FULL:
-				batteryStatus = "Full";
-				break;
-			case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
-				batteryStatus = "Not charging";
-				break;
-			case BatteryManager.BATTERY_STATUS_UNKNOWN:
-				batteryStatus = "Unknown";
-				break;
-			default:
-				batteryStatus = lastBatteryState != null ? lastBatteryState : "Unknown";
-		}
-
-		String batteryCharger = "unplugged";
-		switch (plugged) {
-			case BatteryManager.BATTERY_PLUGGED_AC:
-				batteryCharger = "ac";
-				break;
-			case BatteryManager.BATTERY_PLUGGED_USB:
-				batteryCharger = "usb";
-				break;
-		}
-
-		BatteryDetails battery = new BatteryDetails();
-		// otherInfo.setCPUIdleTime(totalIdleTime);
-
-		// IMPORTANT: All of the battery details fields were never set (=always
-		// zero), like the last battery level.
-		// Now all must have been fixed.
-
-		// current battery temperature in degrees Centigrade (the unit of the
-		// temperature value
-		// (returned by BatteryManager) is not Centigrade, it should be divided
-		// by 10)
-		battery.setBatteryTemperature(temperature);
-		// otherInfo.setBatteryTemperature(temperature);
-
-		// current battery voltage in VOLTS (the unit of the returned value by
-		// BatteryManager is millivolts)
-		battery.setBatteryVoltage(voltage);
-		// otherInfo.setBatteryVoltage(voltage);
-		battery.setBatteryTechnology(batteryTechnology);
-		battery.setBatteryCharger(batteryCharger);
-		battery.setBatteryHealth(batteryHealth);
-		mySample.setBatteryDetails(battery);
-		mySample.setBatteryLevel(batteryLevel);
-		mySample.setBatteryState(batteryStatus);
-
-		// Memory statistics
-		int[] usedFreeActiveInactive = SamplingLibrary.readMeminfo();
-		if (usedFreeActiveInactive != null && usedFreeActiveInactive.length == 4) {
-			mySample.setMemoryUser(usedFreeActiveInactive[0]);
-			mySample.setMemoryFree(usedFreeActiveInactive[1]);
-			mySample.setMemoryActive(usedFreeActiveInactive[2]);
-			mySample.setMemoryInactive(usedFreeActiveInactive[3]);
-		}
-
-		// Record second data point for cpu/idle time
-		long[] idleAndCpu2 = readUsagePoint();
-
-		// CPU status
-		CpuStatus cs = new CpuStatus();
-		double uptime = getUptime();
-		double sleep = getSleepTime();
-		cs.setCpuUsage(getUsage(idleAndCpu1, idleAndCpu2));
-		cs.setUptime(uptime);
-		cs.setSleeptime(sleep);
-		mySample.setCpuStatus(cs);
-
-		// Storage details
-		mySample.setStorageDetails(getStorageDetails());
-
-		// System settings
-		edu.berkeley.cs.amplab.carat.thrift.Settings settings = new edu.berkeley.cs.amplab.carat.thrift.Settings();
-		settings.setBluetoothEnabled(getBluetoothEnabled());
-		mySample.setSettings(settings);
-
-		// Other fields
-		mySample.setDeveloperMode(isDeveloperModeOn(context));
-		mySample.setUnknownSources(allowUnknownSources(context));
-		mySample.setScreenOn(isScreenOn(context));
-		mySample.setTimeZone(getTimeZone(context));
-		mySample.setCountryCode(getCountryCode(context));
-
-		// If there are extra fields, include them into the sample.
-		List<Feature> extras = getExtras(context);
-		if (extras != null && extras.size() > 0)
-			mySample.setExtra(extras);
-
-		if(Constants.DEBUG){
-			// Need to split since output is over 1000 characters
-			Logger.d("debug", "Created the following sample:");
-			String sampleString = mySample.toString();
-			int limit = 1000;
-			for(int i = 0; i <= sampleString.length() / limit; i++) {
-				int start = i * limit;
-				int end = (i+1) * limit;
-				end = (end > sampleString.length()) ? sampleString.length() : end;
-				Logger.d("debug", sampleString.substring(start, end));
-			}
-		}
-
-		lastSampledBatteryLevel = batteryLevel;
-		return mySample;
+	public static int getDevicePluggedState(Context context){
+	    int ERR_VAL = -1;
+	    Intent batteryIntent = getLastBatteryIntent(context);
+	    if(batteryIntent != null){
+	        return batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, ERR_VAL);
+        }
+		return ERR_VAL;
 	}
+
+	public static boolean isDeviceCharging(Context context){
+		Intent batteryIntent = getLastBatteryIntent(context);
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
+		String lastState = p.getString(Keys.lastBatteryStatus, "Unknown");
+		if(batteryIntent == null){
+			return lastState.equals("Charging");
+		}
+		int id = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
+		switch(id){
+			case BatteryManager.BATTERY_STATUS_CHARGING:
+				return true;
+			case BatteryManager.BATTERY_STATUS_DISCHARGING:
+			case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+            case BatteryManager.BATTERY_STATUS_FULL:
+				return false;
+			case BatteryManager.BATTERY_STATUS_UNKNOWN:
+			default:
+				return lastState.equals("Charging");
+		}
+	}
+
 
 	public static Intent getLastBatteryIntent(Context context){
 		return context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
@@ -2348,7 +2141,8 @@ public final class SamplingLibrary {
 		return -1;
 	}
 
-	public static double getBatteryCapacity(Context context) {
+    @SuppressLint("PrivateApi")
+    public static double getBatteryCapacity(Context context) {
 		try {
 			// Please note: Uses reflection, API not available on all devices
 			Class<?> powerProfile = Class.forName("com.android.internal.os.PowerProfile");

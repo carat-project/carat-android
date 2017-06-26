@@ -14,4 +14,5 @@ public class Keys {
     public static String nextSamplingTime = "nextSamplingTime";
     public static String lastSampleTimestamp =  "lastSampleTimestamp";
     public static String lastSampleNotify = "lastSampleNotify";
+    public static String rapidSamplingDisabled = "rapidSamplingDisabled";
 }

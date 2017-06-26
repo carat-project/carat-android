@@ -28,6 +28,10 @@ import edu.berkeley.cs.amplab.carat.thrift.Settings;
 public class Sampler {
     private static String TAG = Sampler.class.getSimpleName();
 
+    public static boolean sample(Context context, String trigger){
+        return sample(context, trigger, null);
+    }
+
     public static boolean sample(Context context, String trigger, Runnable releaseWl){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         boolean success = false;
@@ -47,7 +51,9 @@ public class Sampler {
         if(sampleCount >= Constants.SAMPLES_MAX_BACKLOG /* 250 */) {
             CaratApplication.postSamplesNotification(sampleCount);
         }
-        releaseWl.run();
+        if(releaseWl != null){
+            releaseWl.run();
+        }
         return success;
     }
 
@@ -192,7 +198,7 @@ public class Sampler {
         if(s2 != null && s2.getTriggeredBy().equals(s1.getTriggeredBy())){
             if(s1.getTimestamp() - s2.getTimestamp() < Constants.DUPLICATE_INTERVAL){
 
-                Logger.d(TAG, "Sample was triggered within 1 second " +
+                Logger.d(TAG, "Sample was triggered within a minute " +
                         "(diff: " + (s1.getTimestamp() - s2.getTimestamp()) + "s) " +
                         "of the last one and by the same event. Checking if it's a duplicate..");
 
@@ -204,7 +210,8 @@ public class Sampler {
                                 && 	s1.getTimeZone().equals(s2.getTimeZone())
                                 && 	bd1.getBatteryTemperature() == bd2.getBatteryTemperature()
                                 && 	bd1.getBatteryCapacity() == bd2.getBatteryCapacity()
-                                && 	bd1.getBatteryVoltage() == bd2.getBatteryVoltage()
+                                // This seems to change too often
+                                // && 	bd1.getBatteryVoltage() == bd2.getBatteryVoltage()
                                 && 	bd1.getBatteryTechnology().equals(bd2.getBatteryTechnology())
                                 && 	bd1.getBatteryCharger().equals(bd2.getBatteryCharger())
                                 && 	bd1.getBatteryHealth().equals(bd2.getBatteryHealth());

@@ -14,7 +14,9 @@ import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
+import edu.berkeley.cs.amplab.carat.android.sampling.RapidSampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
@@ -63,26 +65,25 @@ public class IntentRouter extends IntentService {
         String action = intent.getStringExtra(Keys.intentReceiverAction);
         if(action != null){
             Logger.d(TAG, "Routing intent for " + action);
+            long now = System.currentTimeMillis();
+            long lastSample = preferences.getLong(Keys.lastSampleTimestamp, 0);
             switch(action){
-                case Constants.RAPID_SAMPLING:
-                    // TODO: Implement me, old code in version history
-                    break;
                 case Constants.SCHEDULED_SAMPLE:
-                    Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                    if(now - lastSample >= SAMPLING_INTERVAL){
+                        Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                    }
                     scheduleNextSample(SAMPLING_INTERVAL);
                     break;
-                case Intent.ACTION_BATTERY_CHANGED:
                 case Intent.ACTION_POWER_CONNECTED:
                 case Intent.ACTION_POWER_DISCONNECTED:
+                case Intent.ACTION_BATTERY_CHANGED:
                     cancelScheduledSample();
                     Sampler.sample(context, action, wl::release);
                     scheduleNextSample(SAMPLING_INTERVAL);
                     break;
                 default:
                     Logger.i(TAG, "Waken up by " + action + " to check schedule");
-                    long now = System.currentTimeMillis();
                     long future = preferences.getLong(Keys.nextSamplingTime, 0);
-                    long lastSample = preferences.getLong(Keys.lastSampleTimestamp, 0);
 
                     // First condition takes care of the scenario where we have woken up to check
                     // schedule but found out that the time is either really soon or already passed.
@@ -114,7 +115,23 @@ public class IntentRouter extends IntentService {
                         Logger.d(TAG, "Everything was fine with scheduling");
                     }
             }
+            checkRapidSampler(context);
             ActionReceiver.completeWakefulIntent(intent);
+        }
+    }
+
+    private void checkRapidSampler(Context context){
+        boolean disabled = preferences.getBoolean(Keys.rapidSamplingDisabled, false);
+        if(!preferences.contains(Keys.rapidSamplingDisabled)){
+            preferences.edit().putBoolean(Keys.rapidSamplingDisabled, false).apply();
+        }
+        Intent serviceIntent = new Intent(this, RapidSampler.class);
+        boolean running = Util.isServiceRunning(context, RapidSampler.class);
+        boolean charging = SamplingLibrary.isDeviceCharging(context);
+        if(!running && charging && !disabled){
+            startService(serviceIntent);
+        } else if((running && !charging) || disabled){
+            stopService(serviceIntent);
         }
     }
 
@@ -126,15 +143,6 @@ public class IntentRouter extends IntentService {
         Intent scheduleIntent = new Intent(context, ActionReceiver.class);
         scheduleIntent.setAction(Constants.SCHEDULED_SAMPLE);
         return scheduleIntent;
-    }
-
-    private boolean shouldSampleNow(){
-        if(!isAlreadyScheduled(getScheduleIntent())){
-            return true;
-        }
-        long now = System.currentTimeMillis();
-        long last = preferences.getLong(Keys.nextSamplingTime, 0);
-        return now - last < SAMPLING_INTERVAL/2.0;
     }
 
     private void cancelScheduledSample(){

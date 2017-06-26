@@ -18,6 +18,7 @@ public class Constants {
     public static final long FRESHNESS_TIMEOUT_HOGSTATS = TimeUnit.DAYS.toMillis(1);
     public static final long FRESHNESS_TIMEOUT_QUESTIONNAIRE = TimeUnit.DAYS.toMillis(1);
     public static final long DASHBOARD_REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1);
+    public static final long RAPID_SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(5);;
     public static final int THRIFT_CONNECTION_TIMEOUT = (int)TimeUnit.MINUTES.toMillis(1);
 
     public static final String PREFERENCE_FIRST_RUN = "carat.first.run";

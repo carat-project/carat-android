@@ -76,8 +76,8 @@
             android:label="Location receiver"
             android:process=":location"/>
 
-        <!-- Testing class -->
-        <service android:name=".receivers.ImmortalService" />
+        <!-- Used to display notification when charging -->
+        <service android:name=".sampling.RapidSampler" />
 
         <!-- Receivers -->
         <receiver
@@ -131,6 +131,7 @@
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".sampling.RapidSampler" />
     </application>
 
 </manifest>
