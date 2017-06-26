@@ -19,6 +19,15 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.provider.BaseColumns;
 import android.util.Log;
+
+import org.apache.thrift.TDeserializer;
+import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TMemoryBuffer;
+
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
@@ -40,7 +49,7 @@ public class SampleDB {
     public static final String DATABASE_NAME = "caratdata";
     public static final String SAMPLES_VIRTUAL_TABLE = "sampleobjects";
     // TODO: Bump version here when changing the protocol, new one incompatible with old
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     private static final HashMap<String, String> mColumnMap = buildColumnMap();
 
@@ -278,26 +287,19 @@ public class SampleDB {
      * updated when fields update.
      */
     private Sample fillSample(Cursor cursor) {
-        Sample s = null;
+        Sample s = new Sample();
 
-        byte[] sampleB = cursor.getBlob(cursor
-                .getColumnIndex(SampleDB.COLUMN_SAMPLE));
+        byte[] sampleB = cursor.getBlob(cursor.getColumnIndex(SampleDB.COLUMN_SAMPLE));
         if (sampleB != null) {
-            ObjectInputStream oi;
             try {
-                oi = new ObjectInputStream(new ByteArrayInputStream(sampleB));
-                Object o = oi.readObject();
-                if (o != null)
-                    s = SampleReader.readSample(o);
-            } catch (StreamCorruptedException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
+                TDeserializer deserializer = new TDeserializer(new TCompactProtocol.Factory());
+                deserializer.deserialize(s, sampleB);
+                return s;
+            } catch (TException e) {
                 e.printStackTrace();
             }
         }
-        return s;
+        return null;
     }
 
     public Sample getLastSample(Context c) {
@@ -374,7 +376,7 @@ public class SampleDB {
                 // force init
                 id = addSample(s);
                 if (id >= 0) {
-                    lastSample = SampleReader.readSample(s);
+                    lastSample = s;
                 }
                 if (db != null && db.isOpen()) {
                     db.close();
@@ -398,15 +400,11 @@ public class SampleDB {
         ContentValues initialValues = new ContentValues();
         initialValues.put(COLUMN_TIMESTAMP, s.timestamp);
         // Write the sample hashmap as a blob
-        if (s != null) {
-            try {
-                ByteArrayOutputStream bo = new ByteArrayOutputStream();
-                ObjectOutputStream oo = new ObjectOutputStream(bo);
-                oo.writeObject(SampleReader.writeSample(s));
-                initialValues.put(COLUMN_SAMPLE, bo.toByteArray());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
+            initialValues.put(COLUMN_SAMPLE, serializer.serialize(s));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return db.insert(SAMPLES_VIRTUAL_TABLE, null, initialValues);
