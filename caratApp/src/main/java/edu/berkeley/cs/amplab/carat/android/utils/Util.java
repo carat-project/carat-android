@@ -69,35 +69,6 @@ public class Util {
         return System.currentTimeMillis() + milliseconds;
     }
 
-    public static boolean isServiceRunning(Context context, Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    public static String[] trimProcessName(String processName){
-        if (processName != null) {
-            int idx = processName.lastIndexOf(':');
-            if(idx <= 0){
-                return new String[]{processName};
-            }
-            String packageName = processName.substring(0, idx);
-            if(processName.length() == idx + 1){
-                // Rare case where process name simply ends in :
-                return new String[]{packageName};
-            } else {
-                String serviceName = processName.substring(idx+1, processName.length());
-                return new String[]{packageName, serviceName};
-            }
-        }
-        return new String[]{null};
-    }
-
     public static boolean isNullOrEmpty(String string){
         return string == null || string.trim().isEmpty();
     }
