@@ -10,6 +10,7 @@ import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
@@ -62,8 +63,10 @@ public class ProcessListFragment extends Fragment {
     private void refresh() {
         CaratApplication app = (CaratApplication) getActivity().getApplication();
         SamplingLibrary.resetRunningProcessInfo();
-        List<ProcessInfo> searchResults = SamplingLibrary
-                .getRunningAppInfo(getActivity());
+
+        // TODO: Fix me
+        List<ProcessInfo> searchResults = new ArrayList<>();
+        // SamplingLibrary.getRunningServices(getActivity());
         expandableListView.setAdapter(new ProcessExpandListAdapter((MainActivity) getActivity(),
                 expandableListView, app, searchResults));
     }

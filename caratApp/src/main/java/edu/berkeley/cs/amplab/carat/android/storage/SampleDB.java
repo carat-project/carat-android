@@ -19,7 +19,17 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.provider.BaseColumns;
 import android.util.Log;
+
+import org.apache.thrift.TDeserializer;
+import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TMemoryBuffer;
+
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 /**
@@ -29,9 +39,9 @@ import edu.berkeley.cs.amplab.carat.thrift.Sample;
  * @author Eemil Lagerspetz
  * 
  */
-public class CaratSampleDB {
+public class SampleDB {
 
-    private static final String TAG = "CaratSampleDB";
+    private static final String TAG = "SampleDB";
 
     public static final String COLUMN_TIMESTAMP = "timestamp";
     public static final String COLUMN_SAMPLE = "sample";
@@ -39,7 +49,7 @@ public class CaratSampleDB {
     public static final String DATABASE_NAME = "caratdata";
     public static final String SAMPLES_VIRTUAL_TABLE = "sampleobjects";
     // TODO: Bump version here when changing the protocol, new one incompatible with old
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     private static final HashMap<String, String> mColumnMap = buildColumnMap();
 
@@ -49,19 +59,19 @@ public class CaratSampleDB {
 
     private SampleDbOpenHelper helper = null;
 
-    private static CaratSampleDB instance = null;
+    private static SampleDB instance = null;
 
     private static Object dbLock = new Object();
 
-    public static CaratSampleDB getInstance(Context c) {
+    public static SampleDB getInstance(Context c) {
         if (instance == null) {
-            instance = new CaratSampleDB(c);
-//            Log.d("CaratSampleDB", "new instance created and returned");
+            instance = new SampleDB(c);
+//            Logger.d("SampleDB", "new instance created and returned");
         }
         return instance;
     }
 
-    private CaratSampleDB(Context context) {
+    private SampleDB(Context context) {
         synchronized (dbLock) {
             helper = new SampleDbOpenHelper(context);
         }
@@ -141,7 +151,7 @@ public class CaratSampleDB {
                     try{
                         db = helper.getWritableDatabase();
                     }catch (android.database.sqlite.SQLiteException ex){
-                        Log.e(TAG, "Could not open database", ex);
+                        Logger.e(TAG, "Could not open database", ex);
                         return -1;
                     }
                 }
@@ -163,7 +173,7 @@ public class CaratSampleDB {
                 }
             }
         } catch (Throwable th) {
-            Log.e(TAG, "Failed to query oldest samples!", th);
+            Logger.e(TAG, "Failed to query oldest samples!", th);
         }
         return -1;
     }
@@ -176,7 +186,7 @@ public class CaratSampleDB {
                 	try{
                 		db = helper.getWritableDatabase();
                 	}catch (android.database.sqlite.SQLiteException ex){
-                		Log.e(TAG, "Could not open database", ex);
+                		Logger.e(TAG, "Could not open database", ex);
                 		return results;
                 	}
                 }
@@ -187,11 +197,11 @@ public class CaratSampleDB {
                         COLUMN_TIMESTAMP + " ASC LIMIT " + howmany);
 
                 if (cursor == null) {
-                	// Log.d("CaratSampleDB", "query returned null");
+                	// Logger.d("SampleDB", "query returned null");
                     // There are no results
                     return results;
                 } else {
-                	// Log.d("CaratSampleDB", "query is successfull!");
+                	// Logger.d("SampleDB", "query is successfull!");
                     cursor.moveToFirst();
                     while (!cursor.isAfterLast()) {
                         Sample s = fillSample(cursor);
@@ -206,7 +216,7 @@ public class CaratSampleDB {
                 }
             }
         } catch (Throwable th) {
-            Log.e(TAG, "Failed to query oldest samples!", th);
+            Logger.e(TAG, "Failed to query oldest samples!", th);
         }
         return results;
     }
@@ -235,7 +245,7 @@ public class CaratSampleDB {
                 }
                 sb.append(")");
                 if (Constants.DEBUG)
-                    Log.d("CaratSampleDB",
+                    Logger.d("SampleDB",
                         "Deleting where rowid in " + sb.toString());
                 ret = delete("rowid in " + sb.toString(), null);
 
@@ -244,7 +254,7 @@ public class CaratSampleDB {
                 }
             }
         } catch (Throwable th) {
-            Log.e(TAG, "Failed to delete samples!", th);
+            Logger.e(TAG, "Failed to delete samples!", th);
         }
         return ret;
     }
@@ -277,26 +287,19 @@ public class CaratSampleDB {
      * updated when fields update.
      */
     private Sample fillSample(Cursor cursor) {
-        Sample s = null;
+        Sample s = new Sample();
 
-        byte[] sampleB = cursor.getBlob(cursor
-                .getColumnIndex(CaratSampleDB.COLUMN_SAMPLE));
+        byte[] sampleB = cursor.getBlob(cursor.getColumnIndex(SampleDB.COLUMN_SAMPLE));
         if (sampleB != null) {
-            ObjectInputStream oi;
             try {
-                oi = new ObjectInputStream(new ByteArrayInputStream(sampleB));
-                Object o = oi.readObject();
-                if (o != null)
-                    s = SampleReader.readSample(o);
-            } catch (StreamCorruptedException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
+                TDeserializer deserializer = new TDeserializer(new TCompactProtocol.Factory());
+                deserializer.deserialize(s, sampleB);
+                return s;
+            } catch (TException e) {
                 e.printStackTrace();
             }
         }
-        return s;
+        return null;
     }
 
     public Sample getLastSample(Context c) {
@@ -306,7 +309,7 @@ public class CaratSampleDB {
                 	try{
                 		db = helper.getWritableDatabase();
                 	}catch (android.database.sqlite.SQLiteException ex){
-                		Log.e(TAG, "Could not open database", ex);
+                		Logger.e(TAG, "Could not open database", ex);
                 		return lastSample;
                 	}
                 }
@@ -314,7 +317,7 @@ public class CaratSampleDB {
                     queryLastSample();
             }
         } catch (Throwable th) {
-            Log.e(TAG, "Failed to get last sample!", th);
+            Logger.e(TAG, "Failed to get last sample!", th);
         }
         return lastSample;
     }
@@ -332,7 +335,7 @@ public class CaratSampleDB {
                     db = helper.getWritableDatabase();
                 }
                 if (Constants.DEBUG)
-                    Log.d(TAG, "CaratSampleDB.putSample(). About to save a sample to the DB. "
+                    Logger.d(TAG, "SampleDB.putSample(). About to save a sample to the DB. "
                 		+ "uuid=" + s.uuId
                 		+ ", timestamp=" + s.timestamp
                 		+ ", timezone=" + s.timeZone
@@ -373,14 +376,14 @@ public class CaratSampleDB {
                 // force init
                 id = addSample(s);
                 if (id >= 0) {
-                    lastSample = SampleReader.readSample(s);
+                    lastSample = s;
                 }
                 if (db != null && db.isOpen()) {
                     db.close();
                 }
             }
         } catch (Throwable th) {
-            Log.e(TAG, "Failed to add a sample!", th);
+            Logger.e(TAG, "Failed to add a sample! Have you accepted EULA?", th);
         }
         return id;
     }
@@ -392,20 +395,16 @@ public class CaratSampleDB {
      */
     private long addSample(Sample s) {
         if (Constants.DEBUG)
-            Log.d("CaratSampleDB.addSample()", "The sample's battery level=" + s.getBatteryLevel());
+            Logger.d("SampleDB.addSample()", "The sample's battery level=" + s.getBatteryLevel());
     	
         ContentValues initialValues = new ContentValues();
         initialValues.put(COLUMN_TIMESTAMP, s.timestamp);
         // Write the sample hashmap as a blob
-        if (s != null) {
-            try {
-                ByteArrayOutputStream bo = new ByteArrayOutputStream();
-                ObjectOutputStream oo = new ObjectOutputStream(bo);
-                oo.writeObject(SampleReader.writeSample(s));
-                initialValues.put(COLUMN_SAMPLE, bo.toByteArray());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
+            initialValues.put(COLUMN_SAMPLE, serializer.serialize(s));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return db.insert(SAMPLES_VIRTUAL_TABLE, null, initialValues);
@@ -459,7 +458,7 @@ public class CaratSampleDB {
                 mDatabase.execSQL("PRAGMA auto_vacuum = 1;");
             } catch (Throwable th) {
                 // Already created
-                Log.e(TAG, "DB create failed!", th);
+                Logger.e(TAG, "DB create failed!", th);
             }
         }
 

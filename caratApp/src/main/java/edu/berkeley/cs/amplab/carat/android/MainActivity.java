@@ -1,6 +1,9 @@
 package edu.berkeley.cs.amplab.carat.android;
 
 import android.annotation.SuppressLint;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,7 +21,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,14 +33,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.flurry.android.FlurryAgent;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
@@ -46,7 +43,9 @@ import edu.berkeley.cs.amplab.carat.android.fragments.GlobalFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.SettingsFragment;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
+import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefetchData;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
@@ -57,7 +56,6 @@ import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static final String FLURRY_KEYFILE = "flurry.properties";
     private static final String TAG = "CaratMainActivity";
 
     private SharedPreferences p;
@@ -165,31 +163,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStart() {
         super.onStart();
 
-        String secretKey = null;
-        Properties properties = new Properties();
-        try {
-            InputStream raw = MainActivity.this.getAssets().open(FLURRY_KEYFILE);
-            if (raw != null) {
-                properties.load(raw);
-                if (properties.containsKey("secretkey"))
-                    secretKey = properties.getProperty("secretkey", "secretkey");
-                // Log.d(TAG, "Set Flurry secret key.");
-            } else {
-                // Log.e(TAG, "Could not open Flurry key file!");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if(!UsageManager.isPermissionGranted(this)){
+                UsageManager.promptPermission(this);
             }
-        } catch (IOException e) {
-            // Log.e(TAG, "Could not open Flurry key file: " + e.toString());
         }
-        if (secretKey != null) {
-            FlurryAgent.onStartSession(getApplicationContext(), secretKey);
-        }
-
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        FlurryAgent.onEndSession(getApplicationContext());
     }
 
     // This needs to be in a separate method so it can be called
@@ -212,6 +195,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onResume() {
+        Intent intent = new Intent(getApplicationContext(), ActionReceiver.class);
+        intent.setAction(Constants.CHECK_SCHEDULE);
+        sendBroadcast(intent);
         resumeTasksAndUpdate();
         super.onResume();
     }
@@ -241,19 +227,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     refresh();
                     timer.postDelayed(this, interval);
                 } else if(Constants.DEBUG){
-                    Log.d(TAG, "** Data refresh timer stopped ** ");
+                    Logger.d(TAG, "** Data refresh timer stopped ** ");
                 }
             }
         }, interval);
         schedulerRunning = true;
         if(Constants.DEBUG){
-            Log.d(TAG, "** Data refresh timer started **");
+            Logger.d(TAG, "** Data refresh timer started **");
         }
     }
 
     public void refresh(){
         if(Constants.DEBUG){
-            Log.d(TAG, "** Started refreshing data **");
+            Logger.d(TAG, "** Started refreshing data **");
         }
         new Thread(new Runnable() {
             @Override
@@ -270,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     });
                 }
                 if(Constants.DEBUG){
-                    Log.d(TAG, "** Stopped refreshing data **");
+                    Logger.d(TAG, "** Stopped refreshing data **");
                 }
             }
         }).start();
@@ -340,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "Application exited to the background");
+        Logger.d(TAG, "Application exited to the background");
         onBackground = true;
         SamplingLibrary.resetRunningProcessInfo();
     }
@@ -382,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setActionsAmount(actionsAmount);
 
         setCpuValue();
-        Log.d("debug", "*** Values set");
+        Logger.d("debug", "*** Values set");
     }
 
     public void setUpActionBar(int resId, boolean canGoBack) {
@@ -544,7 +530,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void setStatusText(String what){
-        Log.d(TAG, "Setting status to " + what);
+        Logger.d(TAG, "Setting status to " + what);
         statusText = what;
         if(dashboardFragment != null){
             dashboardFragment.setStatusText(what);

@@ -3,11 +3,6 @@
     android:id="@+id/footer_button_view"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <View
-        android:id="@+id/view"
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="#E0E0E0" />
 
     <LinearLayout
         android:id="@+id/footer_button"

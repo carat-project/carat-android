@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSocket;
@@ -16,6 +17,7 @@ import android.util.Log;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.AssetUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 
 /**
@@ -56,13 +58,31 @@ public class ProtocolClient {
         }
 
         TTransport transport = null;
+        TProtocol protocol = null;
         if(location == ServerLocation.GLOBAL){
             if(SERVER_ADDRESS_GLOBAL == null || SERVER_PORT_GLOBAL == 0) return null;
-            transport = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
+            // TODO: Remove to go live
+            if(Constants.DEBUG){
+                if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null){
+                    if(!loadSSLProperties(c)){
+                        return null; // Failed to load SSL properties
+                    }
+                }
+                Log.d(TAG, "In dedug mode, using experimental TLS/SSL support!");
+                TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
+                String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
+                params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
+                transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_GLOBAL, 8443, Constants.THRIFT_CONNECTION_TIMEOUT, params);
+                protocol = new TCompactProtocol(transport, Long.MAX_VALUE, Long.MAX_VALUE);
+            } else {
+                transport = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
+                protocol = new TBinaryProtocol(transport, true, true);
+            }
         }
         else if(location == ServerLocation.EU){
             if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null){
                 if(!loadSSLProperties(c)){
+                    Logger.e(TAG,"Failed loading SSL properties!");
                     return null; // Failed to load SSL properties
                 }
             }
@@ -71,10 +91,10 @@ public class ProtocolClient {
             String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
             params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
             transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_EU, SERVER_PORT_EU, Constants.THRIFT_CONNECTION_TIMEOUT, params);
+            protocol = new TBinaryProtocol(transport, true, true);
         }
 
-        TProtocol p = new TBinaryProtocol(transport, true, true);
-        CaratService.Client instance = new CaratService.Client(p);
+        CaratService.Client instance = new CaratService.Client(protocol);
         if (transport != null && !transport.isOpen()){
             transport.open();
         }
@@ -91,7 +111,7 @@ public class ProtocolClient {
             TRUSTSTORE_PASS = properties.getProperty("storePass");
             return TRUSTSTORE_NAME != null && TRUSTSTORE_PASS != null;
         } catch(Throwable th){
-            Log.e(TAG, "Could not open truststore property file!");
+            Logger.e(TAG, "Could not open truststore property file!");
             th.printStackTrace();
         }
         return false;
@@ -110,22 +130,22 @@ public class ProtocolClient {
                 SERVER_ADDRESS_EU = properties.getProperty("ADDRESS_EU", "caratserver-eu.cs.helsinki.fi");
 
                 if(Constants.DEBUG){
-                    Log.d(TAG, "Set global address=" + SERVER_ADDRESS_GLOBAL + " port=" + SERVER_PORT_GLOBAL);
-                    Log.d(TAG, "Set eu address=" + SERVER_ADDRESS_EU + " port=" + SERVER_PORT_EU);
+                    Logger.d(TAG, "Set global address=" + SERVER_ADDRESS_GLOBAL + " port=" + SERVER_PORT_GLOBAL);
+                    Logger.d(TAG, "Set eu address=" + SERVER_ADDRESS_EU + " port=" + SERVER_PORT_EU);
                 }
                 return true;
             } else {
-                Log.e(TAG, "Could not open server property file!");
+                Logger.e(TAG, "Could not open server property file!");
             }
         } catch (IOException e) {
-            Log.e(TAG, "Could not open server property file: " + e.toString());
+            Logger.e(TAG, "Could not open server property file: " + e.toString());
         }
         return false;
     }
     
     public static CaratService.Client open(Context c, ServerLocation location) throws NumberFormatException, TTransportException {
         if (Constants.DEBUG)
-            Log.d("ProtocolClient", "trying to get an instance of CaratProtocol.");
+            Logger.d("ProtocolClient", "trying to get an instance of CaratProtocol.");
         return getInstance(c, location);
     }
 }

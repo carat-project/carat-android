@@ -2,36 +2,28 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         versionCode 119
         versionName "2.17.5"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 10
+        //noinspection OldTargetApi
         targetSdkVersion 22
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 
-    // Create gradle.properties file to caratApp folder and define KEYSTORE_PASSWORD=xxx and
-    // KEY_PASSWORD=xxx there in order to generate signed APK for release.
-    // NEVER save gradle.properties to GIT or anywhere else, keep it local!
-    // Also create/move carat-release-key.keystore file to caratApp folder.
-    // Lastly uncomment everything below.
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
 
-    /*signingConfigs {
-        release {
-            try {
-                storeFile file("carat-release-key.keystore")
-                storePassword KEYSTORE_PASSWORD
-                keyAlias "carat"
-                keyPassword KEY_PASSWORD
-            }
-            catch (ex) {
-                throw new InvalidUserDataException("You should define KEYSTORE_PASSWORD and KEY_PASSWORD in gradle.properties")
-            }
-        }
-    } */
+    dexOptions {
+        maxProcessCount 4
+        javaMaxHeapSize "4g"
+        jumboMode true
+    }
 
     buildTypes {
         debug {
@@ -43,6 +35,14 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
+    }
+
+    lintOptions {
+        abortOnError true
+        checkAllWarnings false
+        checkReleaseBuilds false
+        ignoreWarnings true
+        quiet false
     }
 
     packagingOptions {
@@ -57,23 +57,27 @@ android {
         exclude 'META-INF/dependencies.txt'
         exclude 'META-INF/LGPL2.1'
         exclude 'META-INF/ASL2.0'
+        return void
     }
 }
 
 repositories {
+    jcenter()
     maven { url "https://jitpack.io" }
 }
 
 dependencies {
-    androidTestCompile 'com.android.support:support-annotations:25.3.0'
+    androidTestCompile 'com.android.support:support-annotations:25.4.0'
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test:rules:0.5'
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile files('libs/universal-image-loader-1.9.5.jar')
+    compile 'org.apache.commons:commons-math3:3.0'
     compile 'org.bouncycastle:bcprov-jdk16:1.45'
-    compile 'com.android.support:support-v4:25.3.0'
-    compile 'com.android.support:appcompat-v7:25.3.0'
-    compile 'com.android.support:gridlayout-v7:25.3.0'
-    compile 'com.android.support:preference-v7:25.3.0'
-    compile 'com.android.support:preference-v14:25.3.0'
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.1'
+    compile 'com.android.support:support-v4:25.4.0'
+    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:gridlayout-v7:25.4.0'
+    compile 'com.android.support:preference-v7:25.4.0'
+    compile 'com.android.support:preference-v14:25.4.0'
+    compile 'com.google.code.gson:gson:2.8.0'
 }

@@ -1,0 +1,3 @@
+[submodule "carat-protocol"]
+	path = carat-protocol
+	url = git@github.com:carat-project/carat-protocol.git

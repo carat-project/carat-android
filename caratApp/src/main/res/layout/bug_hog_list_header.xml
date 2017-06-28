@@ -38,17 +38,16 @@
             android:paddingBottom="5dp"
             android:text="Carat" />
 
+
         <TextView
             android:id="@+id/process_improvement"
             style="@style/SmallGrayText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/process_name"
-            android:layout_toLeftOf="@id/collapse_icon"
-            android:layout_marginRight="16dp"
             android:layout_marginBottom="8dp"
             android:layout_toRightOf="@id/process_icon"
-            android:text="Expected Improvement: 1h 42m" />
+            android:text="1h 42min" />
 
         <ImageView
             android:id="@+id/collapse_icon"
@@ -62,4 +61,9 @@
 
     </RelativeLayout>
 
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_alignParentTop="true"
+        android:background="@color/lightgray" />
 </LinearLayout>

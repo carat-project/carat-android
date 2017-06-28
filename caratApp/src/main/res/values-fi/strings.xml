@@ -197,7 +197,8 @@
 
     <!-- ACTIONS -->
     <string name="stop_app_title">PYSÄYTÄ</string>
-    <string name="app_manager_title">HALLITSE</string>
+    <string name="app_manager_title">HALLINNOI</string>
+    <string name="uninstall_app_title">POISTA</string>
     <string name="actions_list_message">Ehdotukset-lista kertoo, kuinka saat akkusi kestämään kauemmin, ja millaisia parannuksia on luvassa.</string>
     <string name="actions_expanded_info">Pysäyttäminen sulkee sovelluksen, jotta se ei voi enää kuluttaa akkuasi.
         Jotkin sovellukset, kuten Facebook, saattavat käynnistyä automaattisesti uudestaan pysäyttämisen jälkeen.\n\nJos
@@ -365,6 +366,9 @@
 
     <string name="title_activity_dashboard">YLEISNÄKYMÄ</string>
     <string name="out_of"> </string>
+    <string name="battery_cost">Vaikutus:</string>
+    <string name="stop">Pysäytä</string>
+    <string name="manage">Hallinnoi</string>
 </resources>
 
 

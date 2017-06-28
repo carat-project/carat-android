@@ -61,7 +61,7 @@ public class AssetUtils {
             }
         } catch (Throwable th) {
             if(Constants.DEBUG){
-                Log.e(TAG, "Could not open asset file " + fileName + " for caching!");
+                Logger.e(TAG, "Could not open asset file " + fileName + " for caching!");
                 th.printStackTrace();
             }
         }

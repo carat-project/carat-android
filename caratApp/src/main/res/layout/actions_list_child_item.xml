@@ -2,55 +2,77 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="#FAFAFA"
     android:orientation="vertical"
     android:clickable="false"
     android:focusable="false">
 
-    <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingLeft="15dp"
-    android:paddingRight="5dp"
-    android:paddingTop="15dp"
-    android:clickable="false"
-    android:focusable="false"
-    android:weightSum="2">
-
-    <Button
-        android:id="@+id/stop_app_button"
-        style="@style/StopAppButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="35dp"
-        android:layout_alignParentLeft="true"
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="10dp"
+        android:background="#F3F3F3" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="15dp"
+        android:paddingRight="5dp"
+        android:paddingTop="15dp"
         android:clickable="false"
         android:focusable="false"
-        android:layout_weight="1"
-        android:text="@string/stop_app_title" />
+        android:weightSum="3">
+
+        <Button
+            android:id="@+id/stop_app_button"
+            style="@style/StopAppButtonStyle"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="5dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:layout_weight="1"
+            android:text="@string/stop_app_title" />
 
         <Button
             android:id="@+id/app_manager_button"
             style="@style/StopAppButtonStyle"
+            android:textSize="15sp"
             android:layout_width="wrap_content"
-            android:layout_height="35dp"
+            android:layout_height="30dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
+            android:layout_marginRight="5dp"
             android:clickable="false"
             android:focusable="false"
             android:layout_weight="1"
             android:text="@string/app_manager_title" />
 
+        <Button
+            android:id="@+id/uninstall_button"
+            style="@style/StopAppButtonStyle"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:clickable="false"
+            android:focusable="false"
+            android:layout_weight="1"
+            android:text="@string/uninstall_app_title" />
+
         <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_weight="1"
-        android:clickable="false"
-        android:focusable="false"
-        android:orientation="vertical">
-    </LinearLayout>
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:clickable="false"
+            android:focusable="false"
+            android:orientation="vertical">
+        </LinearLayout>
 
 </LinearLayout>
 
@@ -71,7 +93,10 @@
         android:layout_height="wrap_content"
         android:clickable="false"
         android:focusable="false"
-        android:padding="15dp">
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp">
 
         <TextView
             android:id="@+id/impact"
@@ -94,7 +119,7 @@
             android:text="2h 56m" />
 
         <View
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:id="@+id/separator1"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
@@ -105,7 +130,7 @@
             android:id="@+id/hogbug_title"
             style="@style/MediumBlackText"
             android:layout_below="@+id/separator1"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="5dp"
             android:clickable="false"
             android:focusable="false"
             android:layout_width="wrap_content"
@@ -117,7 +142,7 @@
             android:id="@+id/hogbug_text"
             style="@style/MediumOrangeText"
             android:layout_below="@+id/separator1"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="5dp"
             android:clickable="false"
             android:focusable="false"
             android:layout_width="wrap_content"
@@ -126,7 +151,7 @@
             android:text="@string/hog" />
 
         <View
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:id="@+id/separator2"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
@@ -137,7 +162,7 @@
             android:id="@+id/app_category_title"
             style="@style/MediumBlackText"
             android:layout_below="@+id/separator2"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="5dp"
             android:clickable="false"
             android:focusable="false"
             android:layout_width="wrap_content"
@@ -149,7 +174,7 @@
             android:id="@+id/app_category"
             style="@style/MediumBlackText"
             android:layout_below="@+id/separator2"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="5dp"
             android:clickable="false"
             android:focusable="false"
             android:layout_width="wrap_content"
@@ -158,7 +183,7 @@
             android:text="@string/prioritybackground" />
 
         <View
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:id="@+id/separator3"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
@@ -169,7 +194,7 @@
             android:id="@+id/samples_title"
             style="@style/MediumBlackText"
             android:layout_below="@+id/separator3"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="5dp"
             android:clickable="false"
             android:focusable="false"
             android:layout_width="wrap_content"
@@ -181,7 +206,7 @@
             android:id="@+id/samples_amount"
             style="@style/MediumBlackText"
             android:layout_below="@+id/separator3"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="5dp"
             android:clickable="false"
             android:focusable="false"
             android:layout_width="wrap_content"
@@ -190,7 +215,7 @@
             android:text="263" />
 
         <View
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:id="@+id/separator4"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
@@ -202,7 +227,7 @@
             style="@style/MediumOrangeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:layout_below="@id/separator4"
             android:clickable="false"
             android:focusable="false"
@@ -210,6 +235,11 @@
 
 
     </RelativeLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_alignParentBottom="true"
+        android:background="#F3F3F3" />
 
    <!-- <View
         android:id="@+id/view2"

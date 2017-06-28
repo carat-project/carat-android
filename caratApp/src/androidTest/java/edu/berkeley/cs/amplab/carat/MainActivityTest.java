@@ -6,11 +6,15 @@ import android.content.res.Resources;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.DisplayMetrics;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.models.ChargingPoint;
+import edu.berkeley.cs.amplab.carat.android.utils.PeakUtils;
 
 //
 //  Created by Jonatan C Hamberg on 8.5.2016.

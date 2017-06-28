@@ -16,6 +16,7 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.adapters.HogBugExpandListAdapter;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
  * Created by Valto on 30.9.2015.
@@ -64,7 +65,7 @@ public class BugsFragment extends Fragment {
 
     private void refresh() {
         if (getActivity() == null)
-            Log.e("BugsOrHogsFragment", "unable to get activity");
+            Logger.e("BugsOrHogsFragment", "unable to get activity");
         CaratApplication app = (CaratApplication) getActivity().getApplication();
         if (CaratApplication.getStorage().bugsIsEmpty()) {
             noBugsLayout.setVisibility(View.VISIBLE);

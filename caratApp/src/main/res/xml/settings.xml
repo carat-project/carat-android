@@ -21,6 +21,11 @@
         android:title="@string/menu_disable_questionnaires"
         android:summary="@string/menu_questionnaires_desc"
         android:defaultValue="false" />
+    <android.support.v7.preference.SwitchPreferenceCompat
+        android:key="rapidSamplingDisabled"
+        android:title="Disable charging mode"
+        android:summary="Charging data will not be collected"
+        android:defaultValue="false" />
     <android.support.v7.preference.ListPreference
         android:key="@string/hog_hide_threshold"
         android:title="@string/menu_hide_apps"

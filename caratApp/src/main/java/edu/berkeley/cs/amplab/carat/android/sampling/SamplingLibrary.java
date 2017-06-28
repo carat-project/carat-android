@@ -31,13 +31,18 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStats;
 import android.bluetooth.BluetoothAdapter;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -60,32 +65,34 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.os.StatFs;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
-import android.telephony.CellLocation;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
-import android.telephony.cdma.CdmaCellLocation;
-import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.flurry.android.FlurryAgent;
 
 import edu.berkeley.cs.amplab.carat.android.BuildConfig;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.UsageManager;
+import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
+import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
-import edu.berkeley.cs.amplab.carat.thrift.CellInfo;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
 import edu.berkeley.cs.amplab.carat.thrift.NetworkDetails;
+import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 import edu.berkeley.cs.amplab.carat.thrift.StorageDetails;
@@ -98,14 +105,15 @@ import edu.berkeley.cs.amplab.carat.thrift.StorageDetails;
  * 
  */
 public final class SamplingLibrary {
+	private static final String TAG = SamplingLibrary.class.getSimpleName();
 	private static final boolean collectSignatures = true;
-	static final String SIG_SENT = "sig-sent:";
-	static final String SIG_SENT_256 = "sigs-sent:";
-	static final String INSTALLED = "installed:";
-	static final String REPLACED = "replaced:";
-	static final String UNINSTALLED = "uninstalled:";
+	public static final String SIG_SENT = "sig-sent:";
+	public static final String SIG_SENT_256 = "sigs-sent:";
+	public static final String INSTALLED = "installed:";
+	public static final String REPLACED = "replaced:";
+	public static final String UNINSTALLED = "uninstalled:";
 	// Disabled or turned off applications will be scheduled for reporting using this prefix
-	static final String DISABLED = "disabled:";
+	public static final String DISABLED = "disabled:";
 
 	private static final int READ_BUFFER_SIZE = 2 * 1024;
 	// Network status constants
@@ -114,18 +122,18 @@ public final class SamplingLibrary {
 	public static String NETWORKSTATUS_CONNECTED = "connected";
 	public static String NETWORKSTATUS_CONNECTING = "connecting";
 	// Network type constants
-	static String TYPE_UNKNOWN = "unknown";
+	public static String TYPE_UNKNOWN = "unknown";
 	// Data State constants
-	static String DATA_DISCONNECTED = NETWORKSTATUS_DISCONNECTED;
-	static String DATA_CONNECTING = NETWORKSTATUS_CONNECTING;
-	static String DATA_CONNECTED = NETWORKSTATUS_CONNECTED;
-	static String DATA_SUSPENDED = "suspended";
+	public static String DATA_DISCONNECTED = NETWORKSTATUS_DISCONNECTED;
+	public static String DATA_CONNECTING = NETWORKSTATUS_CONNECTING;
+	public static String DATA_CONNECTED = NETWORKSTATUS_CONNECTED;
+	public static String DATA_SUSPENDED = "suspended";
 	// Data Activity constants
-	static String DATA_ACTIVITY_NONE = "none";
-	static String DATA_ACTIVITY_IN = "in";
-	static String DATA_ACTIVITY_OUT = "out";
-	static String DATA_ACTIVITY_INOUT = "inout";
-	static String DATA_ACTIVITY_DORMANT = "dormant";
+	public static String DATA_ACTIVITY_NONE = "none";
+	public static String DATA_ACTIVITY_IN = "in";
+	public static String DATA_ACTIVITY_OUT = "out";
+	public static String DATA_ACTIVITY_INOUT = "inout";
+	public static String DATA_ACTIVITY_DORMANT = "dormant";
 	// Wifi State constants
 	public static String WIFI_STATE_DISABLING = "disabling";
 	public static String WIFI_STATE_DISABLED = "disabled";
@@ -181,12 +189,12 @@ public final class SamplingLibrary {
 	public static double startLongitude = 0;
 	public static double distance = 0;
 
-	private static final String STAG = "getSample";
+	private static final String STAG = "sample";
 	// private static final String TAG="FeaturesPowerConsumption";
 
 	public static final int UUID_LENGTH = 16;
 
-	private static double lastBatteryLevel;
+	private static double lastSampledBatteryLevel;
 	private static double currentBatteryLevel;
 
 	// we might not be able to read the current battery level at the first run
@@ -194,9 +202,8 @@ public final class SamplingLibrary {
 	// so it might be zero until we get the non-zero value from the intent
 	// (BatteryManager.EXTRA_LEVEL & BatteryManager.EXTRA_SCALE)
 
-	/** Library class, prevent instantiation */
-	private SamplingLibrary() {
-	}
+	private static Location lastKnownLocation = null;
+
 
 	/**
 	 * Returns a randomly generated unique identifier that stays constant for
@@ -219,15 +226,15 @@ public final class SamplingLibrary {
 	}
 
 	public static double readLastBatteryLevel() {
-		return lastBatteryLevel;
+		return lastSampledBatteryLevel;
 	}
 
-	public static void setLastBatteryLevel(double level) {
-		SamplingLibrary.lastBatteryLevel = level;
+	public static void setLastSampledBatteryLevel(double level) {
+		SamplingLibrary.lastSampledBatteryLevel = level;
 	}
 
-	public static double getLastBatteryLevel(Context context) {
-		return lastBatteryLevel;
+	public static double getLastSampledBatteryLevel(Context context) {
+		return lastSampledBatteryLevel;
 	}
 
 	public static double getCurrentBatteryLevel() {
@@ -258,7 +265,7 @@ public final class SamplingLibrary {
 		 */
 		if (level != getCurrentBatteryLevel()) {
 			setCurrentBatteryLevel(level);
-			// Log.d("SamplingLibrary.setCurrentBatteryLevel()", "currentBatteryLevel="
+			// Logger.d("SamplingLibrary.setCurrentBatteryLevel()", "currentBatteryLevel="
 			//		+ getCurrentBatteryLevel());
 		}
 	}
@@ -297,7 +304,7 @@ public final class SamplingLibrary {
 			concat += timestamp;
 		}
 
-		// Log.d(STAG,
+		// Logger.d(STAG,
 		// "AID="+aID+" wifiMac="+wifiMac+" devid="+devid+" rawUUID=" +concat );
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
@@ -311,8 +318,8 @@ public final class SamplingLibrary {
 				else
 					hexString.append(hx);
 			}
-			// FlurryAgent.logEvent("ANDROID_ID=" + aID +" UUID=" + uuid);
-			return hexString.toString().substring(0, UUID_LENGTH);
+			String uuid = hexString.toString().substring(0, UUID_LENGTH);
+			return uuid;
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			return aID;
@@ -391,7 +398,7 @@ public final class SamplingLibrary {
 			String k = (String) keys.nextElement();
 			String v = list.getProperty(k);
 			if (Constants.DEBUG)
-			    Log.d("PROPS", k + "=" + v);
+			    Logger.d("PROPS", k + "=" + v);
 		}
 	}
 
@@ -553,48 +560,188 @@ public final class SamplingLibrary {
 		return (now[1] - then[1]) / idleAndCpuDiff;
 	}
 
+	public static double getCpuUsage(SystemLoadPoint cpu1, SystemLoadPoint cpu2){
+		float totalDiff = cpu2.total - cpu1.total;
+		if(totalDiff == 0) return 100; // Avoid diving by zero
+		float idleDiff = cpu2.idleAll - cpu1.idleAll;
+		float cpuP = 100*(totalDiff - idleDiff)/totalDiff;
+
+		// Disregard negative values caused by a bug in linux kernel
+		return (cpuP > 0)? cpuP : 0;
+	}
+
+
+	public static SystemLoadPoint getSystemLoad() {
+		try {
+			RandomAccessFile reader = new RandomAccessFile("/proc/stat", "r");
+			int[] data = Util.readLines(reader, 1, 10, "\\s+")[0];
+			return new SystemLoadPoint(data);
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
 	private static WeakReference<List<RunningAppProcessInfo>> runningAppInfo = null;
 
-	public static List<ProcessInfo> getRunningAppInfo(Context c) {
-		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(c);
-		List<RunningServiceInfo> runningServices = getRunningServiceInfo(c);
-
-		Set<String> packages = new HashSet<String>();
-		List<ProcessInfo> l = new ArrayList<ProcessInfo>();
-
-		if (runningProcs != null) {
-			for (RunningAppProcessInfo pi : runningProcs) {
-				if (pi == null)
-					continue;
-				if (packages.contains(pi.processName))
-				    continue;
-                packages.add(pi.processName);
-				ProcessInfo item = new ProcessInfo();
-				item.setImportance(CaratApplication.importanceString(pi.importance));
-				item.setPId(pi.pid);
-				item.setPName(pi.processName);
-				l.add(item);
+	/**
+	 * NOTE: This only works on older Android versions!
+	 * @param context Application context
+	 * @return List of running processes
+	 */
+	public static Map<String, List<PackageProcess>> getRunningNow(Context context){
+		Map<String, List<PackageProcess>> result = new HashMap<>();
+		Map<String, HashMap<String, PackageProcess>> processes = new HashMap<>();
+		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
+		List<RunningAppProcessInfo> runningAppProcesses = am.getRunningAppProcesses();
+		for (RunningAppProcessInfo pi : runningAppProcesses) {
+			if(pi != null){
+				String processName = pi.processName;
+				String packageName = Util.trimProcessName(processName)[0];
+				HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
+						processes.get(packageName) : new HashMap<String, PackageProcess>();
+				PackageProcess process;
+				if(p.containsKey(processName)){
+					process = p.get(processName);
+					process.setProcessCount(process.getProcessCount()+1);
+				} else {
+				    if(pi.importance == RunningAppProcessInfo.IMPORTANCE_SERVICE){
+				        processName = serviceToProcessName(processName);
+                    } else if(pi.importance == Constants.IMPORTANCE_FOREGROUND_SERVICE){
+				        processName = serviceToProcessName(processName);
+                    }
+					process = Util.getDefaultPackageProcess()
+							.setProcessName(processName)
+							.setImportance(pi.importance)
+                            .setProcessCount(1);
+				}
+				p.put(processName, process);
+				processes.put(packageName, p);
 			}
 		}
+		for(String packageName : processes.keySet()){
+			List<PackageProcess> list = new ArrayList<>(processes.get(packageName).values());
+			result.put(packageName, list);
+		}
+		return result;
+	}
 
-		if (runningServices != null) {
-			for (RunningServiceInfo pi : runningServices) {
-				if (pi == null)
-					continue;
-				if (packages.contains(pi.process))
-                    continue;
-                packages.add(pi.process);
-				ProcessInfo item = new ProcessInfo();
-				item.setImportance(pi.foreground ? "Foreground app" : "Service");
-				item.setPId(pi.pid);
-				//item.setApplicationLabel(pi.service.flattenToString());
-				item.setPName(pi.process);
+
+	/**
+	 * Get running processes starting from given date. Note that this method relies on UsageStats
+	 * and therefore requires a special permission as well as Android version LOLLIPOP or newer.
+     * On older versions an empty map will be returned instead.
+	 * @param context context needed to obtain UsageStats system service
+	 * @param begin starting point in milliseconds since epoch
+	 * @return map with package names as keys and process descriptions as values
+	 */
+	public static Map<String, PackageProcess> getRunningProcessesFromEventLog(Context context, long begin){
+		Map<String, PackageProcess> result = new HashMap<>();
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			Map<String, TreeMap<Long, Integer>> log = UsageManager.getEventLogs(context, begin);
+
+			// Loop through every package and its events
+			for(String packageName : log.keySet()){
+				PackageProcess process = Util.getDefaultPackageProcess();
+				TreeMap<Long, Integer> events = log.get(packageName);
+				long lastForeground = -1, foreground = 0, launchCount = 0;
+
+				// Track time between going foreground and moving to background.
+				for(long timestamp : events.keySet()){
+					switch(events.get(timestamp)){
+						case UsageEvents.Event.MOVE_TO_BACKGROUND:
+							if(lastForeground != -1){
+								long session = timestamp - lastForeground;
+								foreground += session;
+
+								// Switches shorter than 1 seconds are most likely not human.
+								if(session >= Constants.MIN_FOREGROUND_SESSION){
+									launchCount++;
+			}
+							}
+							break;
+						case UsageEvents.Event.MOVE_TO_FOREGROUND:
+							lastForeground = timestamp;
+							break;
+					}
+				}
+				if(launchCount == 0){
+				    launchCount = 1;
+                }
+                process.setProcessName(packageName);
+				process.setForegroundTime(foreground);
+				process.setLaunchCount(launchCount);
+				process.setImportance(RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
+				process.setLastStartTimestamp(lastForeground);
+				result.put(packageName, process);
+			}
+		}
+		return result;
+		}
+
+	public static Map<String, List<PackageProcess>> getRunningServices(Context context){
+		Map<String, List<PackageProcess>> result = new HashMap<>();
+		Map<String, HashMap<String, PackageProcess>> services = new HashMap<>();
+		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
+		List<RunningServiceInfo> runningServices = am.getRunningServices(255);
+		for(RunningServiceInfo serviceInfo : runningServices){
+			if(serviceInfo != null) {
+				ComponentName component = serviceInfo.service;
+				String packageName;
+				if (component != null && !Util.isNullOrEmpty(component.getPackageName())) {
+					packageName = component.getPackageName();
+				} else {
+					packageName = Util.trimProcessName(serviceInfo.process)[0];
+				}
 				
-				l.add(item);
+				HashMap<String, PackageProcess> processes = services.containsKey(packageName) ?
+						services.get(packageName) : new HashMap<String, PackageProcess>();
+				PackageProcess process;
+				if (processes.containsKey(serviceInfo.process)) {
+					// Multiple processes with the same name -> Aggregate
+					process = processes.get(serviceInfo.process);
+					int prevCrashes = process.getCrashCount();
+					int prevCount = process.getProcessCount();
+					double prevLastActivity = process.getLastStartSinceBoot();
+
+					process.setProcessCount(prevCount + 1);
+					process.setCrashCount(prevCrashes + serviceInfo.crashCount);
+					if (serviceInfo.lastActivityTime < prevLastActivity) {
+						process.setLastStartSinceBoot(serviceInfo.activeSince);
+					}
+					processes.put(serviceInfo.process, process);
+					services.put(packageName, processes);
+				} else {
+					// Process name never seen before -> Create entry
+					process = Util.getDefaultPackageProcess();
+					process.setProcessName(serviceInfo.process);
+					process.setProcessCount(1);
+					process.setUId(serviceInfo.uid);
+					process.setSleeping(serviceInfo.restarting != 0);
+					process.setForeground(serviceInfo.foreground);
+					process.setImportance(serviceInfo.foreground ?
+                            Constants.IMPORTANCE_FOREGROUND_SERVICE :
+                            RunningAppProcessInfo.IMPORTANCE_SERVICE);
+					process.setCrashCount(serviceInfo.crashCount);
+					process.setLastStartSinceBoot(serviceInfo.activeSince);
+				}
+				processes.put(serviceInfo.process, process);
+				services.put(packageName, processes);
 			}
 		}
 
-		return l;
+		for(String packageName : services.keySet()){
+			List<PackageProcess> list = new ArrayList<>(services.get(packageName).values());
+			result.put(packageName, list);
+		}
+		return result;
+	}
+
+	private static String serviceToProcessName(String serviceName){
+		String[] split = Util.trimProcessName(serviceName);
+		if(split.length >= 2){
+			return split[0] + "@" + split[1];
+		}
+		return split[0] + "@service";
 	}
 
 	private static WeakReference<List<RunningServiceInfo>> runningServiceInfo = null;
@@ -607,7 +754,7 @@ public final class SamplingLibrary {
 	 */
 	private static List<RunningAppProcessInfo> getRunningProcessInfo(Context context) {
 		if (runningAppInfo == null || runningAppInfo.get() == null) {
-			ActivityManager pActivityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+			ActivityManager pActivityManager = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
 			List<RunningAppProcessInfo> runningProcs = pActivityManager.getRunningAppProcesses();
 			/*
 			 * TODO: Is this the right thing to do? Remove part after ":" in
@@ -616,8 +763,7 @@ public final class SamplingLibrary {
 			for (RunningAppProcessInfo i : runningProcs) {
 				if (i != null && i.processName != null) {
 					int idx = i.processName.lastIndexOf(':');
-					if (idx <=
-							0)
+					if (idx <= 0)
 						idx = i.processName.length();
 					i.processName = i.processName.substring(0, idx);
 				}
@@ -636,7 +782,7 @@ public final class SamplingLibrary {
 	 */
 	public static List<RunningServiceInfo> getRunningServiceInfo(Context c) {
 		if(runningServiceInfo == null || runningServiceInfo.get() == null) {
-			ActivityManager pActivityManager = (ActivityManager) c.getSystemService(Context.ACTIVITY_SERVICE);
+			ActivityManager pActivityManager = (ActivityManager) c.getSystemService(Activity.ACTIVITY_SERVICE);
 			List<RunningServiceInfo> runningServices = pActivityManager.getRunningServices(255);
 			runningServiceInfo = new WeakReference<List<RunningServiceInfo>>(runningServices);
 			return runningServices;
@@ -650,24 +796,28 @@ public final class SamplingLibrary {
 	 * @return true if the application is running, false otherwise.
 	 */
 	public static boolean isRunning(Context context, String appName) {
-		List<RunningAppProcessInfo> runningProcs = getRunningProcessInfo(context);
-		for (RunningAppProcessInfo i : runningProcs) {
-		   // Log.d(TAG, "Matching process: "+i.processName +" with app: "+ appName);
-			if (i.processName.equals(appName) && i.importance != RunningAppProcessInfo.IMPORTANCE_EMPTY)
+		Map<String, List<PackageProcess>> runningProcesses = getRunningNow(context);
+		for (String pkg  : runningProcesses.keySet()) {
+			for(PackageProcess process : runningProcesses.get(pkg)) {
+				String processName = Util.trimProcessName(process.getProcessName())[0];
+				int importance = process.getImportance();
+				if(importance != RunningAppProcessInfo.IMPORTANCE_EMPTY &&
+						(((processName != null) && processName.equals(appName))
+						||  pkg.equals(appName))){
 				return true;
+				}
+			}
 		}
 		
-		List<RunningServiceInfo> services = getRunningServiceInfo(context);
-		for (RunningServiceInfo service: services){
-		  //  Log.d(TAG, "Matching service: "+service.process +" with app: "+ appName + " service pkg: " + service.clientPackage + " label: " + service.clientLabel);
-		    String pname = service.process;
-		    int idx = pname.indexOf(":");
-		    if (idx > 0)
-		        pname = pname.substring(0, idx);
-		    if (pname.equals(appName))
+		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
+		for (String pkg : runningServices.keySet()){
+			for(PackageProcess service : runningServices.get(pkg)){
+				String processName = Util.trimProcessName(service.processName)[0];
+				if(!service.sleeping && (pkg.equals(appName) || pkg.equals(processName))){
 		        return true;
 		}
-		
+			}
+		}
 		return false;
 	}
 
@@ -753,7 +903,6 @@ public final class SamplingLibrary {
 			return true;
 		}
 
-		// FlurryAgent.logEvent("Whitelisted "+processName + " \""+ label+"\"");
 		return false;
 	}
 
@@ -795,14 +944,14 @@ public final class SamplingLibrary {
              */
             if (disabled) {
                 if (Constants.DEBUG)
-                    Log.i(STAG, "DISABLED: " + processName);
+                    Logger.i(STAG, "DISABLED: " + processName);
                 Editor e = PreferenceManager.getDefaultSharedPreferences(c.getApplicationContext()).edit();
                 e.putBoolean(SamplingLibrary.DISABLED + processName, true).commit();
             }
             return disabled;
         } catch (NameNotFoundException e) {
             if (Constants.DEBUG)
-                Log.d(STAG, "Could not find app info for: "+processName);
+                Logger.d(STAG, "Could not find app info for: "+processName);
         }
 	    return false;
 	}
@@ -810,14 +959,15 @@ public final class SamplingLibrary {
 	/**
 	 * Helper to ensure the WeakReferenced `packages` is populated.
 	 * 
-	 * @param pm PackageManager
+	 * @param context
 	 * @return The content of `packages` or null in case of failure.
 	 */
-	private static Map<String, PackageInfo> getPackages(PackageManager pm) {
+	private static Map<String, PackageInfo> getPackages(Context context) {
 		List<android.content.pm.PackageInfo> packagelist = null;
 
 		if (packages == null || packages.get() == null || packages.get().size() == 0) {
 			Map<String, PackageInfo> mp = new HashMap<String, PackageInfo>();
+			PackageManager pm = context.getPackageManager();
 			if (pm == null)
 				return null;
 
@@ -856,14 +1006,13 @@ public final class SamplingLibrary {
 	/**
 	 * Get info for a single package from the WeakReferenced packagelist.
 	 * 
-	 * @param context Context
+	 * @param context
 	 * @param processName
 	 *            The package to get info for.
 	 * @return info for a single package from the WeakReferenced packagelist.
 	 */
 	public static PackageInfo getPackageInfo(Context context, String processName) {
-		PackageManager pm = context.getPackageManager();
-		Map<String, PackageInfo> mp = getPackages(pm);
+		Map<String, PackageInfo> mp = getPackages(context);
 		if (mp == null || !mp.containsKey(processName))
 			return null;
 		PackageInfo pak = mp.get(processName);
@@ -876,14 +1025,14 @@ public final class SamplingLibrary {
 	 * detection project. Later on, single package information is got by
 	 * receiving the package installed intent.
 	 * 
-	 * @param pm PackageManager
+	 * @param context
 	 * @param filterSystem
 	 *            if true, exclude system packages.
 	 * @return a list of installed packages on the device.
 	 */
-	public static Map<String, ProcessInfo> getInstalledPackages(PackageManager pm, boolean filterSystem) {
-		Map<String, PackageInfo> packageMap = getPackages(pm);
-
+	public static Map<String, ProcessInfo> getInstalledPackages(Context context, boolean filterSystem) {
+		Map<String, PackageInfo> packageMap = getPackages(context);
+		PackageManager pm = context.getPackageManager();
 		if (pm == null)
 			return null;
 
@@ -897,16 +1046,8 @@ public final class SamplingLibrary {
 					int vc = pak.versionCode;
 					ApplicationInfo appInfo = pak.applicationInfo;
 					String label = pm.getApplicationLabel(appInfo).toString();
-					// we need application UID to be able to use Android's
-					// TrafficStat API
-					// in order to get the traffic info of a particular app:
-					int appUid = appInfo.uid;
-					// get the amount of transmitted and received bytes by an
-					// app
-					// TODO: disabled for debugging
-//					TrafficRecord trafficRecord = getAppTraffic(appUid);
-
 					int flags = pak.applicationInfo.flags;
+
 					// Check if it is a system app
 					boolean isSystemApp = (flags & ApplicationInfo.FLAG_SYSTEM) > 0;
 					isSystemApp = isSystemApp || (flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) > 0;
@@ -924,8 +1065,6 @@ public final class SamplingLibrary {
 						pi.setImportance(Constants.IMPORTANCE_NOT_RUNNING);
 						pi.setInstallationPkg(pm.getInstallerPackageName(pkg));
 						pi.setVersionName(pak.versionName);
-						//TODO: disbaled for debugging
-//						pi.setTrafficRecord(trafficRecord);
 						result.put(pkg, pi);
 					}
 				}
@@ -940,11 +1079,13 @@ public final class SamplingLibrary {
 	 * Returns info about an installed package. Will be called when receiving
 	 * the PACKAGE_ADDED or PACKAGE_REPLACED intent.
 	 * 
-	 * @param pm PackageManager
-	 * @param pkg package name to get info about.
+	 * @param context
+	 * @param filterSystem
+	 *            if true, exclude system packages.
 	 * @return a list of installed packages on the device.
 	 */
-	public static ProcessInfo getInstalledPackage(PackageManager pm, String pkg) {
+	public static ProcessInfo getInstalledPackage(Context context, String pkg) {
+		PackageManager pm = context.getPackageManager();
 		if (pm == null)
 			return null;
 		PackageInfo pak;
@@ -981,111 +1122,174 @@ public final class SamplingLibrary {
 	}
 
 	/**
-	 * Returns a List of ProcessInfo objects, helper for getSample.
+	 * NOTE: This method returns a list of currently running processes for devices running on
+	 * older versions of Android. Starting from version 5.0, a list of processes that have been
+	 * observed running since last sample is returned instead.
 	 * 
-	 * @param context the Context.
-	 * @return a List of ProcessInfo objects, helper for getSample.
+	 * Information sources are prioritized as follows: Event log > Currently running > Installed.
+	 * This is to make sure the highest level of accuracy and amount of information is obtained.
+	 * Installed applications are only returned when this method is first used.
+	 *
+	 * @param context application context
+	 * @param lastSample last sample timestamp in milliseconds
+	 * @return list of process information for all running processes.
 	 */
-	private static List<ProcessInfo> getRunningProcessInfoForSample(Context context) {
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
-
-		// Reset list for each sample
-		runningAppInfo = null;
-		List<ProcessInfo> list = getRunningAppInfo(context);
-		List<ProcessInfo> result = new ArrayList<ProcessInfo>();
-
+	public static List<ProcessInfo> getRunningProcessInfoForSample(Context context, long lastSample) {
+		List<ProcessInfo> result = new ArrayList<>();
 		PackageManager pm = context.getPackageManager();
-		// Collected in the same loop to save computation.
-		int[] procMem = new int[list.size()];
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		boolean sendInstalled = preferences.getBoolean(Keys.sendInstalledPackages, true);
+		HashSet<String> addedServices = new HashSet<>();
 
-		Set<String> procs = new HashSet<String>();
+		Map<String, ProcessInfo> installedPackages = getInstalledPackages(context, false);
+		Map<String, List<PackageProcess>> runningApps = getRunningNow(context);
+		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
+		Map<String, PackageProcess> runningAppsSince = getRunningProcessesFromEventLog(context, lastSample);
 
-		boolean inst = p.getBoolean(Constants.PREFERENCE_SEND_INSTALLED_PACKAGES, true);
+		// These end up being all packages with active code
+		Set<String> packageNames = new HashSet<>();
+		packageNames.addAll(runningApps.keySet());
+		packageNames.addAll(runningServices.keySet());
+		packageNames.addAll(runningAppsSince.keySet());
+		if(sendInstalled && installedPackages != null){
+			// This should only happen once
+			packageNames.addAll(installedPackages.keySet());
+		}
 
-		Map<String, ProcessInfo> ipkg = null;
-		if (inst)
-			ipkg = getInstalledPackages(pm, false);
+		for(String pkgName : packageNames){
+			String packageName = Util.trimProcessName(pkgName)[0]; // Just in case
+			ProcessInfo processInfo = new ProcessInfo();
+			processInfo.setPName(packageName);
+			processInfo.setPId(-1); // Default values are expected to change during method
+			processInfo.setImportance(CaratApplication.importanceString(-1));
+			List<PackageProcess> applications = new ArrayList<>();
+			boolean accurateCurrentlyRunning = false;
 
-		for (ProcessInfo pi : list) {
-			String pname = pi.getPName();
-			if (ipkg != null && ipkg.containsKey(pname))
-				ipkg.remove(pname);
-			procs.add(pname);
-			ProcessInfo item = new ProcessInfo();
-			PackageInfo pak = getPackageInfo(context, pname);
-			if (pak != null) {
-				String ver = pak.versionName;
-				int vc = pak.versionCode;
-				item.setVersionName(ver);
-				item.setVersionCode(vc);
-				ApplicationInfo info = pak.applicationInfo;
-
-				// Human readable label (if any)
-				String label = pm.getApplicationLabel(info).toString();
-				if (label != null && label.length() > 0)
-					item.setApplicationLabel(label);
-				int flags = pak.applicationInfo.flags;
-				// Check if it is a system app
-				boolean isSystemApp = (flags & ApplicationInfo.FLAG_SYSTEM) > 0;
-				isSystemApp = isSystemApp || (flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) > 0;
-				item.setIsSystemApp(isSystemApp);
-				/*
-				 * boolean sigSent = p.getBoolean(SIG_SENT_256 + pname, false);
-				 * if (collectSignatures && !sigSent && pak.signatures != null
-				 * && pak.signatures.length > 0) { List<String> sigList =
-				 * getSignatures(pak); boolean sigSentOld =
-				 * p.getBoolean(SIG_SENT + pname, false); if (sigSentOld)
-				 * p.edit().remove(SIG_SENT + pname);
-				 * p.edit().putBoolean(SIG_SENT_256 + pname, true).commit();
-				 * item.setAppSignatures(sigList); }
-				 */
+			// Add installed package information first since we want running processes and/or
+			// services to override some of these fields later on. However, not other source
+			// provides application signatures.
+			if(sendInstalled && installedPackages != null && installedPackages.containsKey(packageName)){
+				ProcessInfo info = installedPackages.get(packageName);
+				processInfo.setAppSignatures(info.getAppSignatures());
+				processInfo.setApplicationLabel(info.getApplicationLabel());
+				processInfo.setImportance(info.getImportance());
 			}
-			item.setImportance(pi.getImportance());
-			item.setPId(pi.getPId());
-			item.setPName(pname);
 
-			String installationSource = null;
-			if (!pi.isSystemApp) {
-				try {
-					// Log.w(STAG, "Calling getInstallerPackageName with: " +
-					// pname);
-					installationSource = pm.getInstallerPackageName(pname);
-				} catch (IllegalArgumentException iae) {
-					Log.e(STAG, "Could not get installer for " + pname);
+			// Add services belonging to this package. Also set the pid which might get replaced
+			// on older devices, where foreground process PIDs are available.
+			if(runningServices.containsKey(packageName)){
+				List<PackageProcess> services = runningServices.get(packageName);
+				List<PackageProcess> renamed = new ArrayList<>();
+				for(PackageProcess process : services){
+				    String processName = serviceToProcessName(process.processName);
+					process.setProcessName(processName);
+					addedServices.add(processName);
+                    int importance = process.isForeground() ?
+                            Constants.IMPORTANCE_FOREGROUND_SERVICE :
+                            RunningAppProcessInfo.IMPORTANCE_SERVICE;
+                    processInfo.setImportance(CaratApplication.importanceString(importance));
+					renamed.add(process);
+				}
+				applications.addAll(renamed);
+			}
+
+			// Add currently running activities belonging to this package. These are mostly less
+			// accurate then UsageStats as they are missing information about time spent on
+			// foreground. However, UsageStats only provides aggregated activity data for the
+			// whole package, whereas you can find a RunningAppProcessInfo for each specifically
+			// named process. This to my knowledge requires the field android:process to be set
+			// so most of the time we will not catch anything. Worth fishing anyways.
+			if(runningApps.containsKey(packageName)){
+				List<PackageProcess> processes = runningApps.get(packageName);
+
+				int lowestImportance = Integer.MAX_VALUE;
+				for(PackageProcess application : processes){
+					String processName = application.getProcessName();
+					if(addedServices.contains(processName)){
+					    continue;
+			}
+
+					// Keep track of the lowest importance which is the most important one.
+					if(lowestImportance != -1) {
+						lowestImportance = Math.min(lowestImportance, application.getImportance());
+					}
+
+					// If we find a running process which also has the more accurate UsageStats
+					// variant available, we combine these entries. This should happen rarely.
+					if(runningAppsSince.containsKey(processName)){
+						PackageProcess accurate = runningAppsSince.get(processName);
+						application.setForegroundTime(accurate.getForegroundTime());
+						application.setLaunchCount(accurate.getLaunchCount());
+						application.setImportance(accurate.getImportance());
+						accurateCurrentlyRunning = true;
+						lowestImportance = RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+					}
+					applications.add(application);
+				}
+				processInfo.setImportance(CaratApplication.importanceString(lowestImportance));
+			}
+
+			// Most of the time the RunningAppProcessInfo is not available due to running on
+			// Android 5.0+. When that happens, accurateCurrentlyRunning will remain false
+			// as the process will not be found from the (empty) currently running processes
+			// list. Naturally we want to include this valuable information regardless.
+			if(!accurateCurrentlyRunning && runningAppsSince.containsKey(packageName)){
+                PackageProcess accurate = runningAppsSince.get(packageName);
+				applications.add(accurate);
+				processInfo.setImportance(CaratApplication.importanceString(accurate.getImportance()));
+			}
+			processInfo.setProcesses(applications);
+
+			// Add package properties.
+			PackageInfo packageInfo = getPackageInfo(context, packageName);
+			if(packageInfo != null){
+				processInfo.setVersionName(packageInfo.versionName);
+				processInfo.setVersionCode(packageInfo.versionCode);
+
+				ApplicationInfo appInfo = packageInfo.applicationInfo;
+				if(appInfo != null){
+					String label = pm.getApplicationLabel(appInfo).toString();
+					if(label.length() > 0){
+						processInfo.setApplicationLabel(label);
+					}
+					processInfo.setIsSystemApp(Util.isSystemApp(appInfo.flags));
 				}
 			}
-			if (installationSource == null)
-				installationSource = "null";
-			item.setInstallationPkg(installationSource);
 
-			// procMem[list.indexOf(pi)] = pi.getPId();
-			// FIXME: More fields will need to be added here, but ProcessInfo
-			// needs to change.
-			/*
-			 * uid lru
-			 */
-			// add to result
-			result.add(item);
+			// Add installation source which can apparently fail if the package name is not
+			// recognized by the package manager.
+			String installationSource = null;
+			if(!processInfo.isSystemApp) {
+				try {
+					installationSource = pm.getInstallerPackageName(packageName);
+				} catch (IllegalArgumentException iae) {
+					Logger.e(STAG, "Could not get installer for " + packageName);
+				}
+			}
+			processInfo.setInstallationPkg(installationSource == null
+					? "null" : installationSource);
+
+			// Finally we have a ready ProcessInfo object
+			result.add(processInfo);
 		}
 
 		// Send installed packages if we were to do so.
-		if (ipkg != null && ipkg.size() > 0) {
-			result.addAll(ipkg.values());
-			p.edit().putBoolean(Constants.PREFERENCE_SEND_INSTALLED_PACKAGES, false).commit();
+		if (installedPackages != null && installedPackages.size() > 0) {
+			preferences.edit().putBoolean(Keys.sendInstalledPackages, false).apply();
 		}
 
 		// Go through the preferences and look for UNINSTALL, INSTALL and
 		// REPLACE keys set by InstallReceiver.
-		Set<String> ap = p.getAll().keySet();
-		SharedPreferences.Editor e = p.edit();
+		Set<String> ap = preferences.getAll().keySet();
+		SharedPreferences.Editor e = preferences.edit();
 		boolean edited = false;
 		for (String pref : ap) {
 			if (pref.startsWith(INSTALLED)) {
 				String pname = pref.substring(INSTALLED.length());
-				boolean installed = p.getBoolean(pref, false);
+				boolean installed = preferences.getBoolean(pref, false);
 				if (installed) {
-					Log.i(STAG, "Installed:" + pname);
-					ProcessInfo i = getInstalledPackage(pm, pname);
+					Logger.i(STAG, "Installed:" + pname);
+					ProcessInfo i = getInstalledPackage(context, pname);
 					if (i != null) {
 						i.setImportance(Constants.IMPORTANCE_INSTALLED);
 						result.add(i);
@@ -1095,10 +1299,10 @@ public final class SamplingLibrary {
 				}
 			} else if (pref.startsWith(REPLACED)) {
 				String pname = pref.substring(REPLACED.length());
-				boolean replaced = p.getBoolean(pref, false);
+				boolean replaced = preferences.getBoolean(pref, false);
 				if (replaced) {
-					Log.i(STAG, "Replaced:" + pname);
-					ProcessInfo i = getInstalledPackage(pm, pname);
+					Logger.i(STAG, "Replaced:" + pname);
+					ProcessInfo i = getInstalledPackage(context, pname);
 					if (i != null) {
 						i.setImportance(Constants.IMPORTANCE_REPLACED);
 						result.add(i);
@@ -1108,35 +1312,25 @@ public final class SamplingLibrary {
 				}
 			} else if (pref.startsWith(UNINSTALLED)) {
 				String pname = pref.substring(UNINSTALLED.length());
-				boolean uninstalled = p.getBoolean(pref, false);
+				boolean uninstalled = preferences.getBoolean(pref, false);
 				if (uninstalled) {
-					Log.i(STAG, "Uninstalled:" + pname);
+					Logger.i(STAG, "Uninstalled:" + pname);
 					result.add(uninstalledItem(pname, pref, e));
 					edited = true;
 				}
 			} else if (pref.startsWith(DISABLED)) {
                 String pname = pref.substring(DISABLED.length());
-                boolean disabled = p.getBoolean(pref, false);
+                boolean disabled = preferences.getBoolean(pref, false);
                 if (disabled) {
-                    Log.i(STAG, "Disabled app:" + pname);
+                    Logger.i(STAG, "Disabled app:" + pname);
                     result.add(disabledItem(pname, pref, e));
                     edited = true;
                 }
             }
 		}
-		if (edited)
-			e.commit();
-
-		// FIXME: These are not used yet.
-		/*
-		 * ActivityManager pActivityManager = (ActivityManager) context
-		 * .getSystemService(Activity.ACTIVITY_SERVICE); Debug.MemoryInfo[]
-		 * memoryInfo = pActivityManager .getProcessMemoryInfo(procMem); for
-		 * (Debug.MemoryInfo info : memoryInfo) { // Decide which ones of info.*
-		 * we want, add to a new and improved // ProcessInfo object // FIXME:
-		 * Not used yet, Sample needs more fields // FIXME: Which memory fields
-		 * to choose? //int memory = info.dalvikPrivateDirty; }
-		 */
+		if (edited){
+			e.apply();
+		}
 
 		return result;
 	}
@@ -1279,6 +1473,21 @@ public final class SamplingLibrary {
 		return TimeUnit.MILLISECONDS.toSeconds(sleep);
 	}
 
+	public static String getNetworkStatusForSample(Context context){
+		String network = getNetworkStatus(context);
+		String networkType = getNetworkType(context);
+		String mobileNetworkType = getMobileNetworkType(context);
+
+		// Required in new Carat protocol
+		if (network.equals(NETWORKSTATUS_CONNECTED)) {
+			if (networkType.equals("WIFI"))
+				return networkType;
+			else
+				return mobileNetworkType;
+		} else
+			return network;
+	}
+
 	/**
 	 * Get the network status, one of connected, disconnected, connecting, or disconnecting.
 	 * @param context the Context.
@@ -1326,8 +1535,8 @@ public final class SamplingLibrary {
 	 * @param c the Context
 	 * @return true if the Internet is reachable.
 	 */
-	public static boolean networkAvailable(Context c) {
-		String network = getNetworkStatus(c);
+	public static boolean networkAvailable(Context context) {
+		String network = getNetworkStatus(context);
 		return network.equals(NETWORKSTATUS_CONNECTED);
 	}
 
@@ -1426,18 +1635,16 @@ public final class SamplingLibrary {
 
 	/* Get Current Screen Brightness Value */
 	public static int getScreenBrightness(Context context) {
-
+		if(isAutoBrightness(context)){
+			return -1;
+		}
 		int screenBrightnessValue = 0;
 		try {
 			screenBrightnessValue = android.provider.Settings.System.getInt(context.getContentResolver(),
 					android.provider.Settings.System.SCREEN_BRIGHTNESS);
 		} catch (SettingNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		// Log.v("ScreenBrightness", "Screen brightness value:" +
-		// screenBrightnessValue);
 		return screenBrightnessValue;
 	}
 
@@ -1449,8 +1656,6 @@ public final class SamplingLibrary {
 		} catch (SettingNotFoundException e) {
 			e.printStackTrace();
 		}
-		// Log.v("AutoScreenBrightness",
-		// "Automatic Screen brightness mode is enabled:" + autoBrightness);
 		return autoBrightness;
 	}
 
@@ -1464,106 +1669,25 @@ public final class SamplingLibrary {
 		return gpsEnabled;
 	}
 
-	/* check the GSM cell information */
-	public static CellInfo getCellInfo(Context context) {
-		CellInfo curCell = new CellInfo();
-
-		TelephonyManager myTelManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
-		String netOperator = myTelManager.getNetworkOperator();
-
-		// Fix crash when not connected to network (airplane mode, underground,
-		// etc)
-		if (netOperator == null || netOperator.length() < 3) {
-			return curCell;
-		}
-
-		/*
-		 * FIXME: Actually check for mobile network status == connected before
-		 * doing this stuff.
-		 */
-
-		if (SamplingLibrary.getPhoneType(context) == PHONE_TYPE_CDMA) {
-			CdmaCellLocation cdmaLocation = (CdmaCellLocation) myTelManager.getCellLocation();
-			if (cdmaLocation == null) {
-				// Log.v("cdmaLocation", "CDMA Location:" + cdmaLocation);
-			} else {
-				int cid = cdmaLocation.getBaseStationId();
-				int lac = cdmaLocation.getNetworkId();
-				int mnc = cdmaLocation.getSystemId();
-				int mcc = Integer.parseInt(netOperator.substring(0, 3));
-
-				curCell.CID = cid;
-				curCell.LAC = lac;
-				curCell.MNC = mnc;
-				curCell.MCC = mcc;
-				curCell.radioType = SamplingLibrary.getMobileNetworkType(context);
-
-				// Log.v("MCC", "MCC is:" + mcc);
-				// Log.v("MNC", "MNC is:" + mnc);
-				// Log.v("CID", "CID is:" + cid);
-				// Log.v("LAC", "LAC is:" + lac);
-			}
-
-		} else if (SamplingLibrary.getPhoneType(context) == PHONE_TYPE_GSM) {
-			GsmCellLocation gsmLocation = (GsmCellLocation) myTelManager.getCellLocation();
-
-			if (gsmLocation == null) {
-				// Log.v("gsmLocation", "GSM Location:" + gsmLocation);
-			} else {
-				int cid = gsmLocation.getCid();
-				int lac = gsmLocation.getLac();
-				int mcc = Integer.parseInt(netOperator.substring(0, 3));
-				int mnc = Integer.parseInt(netOperator.substring(3));
-
-				curCell.MCC = mcc;
-				curCell.MNC = mnc;
-				curCell.LAC = lac;
-				curCell.CID = cid;
-				curCell.radioType = SamplingLibrary.getMobileNetworkType(context);
-
-				// Log.v("MCC", "MCC is:" + mcc);
-				// Log.v("MNC", "MNC is:" + mnc);
-				// Log.v("CID", "CID is:" + cid);
-				// Log.v("LAC", "LAC is:" + lac);
-			}
-		}
-		return curCell;
-	}
-
-	/**
-	 * Return distance between <code>lastKnownLocation</code> and a newly
-	 * obtained location from any available provider.
-	 * 
-	 * @param c
-	 *            from Intent or Application.
-	 * @return
-	 */
-	public static double getDistance(Context c) {
-		Location l = getLastKnownLocation(c);
-		double distance = 0.0;
-		if (lastKnownLocation != null && l != null) {
-			distance = lastKnownLocation.distanceTo(l);
-		}
-		lastKnownLocation = l;
-		return distance;
+	// This value gets updated in IntentRouter, look there for implementation
+	public static long getDistanceTraveled(Context context){
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
+		long distanceTraveled = p.getLong("distanceTraveled", 0);
+		p.edit().putLong("distanceTraveled", 0).apply(); // Reset the counter
+		return distanceTraveled;
 	}
 
 	public static Location getLastKnownLocation(Context c) {
 		String provider = getBestProvider(c);
-		// FIXME: Some buggy device is giving GPS to us, even though we cannot
-		// use it.
 		if (provider != null && !provider.equals("gps")) {
-			Location l = getLastKnownLocation(c, provider);
-			return l;
+			return getLastKnownLocation(c, provider);
 		}
 		return null;
 	}
 
 	private static Location getLastKnownLocation(Context context, String provider) {
 		LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-		Location l = lm.getLastKnownLocation(provider);
-		return l;
+		return lm.getLastKnownLocation(provider);
 	}
 
 	/* Get the distance users between two locations */
@@ -1592,7 +1716,7 @@ public final class SamplingLibrary {
 				return String.valueOf(latitude)+","+String.valueOf(longitude);
 			} catch (Throwable th){
 				if(Constants.DEBUG){
-					Log.d("SamplingLibrary", "Failed getting coarse location!");
+					Logger.d("SamplingLibrary", "Failed getting coarse location!");
 					th.printStackTrace();
 				}
 			}
@@ -1619,33 +1743,6 @@ public final class SamplingLibrary {
 		c.setPowerRequirement(Criteria.POWER_LOW);
 		String provider = lm.getBestProvider(c, true);
 		return provider;
-	}
-
-	/* Check the maximum number of satellites can be used in the satellite list */
-	/*public static int getMaxNumSatellite(Context context) {
-
-		LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-		GpsStatus gpsStatus = locationManager.getGpsStatus(null);
-		int maxNumSatellite = gpsStatus.getMaxSatellites();
-
-		// Log.v("maxNumStatellite", "Maxmium number of satellites:" +
-		// maxNumSatellite);
-		return maxNumSatellite;
-	}*/
-
-	/* Get call status */
-	public static String getCallState(Context context) {
-		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
-		int callState = telManager.getCallState();
-		switch (callState) {
-		case TelephonyManager.CALL_STATE_OFFHOOK:
-			return CALL_STATE_OFFHOOK;
-		case TelephonyManager.CALL_STATE_RINGING:
-			return CALL_STATE_RINGING;
-		default:
-			return CALL_STATE_IDLE;
-		}
 	}
 
 	private static String getDeviceId(Context context) {
@@ -1757,162 +1854,20 @@ public final class SamplingLibrary {
 			return DATA_ACTIVITY_NONE;
 		}
 	}
-
-	/* Get the current location of the device */
-	public static CellLocation getDeviceLocation(Context context) {
-		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
-		CellLocation LocDevice = telManager.getCellLocation();
-		// Log.v("DeviceLocation", "Device Location:" + LocDevice);
-		return LocDevice;
-	}
-
-	/**
-	 * Return a long[3] with incoming call time, outgoing call time, and
-	 * non-call time in seconds since boot.
-	 * 
-	 * @param context
-	 *            from onReceive or Activity
-	 * @return a long[3] with incoming call time, outgoing call time, and
-	 *         non-call time in seconds since boot.
-	 */
-/*	public static long[] getCalltimesSinceBoot(Context context) {
-
-		long[] result = new long[3];
-
-		long callInSeconds = 0;
-		long callOutSeconds = 0;
-		int type;
-		long dur;
-
-		// ms since boot
-		long uptime = SystemClock.elapsedRealtime();
-		long now = System.currentTimeMillis();
-		long bootTime = now - uptime;
-
-		String[] queries = new String[] { android.provider.CallLog.Calls.TYPE, android.provider.CallLog.Calls.DATE,
-				android.provider.CallLog.Calls.DURATION };
-
-		Cursor cur = context.getContentResolver().query(android.provider.CallLog.Calls.CONTENT_URI, queries,
-				android.provider.CallLog.Calls.DATE + " > " + bootTime, null,
-				android.provider.CallLog.Calls.DATE + " ASC");
-
-		if (cur != null) {
-			if (cur.moveToFirst()) {
-				while (!cur.isAfterLast()) {
-					type = cur.getInt(0);
-					dur = cur.getLong(2);
-					switch (type) {
-					case android.provider.CallLog.Calls.INCOMING_TYPE:
-						callInSeconds += dur;
-						break;
-					case android.provider.CallLog.Calls.OUTGOING_TYPE:
-						callOutSeconds += dur;
-						break;
-					default:
-					}
-					cur.moveToNext();
-				}
-			} else {
-				Log.w("CallDurFromBoot", "No calls listed");
-			}
-			cur.close();
-		} else {
-			Log.w("CallDurFromBoot", "Cursor is null");
-		}
-
-		// uptime is ms, so it needs to be divided by 1000
-		long nonCallTime = uptime / 1000 - callInSeconds - callOutSeconds;
-		result[0] = callInSeconds;
-		result[1] = callOutSeconds;
-		result[2] = nonCallTime;
-		return result;
-	}*/
-
-	/* Get a monthly call duration record */
-	/*public static Map<String, CallMonth> getMonthCallDur(Context context) {
-
-		Map<String, CallMonth> callMonth = new HashMap<String, CallMonth>();
-		Map<String, String> callInDur = new HashMap<String, String>();
-		Map<String, String> callOutDur = new HashMap<String, String>();
-
-		int callType;
-		long callDur;
-		Date callDate;
-		String tmpTime = null;
-		String time;
-		SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM");
-		CallMonth curMonth = null;
-
-		String[] queryFields = new String[] { android.provider.CallLog.Calls.TYPE, android.provider.CallLog.Calls.DATE,
-				android.provider.CallLog.Calls.DURATION };
-
-		Cursor myCursor = context.getContentResolver().query(android.provider.CallLog.Calls.CONTENT_URI, queryFields,
-				null, null, android.provider.CallLog.Calls.DATE + " DESC");
-
-		if (myCursor.moveToFirst()) {
-			for (int i = 0; i < myCursor.getColumnCount(); i++) {
-				myCursor.moveToPosition(i);
-				callType = myCursor.getInt(0);
-				callDate = new Date(myCursor.getLong(1));
-				callDur = myCursor.getLong(2);
-
-				time = dateformat.format(callDate);
-				if (tmpTime != null && !time.equals(tmpTime)) {
-					callMonth.put(tmpTime, curMonth);
-					callInDur.clear();
-					callOutDur.clear();
-					curMonth = new CallMonth();
-				}
-				tmpTime = time;
-
-				if (callType == 1) {
-					curMonth.tolCallInNum++;
-					curMonth.tolCallInDur += callDur;
-					callInDur.put("tolCallInNum", String.valueOf(curMonth.tolCallInNum));
-					callInDur.put("tolCallInDur", String.valueOf(curMonth.tolCallInDur));
-				}
-				if (callType == 2) {
-					curMonth.tolCallOutNum++;
-					curMonth.tolCallOutDur += callDur;
-					callOutDur.put("tolCallOutNum", String.valueOf(curMonth.tolCallOutNum));
-					callOutDur.put("tolCallOutDur", String.valueOf(curMonth.tolCallOutDur));
-				}
-				if (callType == 3) {
-					curMonth.tolMissedCallNum++;
-					callInDur.put("tolMissedCallNum", String.valueOf(curMonth.tolMissedCallNum));
-				}
-			}
-		} else {
-			// Log.v("MonthType", "callType=None");
-			// Log.v("MonthDate", "callDate=None");
-			// Log.v("MonthDuration", "callduration =None");
-		}
-		return callMonth;
-	}
-
-	public static CallMonth getCallMonthinfo(Context context, String time) {
-
-		Map<String, CallMonth> callInfo;
-		callInfo = SamplingLibrary.getMonthCallDur(context);
-		CallMonth call = new CallMonth();
-		call = callInfo.get(time);
-		return call;
-	}*/
-
-	private static Location lastKnownLocation = null;
-
 	/**
 	 * Get whether the screen is on or off.
 	 * 
 	 * @return true if the screen is on.
 	 */
 	public static int isScreenOn(Context context) {
-		android.os.PowerManager powerManager = (android.os.PowerManager) context
-				.getSystemService(Context.POWER_SERVICE);
-		if (powerManager != null)
-			if (powerManager.isScreenOn())
-				return 1;
+		PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+		if (powerManager != null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+				return powerManager.isInteractive() ? 1 : 0;
+			} else {
+				return powerManager.isScreenOn() ? 1 : 0;
+			}
+		}
 		return 0;
 	}
 
@@ -1924,7 +1879,6 @@ public final class SamplingLibrary {
 		Calendar cal = Calendar.getInstance();
 		TimeZone tz = cal.getTimeZone();
 		return tz.getID();
-		//return tz.getDisplayName();
 	}
 
 	/**
@@ -1950,6 +1904,12 @@ public final class SamplingLibrary {
 		return adb;
 	}
 
+	// TODO: Should this call be in Sampler directly?
+	public static boolean isUsageAccessGranted(Context context) {
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+				&& UsageManager.isPermissionGranted(context);
+	}
+
 	/*
 	 * TODO: Make the app running when the system reboots, and provide a stop
 	 * button. CPU and Memory info per application CPU core/ frequency, CPU
@@ -1971,8 +1931,6 @@ public final class SamplingLibrary {
 				PackageInfo p = getPackageInfo(context, packageName);
 				// Log.v(STAG, "Trying to kill proc=" + packageName + " pak=" +
 				// p.packageName);
-				FlurryAgent.logEvent("Killing app=" + (label == null ? "null" : label) + " proc=" + packageName
-						+ " pak=" + (p == null ? "null" : p.packageName));
 				am.killBackgroundProcesses(packageName);
 				/*Toast.makeText(context, context.getResources().getString(R.string.stopping) + ((label == null) ? "" : " "+label),
 						Toast.LENGTH_SHORT).show();*/
@@ -1981,7 +1939,7 @@ public final class SamplingLibrary {
 			} catch (Throwable th) {
 				Toast.makeText(context,  context.getResources().getString(R.string.stopping_failed),
 						Toast.LENGTH_SHORT).show();
-				Log.e(STAG, "Could not kill process: " + packageName, th);
+				Logger.e(STAG, "Could not kill process: " + packageName, th);
 			}
 		}
 		return false;
@@ -2020,8 +1978,6 @@ public final class SamplingLibrary {
 		}
 		try{
 			context.startActivity(intent);
-			Toast.makeText(context,  context.getResources().getString(R.string.opening_manager),
-					Toast.LENGTH_SHORT).show();
 		} catch(Exception e){
 			if(e.getLocalizedMessage() != null){
 				Toast.makeText(context,  context.getResources().getString(R.string.opening_manager_failed),
@@ -2077,294 +2033,39 @@ public final class SamplingLibrary {
 		return buf.toString();
 	}
 
-	public static Sample getSample(Context context, Intent intent, String lastBatteryState) {
-		final String TAG = "SamplingLibrary.getSample";
-		if (Constants.DEBUG)
-		    Log.d(TAG, "getSample() was invoked.");
+	public static int getDevicePluggedState(Context context){
+	    int ERR_VAL = -1;
+	    Intent batteryIntent = getLastBatteryIntent(context);
+	    if(batteryIntent != null){
+	        return batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, ERR_VAL);
+        }
+		return ERR_VAL;
+	}
 
-		String action = intent.getAction();
-		if (Constants.DEBUG)
-		    Log.d(TAG, "action = " + action);
-
-		// Construct sample and return it in the end
-		Sample mySample = new Sample();
+	public static boolean isDeviceCharging(Context context){
+		Intent batteryIntent = getLastBatteryIntent(context);
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
-		String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
-		mySample.setUuId(uuId);
-		mySample.setTriggeredBy(action);
-		// required always
-		long now = System.currentTimeMillis();
-		mySample.setTimestamp(now / 1000.0);
-
-		// Record first data point for CPU usage
-		long[] idleAndCpu1 = readUsagePoint();
-
-		// If the sampler is running because of the SCREEN_ON or SCREEN_OFF
-		// event/action,
-		// we want to get the info of all installed apps/packages, not only
-		// those running.
-		// This is because we need the traffic info of all apps, some might not
-		// be running when
-		// those events (screen on / screen off) occur
-
-		// TODO: let's comment out these lines for debugging purpose
-
-		// if (action.equals(Intent.ACTION_SCREEN_ON) ||
-		// action.equals(Intent.ACTION_SCREEN_OFF)) {
-		// Log.d(TAG,
-		// "the action has been Intent.ACTION_SCREEN_ON or SCREEN_OFF. Taking sample of ALL INSTALLED packages (rather than running processes)");
-		// Map<String, ProcessInfo> installedPackages =
-		// getInstalledPackages(context, false);
-		// List<ProcessInfo> processes = new ArrayList<ProcessInfo>();
-		// processes.addAll(installedPackages.values());
-		// } else {
-		// Log.d(TAG,
-		// "the action has NOT been Intent.ACTION_SCREEN_ON or SCREEN_OFF. Taking sample of running processes.");
-		List<ProcessInfo> processes = getRunningProcessInfoForSample(context);
-		mySample.setPiList(processes);
-		// }
-
-		int screenBrightness = SamplingLibrary.getScreenBrightness(context);
-		mySample.setScreenBrightness(screenBrightness);
-		boolean autoScreenBrightness = SamplingLibrary.isAutoBrightness(context);
-		if (autoScreenBrightness)
-			mySample.setScreenBrightness(-1); // Auto
-		// boolean gpsEnabled = SamplingLibrary.getGpsEnabled(context);
-		// Location providers
-		List<String> enabledLocationProviders = SamplingLibrary.getEnabledLocationProviders(context);
-		mySample.setLocationProviders(enabledLocationProviders);
-
-		// TODO: not in Sample yet
-		// int maxNumSatellite = SamplingLibrary.getMaxNumSatellite(context);
-
-		String network = SamplingLibrary.getNetworkStatus(context);
-		String networkType = SamplingLibrary.getNetworkType(context);
-		String mobileNetworkType = SamplingLibrary.getMobileNetworkType(context);
-
-		// Required in new Carat protocol
-		if (network.equals(NETWORKSTATUS_CONNECTED)) {
-			if (networkType.equals("WIFI"))
-				mySample.setNetworkStatus(networkType);
-			else
-				mySample.setNetworkStatus(mobileNetworkType);
-		} else
-			mySample.setNetworkStatus(network);
-
-		// String ns = mySample.getNetworkStatus();
-		// Log.d(STAG, "Set networkStatus="+ns);
-
-		// Network details
-		NetworkDetails nd = new NetworkDetails();
-
-		// Network type
-		nd.setNetworkType(networkType);
-		nd.setMobileNetworkType(mobileNetworkType);
-		boolean roamStatus = SamplingLibrary.getRoamingStatus(context);
-		nd.setRoamingEnabled(roamStatus);
-		String dataState = SamplingLibrary.getDataState(context);
-		nd.setMobileDataStatus(dataState);
-		String dataActivity = SamplingLibrary.getDataActivity(context);
-		nd.setMobileDataActivity(dataActivity);
-		String simOperator = SamplingLibrary.getSIMOperator(context);
-		nd.setSimOperator(simOperator);
-		String networkOperator = SamplingLibrary.getNetworkOperator(context);
-		nd.setNetworkOperator(networkOperator);
-		String mcc = SamplingLibrary.getMcc(context);
-		nd.setMcc(mcc);
-		String mnc = SamplingLibrary.getMnc(context);
-		nd.setMnc(mnc);
-
-		// Wifi stuff
-		String wifiState = SamplingLibrary.getWifiState(context);
-		nd.setWifiStatus(wifiState);
-		int wifiSignalStrength = SamplingLibrary.getWifiSignalStrength(context);
-		nd.setWifiSignalStrength(wifiSignalStrength);
-		int wifiLinkSpeed = SamplingLibrary.getWifiLinkSpeed(context);
-		nd.setWifiLinkSpeed(wifiLinkSpeed);
-		String wifiApStatus = SamplingLibrary.getWifiHotspotState(context);
-		nd.setWifiApStatus(wifiApStatus);
-
-		// No easy way to check this as API keeps changing
-		// Possible by using reflection and checking build version
-		// NetworkStatistics ns = new NetworkStatistics();
-
-		// Add NetworkDetails substruct to Sample
-		mySample.setNetworkDetails(nd);
-
-		/* Calling Information */
-		// List<String> callInfo;
-		// callInfo=SamplingLibrary.getCallInfo(context);
-		/* Total call time */
-		// long totalCallTime=0;
-		// totalCallTime=SamplingLibrary.getTotalCallDur(context);
-
-		/*
-		 * long[] incomingOutgoingIdle = getCalltimesSinceBoot(context);
-		 * Log.d(STAG, "Call time since boot: Incoming=" +
-		 * incomingOutgoingIdle[0] + " Outgoing=" + incomingOutgoingIdle[1] +
-		 * " idle=" + incomingOutgoingIdle[2]);
-		 * 
-		 * // Summary Call info CallInfo ci = new CallInfo(); String callState =
-		 * SamplingLibrary.getCallState(context); ci.setCallStatus(callState);
-		 * ci.setIncomingCallTime(incomingOutgoingIdle[0]);
-		 * ci.setOutgoingCallTime(incomingOutgoingIdle[1]);
-		 * ci.setNonCallTime(incomingOutgoingIdle[2]);
-		 * 
-		 * mySample.setCallInfo(ci);
-		 */
-
-		// Bundle b = intent.getExtras();
-
-		// Battery details
-		int health = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0);
-		int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
-		// This is really an int.
-		// FIXED: Not used yet, Sample needs more fields
-
-		int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
-		String batteryTechnology = intent.getExtras().getString(BatteryManager.EXTRA_TECHNOLOGY);
-
-		// FIXED: Not used yet, Sample needs more fields
-		String batteryHealth = "Unknown";
-		String batteryStatus = "Unknown";
-
-		switch (health) {
-
-		case BatteryManager.BATTERY_HEALTH_DEAD:
-			batteryHealth = "Dead";
-			break;
-		case BatteryManager.BATTERY_HEALTH_GOOD:
-			batteryHealth = "Good";
-			break;
-		case BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE:
-			batteryHealth = "Over voltage";
-			break;
-		case BatteryManager.BATTERY_HEALTH_OVERHEAT:
-			batteryHealth = "Overheat";
-			break;
-		case BatteryManager.BATTERY_HEALTH_UNKNOWN:
-			batteryHealth = "Unknown";
-			break;
-		case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE:
-			batteryHealth = "Unspecified failure";
-			break;
+		String lastState = p.getString(Keys.lastBatteryStatus, "Unknown");
+		if(batteryIntent == null){
+			return lastState.equals("Charging");
 		}
-
-		switch (status) {
-
+		int id = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
+		switch(id){
 		case BatteryManager.BATTERY_STATUS_CHARGING:
-			batteryStatus = "Charging";
-			break;
+				return true;
 		case BatteryManager.BATTERY_STATUS_DISCHARGING:
-			batteryStatus = "Discharging";
-			break;
-		case BatteryManager.BATTERY_STATUS_FULL:
-			batteryStatus = "Full";
-			break;
 		case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
-			batteryStatus = "Not charging";
-			break;
+            case BatteryManager.BATTERY_STATUS_FULL:
+				return false;
 		case BatteryManager.BATTERY_STATUS_UNKNOWN:
-			batteryStatus = "Unknown";
-			break;
 		default:
-			batteryStatus = lastBatteryState != null ? lastBatteryState : "Unknown";
+				return lastState.equals("Charging");
+		}
 		}
 
-		// FIXED: Not used yet, Sample needs more fields
-		String batteryCharger = "unplugged";
-		switch (plugged) {
 
-		case BatteryManager.BATTERY_PLUGGED_AC:
-			batteryCharger = "ac";
-			break;
-		case BatteryManager.BATTERY_PLUGGED_USB:
-			batteryCharger = "usb";
-			break;
-		}
-
-		BatteryDetails bd = new BatteryDetails();
-		// otherInfo.setCPUIdleTime(totalIdleTime);
-
-		// IMPORTANT: All of the battery details fields were never set (=always
-		// zero), like the last battery level.
-		// Now all must have been fixed.
-
-		// current battery temperature in degrees Centigrade (the unit of the
-		// temperature value
-		// (returned by BatteryManager) is not Centigrade, it should be divided
-		// by 10)
-		double temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10.0;
-		bd.setBatteryTemperature(temperature);
-		// otherInfo.setBatteryTemperature(temperature);
-
-		// current battery voltage in VOLTS (the unit of the returned value by
-		// BatteryManager is millivolts)
-		double voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000.0;
-		bd.setBatteryVoltage(voltage);
-		// otherInfo.setBatteryVoltage(voltage);
-		bd.setBatteryTechnology(batteryTechnology);
-		bd.setBatteryCharger(batteryCharger);
-		bd.setBatteryHealth(batteryHealth);
-		mySample.setBatteryDetails(bd);
-		mySample.setBatteryLevel(currentBatteryLevel);
-		mySample.setBatteryState(batteryStatus);
-
-		// Memory statistics
-		int[] usedFreeActiveInactive = SamplingLibrary.readMeminfo();
-		if (usedFreeActiveInactive != null && usedFreeActiveInactive.length == 4) {
-			mySample.setMemoryUser(usedFreeActiveInactive[0]);
-			mySample.setMemoryFree(usedFreeActiveInactive[1]);
-			mySample.setMemoryActive(usedFreeActiveInactive[2]);
-			mySample.setMemoryInactive(usedFreeActiveInactive[3]);
-		}
-
-		// Record second data point for cpu/idle time
-		long[] idleAndCpu2 = readUsagePoint();
-
-		// CPU status
-		CpuStatus cs = new CpuStatus();
-		double uptime = getUptime();
-		double sleep = getSleepTime();
-		cs.setCpuUsage(getUsage(idleAndCpu1, idleAndCpu2));
-		cs.setUptime(uptime);
-		cs.setSleeptime(sleep);
-		mySample.setCpuStatus(cs);
-
-		// Storage details
-		mySample.setStorageDetails(getStorageDetails());
-
-		// System settings
-		edu.berkeley.cs.amplab.carat.thrift.Settings settings = new edu.berkeley.cs.amplab.carat.thrift.Settings();
-		settings.setBluetoothEnabled(getBluetoothEnabled());
-		mySample.setSettings(settings);
-
-		// Other fields
-		mySample.setDeveloperMode(isDeveloperModeOn(context));
-		mySample.setUnknownSources(allowUnknownSources(context));
-		mySample.setScreenOn(isScreenOn(context));
-		mySample.setTimeZone(getTimeZone(context));
-		mySample.setCountryCode(getCountryCode(context));
-
-		// If there are extra fields, include them into the sample.
-		List<Feature> extras = getExtras();
-		if (extras != null && extras.size() > 0)
-			mySample.setExtra(extras);
-
-		if(Constants.DEBUG){
-			// Need to split since output is over 1000 characters
-			Log.d("debug", "Created the following sample:");
-			String sampleString = mySample.toString();
-			int limit = 1000;
-			for(int i = 0; i <= sampleString.length() / limit; i++) {
-				int start = i * limit;
-				int end = (i+1) * limit;
-				end = (end > sampleString.length()) ? sampleString.length() : end;
-				Log.d("debug", sampleString.substring(start, end));
-			}
-		}
-
-		return mySample;
+	public static Intent getLastBatteryIntent(Context context){
+		return context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 	}
 
 	/**
@@ -2397,6 +2098,7 @@ public final class SamplingLibrary {
 		return -1;
 	}
 
+    @SuppressLint("PrivateApi")
 	public static double getBatteryCapacity(Context context) {
 		try {
 			// Please note: Uses reflection, API not available on all devices
@@ -2755,7 +2457,7 @@ public final class SamplingLibrary {
 			return ((String) getName.invoke(context, subId));
 		} catch (Exception e) {
 			if(Constants.DEBUG && e != null && e.getLocalizedMessage() != null){
-				Log.d(STAG, "Failed getting sim operator with subid: " + e.getLocalizedMessage());
+				Logger.d(STAG, "Failed getting sim operator with subid: " + e.getLocalizedMessage());
 			}
 		}
 		return null;
@@ -2777,7 +2479,7 @@ public final class SamplingLibrary {
             }
         } catch(Exception e){
             if(Constants.DEBUG && e != null && e.getLocalizedMessage() != null){
-                Log.d(STAG, "Failed getting network location: " + e.getLocalizedMessage());
+                Logger.d(STAG, "Failed getting network location: " + e.getLocalizedMessage());
             }
         }
         return null;
@@ -2798,7 +2500,7 @@ public final class SamplingLibrary {
 			}
 		} catch (Exception e){
 			if(Constants.DEBUG && e != null && e.getLocalizedMessage() != null){
-				Log.d(STAG, "Failed getting service provider: " + e.getLocalizedMessage());
+				Logger.d(STAG, "Failed getting service provider: " + e.getLocalizedMessage());
 			}
 		}
 		return null;
@@ -2863,7 +2565,7 @@ public final class SamplingLibrary {
 	 * @param context the Context
 	 * @return a List<Feature> populated with extra items to collect outside of the protocol spec.
 	 */
-	private static List<Feature> getExtras() {
+	public static List<Feature> getExtras(Context context) {
 		LinkedList<Feature> res = new LinkedList<Feature>();
 		res.add(getVmVersion());
 		res.add(versionCode());
@@ -2902,6 +2604,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * Get the java.vm.version system property as a Feature("vm", version).
+	 * @param context the Context.
 	 * @return a Feature instance with the key "vm" and value of the "java.vm.version" system property. 
 	 */
 	private static Feature getVmVersion() {
@@ -2919,9 +2622,9 @@ public final class SamplingLibrary {
 			String hexB = convertToHex(bytes);
 			sigList.add(hexB);
 		}
-		Signature[] sigs = pak.signatures;
+		Signature[] signatures = pak.signatures;
 
-		for (Signature s : sigs) {
+		for (Signature s : signatures) {
 			MessageDigest md = null;
 			try {
 				md = MessageDigest.getInstance("SHA-1");
@@ -2941,7 +2644,8 @@ public final class SamplingLibrary {
 				if (pkPublic == null)
 					continue;
 				String al = pkPublic.getAlgorithm();
-				if (al.equals("RSA")) {
+				switch (al) {
+					case "RSA": {
 					md = MessageDigest.getInstance("SHA-256");
 					RSAPublicKey rsa = (RSAPublicKey) pkPublic;
 					byte[] data = rsa.getModulus().toByteArray();
@@ -2954,7 +2658,9 @@ public final class SamplingLibrary {
 					dig = md.digest();
 					// Add SHA-256 of modulus
 					sigList.add(convertToHex(dig));
-				} else if (al.equals("DSA")) {
+						break;
+					}
+					case "DSA": {
 					DSAPublicKey dsa = (DSAPublicKey) pkPublic;
 					md = MessageDigest.getInstance("SHA-256");
 					byte[] data = dsa.getY().toByteArray();
@@ -2967,12 +2673,13 @@ public final class SamplingLibrary {
 					dig = md.digest();
 					// Add SHA-256 of public key (DSA)
 					sigList.add(convertToHex(dig));
-				} else {
-					Log.e("SamplingLibrary", "Weird algorithm: " + al + " for " + pak.packageName);
+						break;
 				}
-			} catch (NoSuchAlgorithmException e) {
-				// Do nothing
-			} catch (CertificateException e) {
+					default:
+						Logger.e("SamplingLibrary", "Weird algorithm: " + al + " for " + pak.packageName);
+						break;
+				}
+			} catch (NoSuchAlgorithmException | CertificateException e) {
 				// Do nothing
 			}
 
@@ -2985,7 +2692,7 @@ public final class SamplingLibrary {
 			return null;
 		if (permList.size() == 0)
 			populatePermList();
-		// Log.i(STAG, "PermList Size: " + permList.size());
+		// Logger.i(STAG, "PermList Size: " + permList.size());
 		byte[] bytes = new byte[permList.size() / 8 + 1];
 		for (String p : perms) {
 			int idx = permList.indexOf(p);
