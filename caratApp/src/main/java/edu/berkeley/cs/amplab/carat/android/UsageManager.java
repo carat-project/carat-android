@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import edu.berkeley.cs.amplab.carat.android.receivers.AsyncSuccess;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
@@ -108,6 +109,10 @@ public class UsageManager {
     }
 
     public static void promptPermission(Context context){
+        promptPermission(context, null);
+    }
+
+    public static void promptPermission(Context context, AsyncSuccess callback){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Permission request");
         builder.setMessage("Allow Carat to monitor running applications by enabling usage access in settings.");
@@ -115,10 +120,16 @@ public class UsageManager {
             Toast.makeText(context, "Enable the permission and return with the back button", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
             context.startActivity(intent);
+            if(callback != null){
+                callback.complete(true);
+            }
         });
         builder.setIcon(R.drawable.carat_material_icon);
         builder.setNegativeButton("Cancel", (dialog, which) -> {
             Toast.makeText(context, "You can enable this option in the settings.", Toast.LENGTH_SHORT).show();
+            if(callback != null){
+                callback.complete(false);
+            }
         });
         AlertDialog dialog = builder.create();
         dialog.show();
