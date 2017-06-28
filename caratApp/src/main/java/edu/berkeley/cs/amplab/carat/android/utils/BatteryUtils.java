@@ -21,7 +21,7 @@ public class BatteryUtils {
 
     public static double getBatteryLevel(Intent intent){
         double level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-        int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        double scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
         // TODO: Remove logging while confirmed working. This floods the log.
         if(level < 0){
@@ -36,7 +36,7 @@ public class BatteryUtils {
         }
 
         if(level > 0 && scale > 0){
-            level = (level * 100) / (double)scale;
+            level = level / scale * 100.0;
         }
         return Math.round(level);
     }
