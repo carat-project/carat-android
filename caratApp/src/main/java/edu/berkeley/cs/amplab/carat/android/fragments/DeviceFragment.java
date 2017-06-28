@@ -135,8 +135,8 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
     }
 
     private void setValues() {
-        if (mainActivity.getJScore() == -1 || mainActivity.getJScore() == 0) {
-            cd.setCustomText(new String[]{"N/A"});
+        if (mainActivity.getJScore() == -1) {
+            cd.setCustomText(new String[]{"..."});
         } else {
             cd.showValue((float) mainActivity.getJScore(), 99f, false);
         }

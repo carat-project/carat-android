@@ -496,7 +496,7 @@ public class CaratApplication extends Application {
 
     public static int getJscore() {
         final Reports reports = getStorage().getReports();
-        int jscore = 0;
+        int jscore = -1;
         if (reports != null) {
             jscore = (int)Math.round(reports.getJScore() * 100);
             if(jscore <= 0){

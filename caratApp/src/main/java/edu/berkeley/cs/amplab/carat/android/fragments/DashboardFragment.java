@@ -148,8 +148,8 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     }
 
     public void setValues() {
-        if (mainActivity.getJScore() == -1 || mainActivity.getJScore() == 0) {
-            cd.setCustomText(new String[]{"N/A"});
+        if (mainActivity.getJScore() == -1) {
+            cd.setCustomText(new String[]{"..."});
         } else {
             cd.setCustomText(null);
             cd.showValue((float) mainActivity.getJScore(), 99f, false);
