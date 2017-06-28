@@ -2,13 +2,16 @@ package edu.berkeley.cs.amplab.carat.android.adapters;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.Arrays;
@@ -18,9 +21,11 @@ import java.util.List;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.models.SimpleProcessInfo;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 
 /**
@@ -126,19 +131,47 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
     private void setViewsInChild(View v, SimpleProcessInfo item) {
         TextView priorityValue = (TextView) v.findViewById(R.id.priority_value);
         TextView processVersion = (TextView) v.findViewById(R.id.version_amount);
+        TextView packageName = (TextView) v.findViewById(R.id.package_name);
         processVersion.setText(item.getVersionName());
         priorityValue.setText(item.getImportance());
+        packageName.setText(item.getPackageName());
 
     }
 
     private void setItemViews(View v, SimpleProcessInfo item, int groupPosition) {
         ImageView processIcon = (ImageView) v.findViewById(R.id.process_icon);
         TextView processName = (TextView) v.findViewById(R.id.process_name);
-        TextView processPackage = (TextView) v.findViewById(R.id.process_package);
+        TextView serviceCount = (TextView) v.findViewById(R.id.serviceCount);
+        TextView activityCount = (TextView) v.findViewById(R.id.activityCount);
+        TextView serviceDesc = (TextView) v.findViewById(R.id.serviceText);
+        TextView activityDesc = (TextView) v.findViewById(R.id.activityText);
+        View activityIndicator = (View) v.findViewById(R.id.activityIndicator);
 
         processIcon.setImageDrawable(item.getIcon());
         processName.setText(item.getLocalizedName());
-        processPackage.setText(item.getPackageName());
+
+        int aCount = item.getActivityCount();
+        int sCount = item.getServiceCount();
+
+        if(aCount == 0){
+            activityCount.setVisibility(View.GONE);
+            activityDesc.setVisibility(View.GONE);
+            activityIndicator.setBackgroundColor(v.getResources().getColor(R.color.gray));
+        } else {
+            activityCount.setVisibility(View.VISIBLE);
+            activityDesc.setVisibility(View.VISIBLE);
+            activityIndicator.setBackgroundColor(v.getResources().getColor(R.color.accent));
+            activityCount.setText(String.valueOf(aCount));
+        }
+
+        if(sCount == 0){
+            serviceCount.setVisibility(View.GONE);
+            serviceDesc.setVisibility(View.GONE);
+        } else {
+            serviceCount.setVisibility(View.VISIBLE);
+            serviceDesc.setVisibility(View.VISIBLE);
+            serviceCount.setText(String.valueOf(sCount));
+        }
 
     }
 
@@ -168,12 +201,26 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
     }
 
     private SimpleProcessInfo[] convertProcessInfo(List<ProcessInfo> list){
-        List<SimpleProcessInfo> result = new LinkedList<SimpleProcessInfo>();
+        List<SimpleProcessInfo> result = new LinkedList<>();
         Context context = caratApplication.getApplicationContext();
         for(ProcessInfo pi : list){
             String pName = pi.getPName();
             String localizedName = CaratApplication.labelForApp(context, pName);
-            String importance = SamplingLibrary.getAppPriority(context, pName);
+            String importance = pi.getImportance();
+            int serviceCount = 0;
+            int activityCount = 0;
+            if(pi.isSetProcesses()){
+                for(PackageProcess p : pi.getProcesses()){
+                    String processName = p.getProcessName();
+                    int processCount = p.getProcessCount();
+                    processCount = processCount <= 0 ? 1 : processCount;
+                    if(processName.contains("@")){
+                        serviceCount += processCount;
+                    } else {
+                        activityCount += processCount;
+                    }
+                }
+            }
             Drawable icon = CaratApplication.iconForApp(context, pName);
             PackageInfo pInfo = SamplingLibrary.getPackageInfo(context, pName);
             String versionName;
@@ -185,7 +232,15 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
             } else {
                 versionName = "N/A";
             }
-            result.add(new SimpleProcessInfo(pName, localizedName, importance, versionName, icon));
+            SimpleProcessInfo spi = new SimpleProcessInfo()
+                    .setPackageName(pName)
+                    .setLocalizedName(localizedName)
+                    .setImportance(importance)
+                    .setVersionName(versionName)
+                    .setIcon(icon)
+                    .setActivityCount(activityCount)
+                    .setServiceCount(serviceCount);
+            result.add(spi);
         }
         return result.toArray(new SimpleProcessInfo[result.size()]);
     }

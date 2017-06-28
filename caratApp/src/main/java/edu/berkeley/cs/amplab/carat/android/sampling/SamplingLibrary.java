@@ -705,7 +705,9 @@ public final class SamplingLibrary {
 							break;
 					}
 				}
-				if(foreground == 0 || launchCount == 0) continue;
+				if(launchCount == 0){
+				    launchCount = 1;
+                }
                 process.setProcessName(packageName);
 				process.setForegroundTime(foreground);
 				process.setLaunchCount(launchCount);

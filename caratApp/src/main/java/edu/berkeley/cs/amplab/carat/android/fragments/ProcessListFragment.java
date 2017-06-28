@@ -1,27 +1,36 @@
 package edu.berkeley.cs.amplab.carat.android.fragments;
 
 import android.app.Activity;
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.TimeUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.UsageManager;
+import edu.berkeley.cs.amplab.carat.android.receivers.AsyncSuccess;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.adapters.ProcessExpandListAdapter;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 
 /**
  * Created by Valto on 7.10.2015.
+ * Modified by Jonatan Hamberg on 28.6.2017
  */
 public class ProcessListFragment extends Fragment {
     private MainActivity mainActivity;
@@ -58,15 +67,29 @@ public class ProcessListFragment extends Fragment {
     private void initViewRefs() {
         processHeader = (RelativeLayout) mainFrame.findViewById(R.id.process_header);
         expandableListView = (ExpandableListView) mainFrame.findViewById(R.id.expandable_process_list);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            Context context = getContext();
+            TextView description = (TextView) mainFrame.findViewById(R.id.processlistDescription);
+            description.setText(R.string.process_list_message_lp);
+            if(!UsageManager.isPermissionGranted(context)){
+                UsageManager.promptPermission(context, new AsyncSuccess() {
+                    @Override
+                    public void complete(boolean success) {
+                        if(!success){
+                            Toast.makeText(context, "Only services will be shown.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        }
     }
 
     private void refresh() {
         CaratApplication app = (CaratApplication) getActivity().getApplication();
         SamplingLibrary.resetRunningProcessInfo();
-
-        // TODO: Fix me
-        List<ProcessInfo> searchResults = new ArrayList<>();
-        // SamplingLibrary.getRunningServices(getActivity());
+        Context context = getContext();
+        long recent = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(30);
+        List<ProcessInfo> searchResults = SamplingLibrary.getRunningProcessInfoForSample(context, recent);
         expandableListView.setAdapter(new ProcessExpandListAdapter((MainActivity) getActivity(),
                 expandableListView, app, searchResults));
     }
