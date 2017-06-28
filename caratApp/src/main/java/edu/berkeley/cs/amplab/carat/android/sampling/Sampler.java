@@ -111,7 +111,7 @@ public class Sampler {
         BatteryDetails details = new BatteryDetails();
         details.setBatteryHealth(getHealthString(intent));
         details.setBatteryTechnology(intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY));
-        details.setBatteryTemperature(intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 100);
+        details.setBatteryTemperature(intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10.0);
         details.setBatteryVoltage(intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000.0);
         details.setBatteryCharger(getChargerString(intent));
         details.setBatteryCapacity(SamplingLibrary.getBatteryCapacity(context));
