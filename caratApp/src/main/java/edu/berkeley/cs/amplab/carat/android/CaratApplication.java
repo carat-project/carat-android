@@ -41,6 +41,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
@@ -344,31 +345,11 @@ public class CaratApplication extends Application {
         int actionsAmount=0;
         if(CaratApplication.getStorage() != null){
             SimpleHogBug[] report = CaratApplication.getStorage().getBugReport();
-            actionsAmount += filterByRunning(report).size();
+            actionsAmount += ProcessUtil.filterByRunning(report, getAppContext()).size();
             report = CaratApplication.getStorage().getHogReport();
-            actionsAmount += filterByRunning(report).size();
+            actionsAmount += ProcessUtil.filterByRunning(report, getAppContext()).size();
         }
         return actionsAmount;
-    }
-
-    public static ArrayList<SimpleHogBug> filterByRunning(SimpleHogBug[] packages){
-        if(packages == null || packages.length == 0) return new ArrayList<>();
-
-        ArrayList<SimpleHogBug> report = filterByVisibility(packages);
-        HashMap<String, SimpleHogBug> running = new HashMap<>();
-        if(report == null) return new ArrayList<>();
-        for(SimpleHogBug s : report){
-            if(SamplingLibrary.isRunning(getAppContext(), s.getAppName())){
-                SimpleHogBug duplicate = running.get(s.getAppName());
-                if(duplicate != null
-                        && s.getAppPriority() == duplicate.getAppPriority()
-                        && s.getBenefit() == duplicate.getBenefit()){
-                    continue;
-                }
-                running.put(s.getAppName(), s);
-            }
-        }
-        return new ArrayList<>(running.values());
     }
 
     public static ArrayList<SimpleHogBug> filterByVisibility(SimpleHogBug[] reports){
@@ -517,10 +498,12 @@ public class CaratApplication extends Application {
         final Reports reports = getStorage().getReports();
         int jscore = 0;
         if (reports != null) {
-            jscore = ((int) (reports.getJScore() * 100));
+            jscore = (int)Math.round(reports.getJScore() * 100);
             if(jscore <= 0){
-                Logger.d(TAG, "No personal J-score yet, using model score");
-                jscore = ((int) (reports.model.getScore() * 100));
+                jscore = (int) Math.round(reports.model.getScore() * 100);
+                if(jscore >= 0){
+                    Logger.d(TAG, "No personal J-score yet, using model score: " + jscore);
+                }
             }
         }
         return jscore;

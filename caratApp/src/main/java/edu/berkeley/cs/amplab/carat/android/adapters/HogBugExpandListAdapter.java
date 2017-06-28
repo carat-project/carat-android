@@ -19,6 +19,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 
 /**
  * Created by Valto on 30.9.2015.
@@ -55,7 +56,7 @@ public class HogBugExpandListAdapter extends BaseExpandableListAdapter implement
         this.lv.setOnChildClickListener(this);
         this.lv.setOnGroupClickListener(this);
 
-        allBugsOrHogs = CaratApplication.filterByVisibility(results);
+        allBugsOrHogs = ProcessUtil.filterByVisibility(results);
         Collections.sort(allBugsOrHogs);
     }
 

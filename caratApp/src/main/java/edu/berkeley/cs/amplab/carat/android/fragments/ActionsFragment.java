@@ -22,6 +22,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.adapters.ActionsExpandListAdapter;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 
 /**
  * Created by Valto on 30.9.2015.
@@ -81,8 +82,8 @@ public class ActionsFragment extends Fragment implements Serializable {
         bugReport = s.getBugReport();
 
         ArrayList<SimpleHogBug> running = new ArrayList<>();
-        running.addAll(filterByRunning(hogReport));
-        running.addAll(filterByRunning(bugReport));
+        running.addAll(ProcessUtil.filterByRunning(hogReport, getContext()));
+        running.addAll(ProcessUtil.filterByRunning(bugReport, getContext()));
 
         // Populate actions list with running applications
         if (!s.hogsIsEmpty() || !s.bugsIsEmpty() || !CaratApplication.getStaticActions().isEmpty()) {
@@ -101,30 +102,6 @@ public class ActionsFragment extends Fragment implements Serializable {
             expandableListView.setVisibility(View.GONE);
         }
     }
-
-    private ArrayList<SimpleHogBug> filterByRunning(SimpleHogBug[] report){
-        HashMap<String, SimpleHogBug> running = new HashMap<>();
-        if(report == null) return new ArrayList<>();
-        for(SimpleHogBug s : report){
-            if(SamplingLibrary.isRunning(mainActivity, s.getAppName())){
-                SimpleHogBug duplicate = running.get(s.getAppName());
-                if(duplicate != null
-                        && s.getAppName().equalsIgnoreCase(duplicate.getAppName())
-                        && s.getAppPriority().equalsIgnoreCase(duplicate.getAppPriority())
-                        && s.getBenefit() == duplicate.getBenefit()){
-                    continue;
-                }
-
-                // Enable this when we can reliably detect killable apps
-                // if(CaratApplication.isPackageSystemApp(s.getAppName())){
-                //   continue;
-                // }
-                running.put(s.getAppName(), s);
-            }
-        }
-        return new ArrayList<>(running.values());
-    }
-
 
     @Override
     public void onSaveInstanceState(Bundle outState) {

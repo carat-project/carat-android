@@ -18,6 +18,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.RapidSampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 /**
@@ -58,7 +59,7 @@ public class IntentRouter extends IntentService {
         // Start up a location receiver in case it has died, it should stay up long enough
         // to get at least one update, which is enough for the coarse location sampling
         // we do for distance traveled.
-        if(!Util.isServiceRunning(context, LocationReceiver.class)){
+        if(!ProcessUtil.isServiceRunning(context, LocationReceiver.class)){
             startService(new Intent(this, LocationReceiver.class));
         }
 
@@ -128,7 +129,7 @@ public class IntentRouter extends IntentService {
             preferences.edit().putBoolean(Keys.rapidSamplingDisabled, false).apply();
         }
         Intent serviceIntent = new Intent(this, RapidSampler.class);
-        boolean running = Util.isServiceRunning(context, RapidSampler.class);
+        boolean running = ProcessUtil.isServiceRunning(context, RapidSampler.class);
         boolean charging = SamplingLibrary.isDeviceCharging(context);
         if(!running && charging && !disabled){
             startService(serviceIntent);

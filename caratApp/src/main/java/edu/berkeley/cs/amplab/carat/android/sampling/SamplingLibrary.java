@@ -86,6 +86,7 @@ import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
@@ -637,7 +638,7 @@ public final class SamplingLibrary {
 		for (RunningAppProcessInfo pi : runningAppProcesses) {
 			if(pi != null){
 				String processName = pi.processName;
-				String packageName = Util.trimProcessName(processName)[0];
+				String packageName = ProcessUtil.trimProcessName(processName)[0];
 				HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
 						processes.get(packageName) : new HashMap<String, PackageProcess>();
 				PackageProcess process;
@@ -731,7 +732,7 @@ public final class SamplingLibrary {
 				if (component != null && !Util.isNullOrEmpty(component.getPackageName())) {
 					packageName = component.getPackageName();
 				} else {
-					packageName = Util.trimProcessName(serviceInfo.process)[0];
+					packageName = ProcessUtil.trimProcessName(serviceInfo.process)[0];
 				}
 
 				HashMap<String, PackageProcess> processes = services.containsKey(packageName) ?
@@ -778,7 +779,7 @@ public final class SamplingLibrary {
 	}
 
 	private static String serviceToProcessName(String serviceName){
-		String[] split = Util.trimProcessName(serviceName);
+		String[] split = ProcessUtil.trimProcessName(serviceName);
 		if(split.length >= 2){
 			return split[0] + "@" + split[1];
 		}
@@ -837,26 +838,14 @@ public final class SamplingLibrary {
 	 * @return true if the application is running, false otherwise.
 	 */
 	public static boolean isRunning(Context context, String appName) {
-		Map<String, List<PackageProcess>> runningProcesses = getRunningNow(context);
-		for (String pkg  : runningProcesses.keySet()) {
-			for(PackageProcess process : runningProcesses.get(pkg)) {
-				String processName = Util.trimProcessName(process.getProcessName())[0];
-				int importance = process.getImportance();
-				if(importance != RunningAppProcessInfo.IMPORTANCE_EMPTY &&
-						(((processName != null) && processName.equals(appName))
-						||  pkg.equals(appName))){
-					return true;
-				}
-			}
-		}
-		
-		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
-		for (String pkg : runningServices.keySet()){
-			for(PackageProcess service : runningServices.get(pkg)){
-				String processName = Util.trimProcessName(service.processName)[0];
-				if(!service.sleeping && (pkg.equals(appName) || pkg.equals(processName))){
-					return true;
-				}
+		long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
+		List<ProcessInfo> runningProcesses = getRunningProcessInfoForSample(context, recent);
+		for(ProcessInfo p : runningProcesses){
+			String importance = p.getImportance();
+			String packageName = ProcessUtil.trimProcessName(p.pName)[0];
+			if(packageName != null && appName.equals(packageName)
+					&& !importance.equals("Not running")){
+				return true;
 			}
 		}
 		return false;
@@ -1176,6 +1165,7 @@ public final class SamplingLibrary {
 	 * @return list of process information for all running processes.
 	 */
 	public static List<ProcessInfo> getRunningProcessInfoForSample(Context context, long lastSample) {
+		Logger.d(TAG, "Fetching running processes");
 		List<ProcessInfo> result = new ArrayList<>();
 		PackageManager pm = context.getPackageManager();
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -1198,7 +1188,7 @@ public final class SamplingLibrary {
 		}
 
 		for(String pkgName : packageNames){
-			String packageName = Util.trimProcessName(pkgName)[0]; // Just in case
+			String packageName = ProcessUtil.trimProcessName(pkgName)[0]; // Just in case
 			ProcessInfo processInfo = new ProcessInfo();
 			processInfo.setPName(packageName);
 			processInfo.setPId(-1); // Default values are expected to change during method
@@ -1373,6 +1363,7 @@ public final class SamplingLibrary {
 			e.apply();
 		}
 
+		Logger.d(TAG, "Finished fetching processes");
 		return result;
 	}
 

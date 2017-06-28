@@ -51,6 +51,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragment;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 
@@ -351,16 +352,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SimpleHogBug[] h = CaratApplication.getStorage().getHogReport();
         int actionsAmount = 0;
         if (b != null) {
-            int bugsAmount = CaratApplication.filterByVisibility(b).size();
+            int bugsAmount = ProcessUtil.filterByVisibility(b).size();
             setBugAmount(String.valueOf(bugsAmount));
-            actionsAmount += CaratApplication.filterByRunning(b).size();
+            actionsAmount += ProcessUtil.filterByRunning(b, getApplicationContext()).size();
         } else {
             setBugAmount("0");
         }
         if (h != null) {
-            int hogsAmount = CaratApplication.filterByVisibility(h).size();
+            int hogsAmount = ProcessUtil.filterByVisibility(h).size();
             setHogAmount(String.valueOf(hogsAmount));
-            actionsAmount += CaratApplication.filterByRunning(h).size();
+            actionsAmount += ProcessUtil.filterByRunning(h, getApplicationContext()).size();
         } else {
             setHogAmount("0");
         }

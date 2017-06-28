@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
+import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.UsageManager;
@@ -88,7 +89,7 @@ public class ProcessListFragment extends Fragment {
         CaratApplication app = (CaratApplication) getActivity().getApplication();
         SamplingLibrary.resetRunningProcessInfo();
         Context context = getContext();
-        long recent = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(30);
+        long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
         List<ProcessInfo> searchResults = SamplingLibrary.getRunningProcessInfoForSample(context, recent);
         expandableListView.setAdapter(new ProcessExpandListAdapter((MainActivity) getActivity(),
                 expandableListView, app, searchResults));

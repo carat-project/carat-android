@@ -368,7 +368,7 @@ public class CommunicationManager {
 			if (r != null) {
 			    if (Constants.DEBUG) Logger.d("CommunicationManager.refreshMainReports()",
 						"got the main report (action list)" + ", model=" + r.getModel()
-						+ ", jscore=" + r.getJScore() + ". Storing the report in the databse");
+						+ ", jscore=" + r.getJScore() + ", model.jscore=" + r.model.getScore() + ". Storing the report in the databse");
 				CaratApplication.getStorage().writeReports(r);
 			} else {
 			    if (Constants.DEBUG)

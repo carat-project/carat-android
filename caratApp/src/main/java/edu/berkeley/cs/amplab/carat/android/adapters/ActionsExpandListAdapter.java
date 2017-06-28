@@ -34,6 +34,7 @@ import edu.berkeley.cs.amplab.carat.android.protocol.ClickTracking;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
@@ -264,11 +265,13 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
             @Override
             public void onClick(View v) {
                 killApp(item, v, holder);
+                ProcessUtil.invalidateInMemoryProcesses();
             }
         });
 
         holder.uninstallAppButton.setOnClickListener(v1 -> {
             uninstallApp(item, v, holder);
+            ProcessUtil.invalidateInMemoryProcesses();
         });
 
         holder.appManagerButton.setEnabled(true);
@@ -277,6 +280,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
             @Override
             public void onClick(View v){
                 openAppDetails(item);
+                ProcessUtil.invalidateInMemoryProcesses();
             }
         });
 
