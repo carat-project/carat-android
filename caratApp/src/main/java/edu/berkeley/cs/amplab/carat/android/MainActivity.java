@@ -1,9 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android;
 
 import android.annotation.SuppressLint;
-import android.app.usage.UsageEvents;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -114,6 +111,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             getWindow().setStatusBarColor(getResources().getColor(R.color.statusbar_color));
+            if(!UsageManager.isPermissionGranted(this)) {
+                UsageManager.promptPermission(this);
+            }
         }
 
         p = PreferenceManager.getDefaultSharedPreferences(this);
@@ -163,12 +163,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if(!UsageManager.isPermissionGranted(this)){
-                UsageManager.promptPermission(this);
-            }
-        }
     }
 
     @Override
