@@ -25,7 +25,7 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
  */
 public class IntentRouter extends IntentService {
     private final static String TAG = IntentRouter.class.getSimpleName();
-    private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(2);
+    private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(15);
     private final static int REQUEST_CODE = 67294580;
 
     private Context context;
@@ -65,11 +65,11 @@ public class IntentRouter extends IntentService {
         String action = intent.getStringExtra(Keys.intentReceiverAction);
         if(action != null){
             Logger.d(TAG, "Routing intent for " + action);
-            long now = System.currentTimeMillis();
+            long now = (long)(System.currentTimeMillis()/1000.0);
             long lastSample = preferences.getLong(Keys.lastSampleTimestamp, 0);
             switch(action){
                 case Constants.SCHEDULED_SAMPLE:
-                    if(now - lastSample >= SAMPLING_INTERVAL){
+                    if(now - lastSample >= SAMPLING_INTERVAL - 100){
                         Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
                     }
                     scheduleNextSample(SAMPLING_INTERVAL);
@@ -92,7 +92,9 @@ public class IntentRouter extends IntentService {
                     if(isAlreadyScheduled(getScheduleIntent()) && (future - now < SAMPLING_INTERVAL/4.0 || now > future)){
                         Logger.d(TAG, "Next scheduled sampling time either soon or already passed, sampling now");
                         cancelScheduledSample();
-                        Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                        if(now - lastSample >= SAMPLING_INTERVAL - 100){
+                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                        }
                         scheduleNextSample(SAMPLING_INTERVAL);
                     }
 
@@ -101,7 +103,7 @@ public class IntentRouter extends IntentService {
                     // the last sample, we've been dead for a good while and want to sample right
                     // away before rescheduling.
                     else if(!isAlreadyScheduled(getScheduleIntent())){
-                        if(now - lastSample >= SAMPLING_INTERVAL){
+                        if(now - lastSample >= SAMPLING_INTERVAL - 100){
                             Logger.d(TAG, "Sampler has been dead for a long while, sampling now");
                             Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
                         }
