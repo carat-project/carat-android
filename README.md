@@ -1,5 +1,9 @@
 # Carat Project: Android application
 
+## This branch was in beta on Google Play 2017-06-19 as Carat version 2.17.5
+With minor changes to Italian translation from 2.17.4
+
+
 For details, visit http://carat.cs.helsinki.fi
 
 ## Build instructions
