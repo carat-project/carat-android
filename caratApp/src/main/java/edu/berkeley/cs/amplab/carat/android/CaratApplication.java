@@ -518,6 +518,10 @@ public class CaratApplication extends Application {
         int jscore = 0;
         if (reports != null) {
             jscore = ((int) (reports.getJScore() * 100));
+            if(jscore <= 0){
+                Logger.d(TAG, "No personal J-score yet, using model score");
+                jscore = ((int) (reports.model.getScore() * 100));
+            }
         }
         return jscore;
     }
