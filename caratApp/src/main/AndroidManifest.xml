@@ -77,7 +77,9 @@
             android:process=":location"/>
 
         <!-- Used to display notification when charging -->
-        <service android:name=".sampling.RapidSampler" />
+        <service
+            android:name=".sampling.RapidSampler"
+             android:process=":charging" />
 
         <!-- Receivers -->
         <receiver
