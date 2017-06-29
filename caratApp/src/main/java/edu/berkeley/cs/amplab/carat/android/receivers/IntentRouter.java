@@ -71,7 +71,11 @@ public class IntentRouter extends IntentService {
             switch(action){
                 case Constants.SCHEDULED_SAMPLE:
                     if(now - lastSample >= SAMPLING_INTERVAL - 100){
-                        Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                        Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> {
+                            if(wl.isHeld()){
+                                wl.release();
+                            }
+                        });
                     }
                     scheduleNextSample(SAMPLING_INTERVAL);
                     break;
@@ -79,7 +83,11 @@ public class IntentRouter extends IntentService {
                 case Intent.ACTION_POWER_DISCONNECTED:
                 case Intent.ACTION_BATTERY_CHANGED:
                     cancelScheduledSample();
-                    Sampler.sample(context, action, wl::release);
+                    Sampler.sample(context, action, () -> {
+                        if(wl.isHeld()){
+                            wl.release();
+                        }
+                    });
                     scheduleNextSample(SAMPLING_INTERVAL);
                     break;
                 default:
@@ -97,7 +105,11 @@ public class IntentRouter extends IntentService {
                                 "the future or already passed, sampling now");
                         cancelScheduledSample();
                         if(now - lastSample >= SAMPLING_INTERVAL - 100){
-                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> {
+                                if(wl.isHeld()){
+                                    wl.release();
+                                }
+                            });
                         }
                         scheduleNextSample(SAMPLING_INTERVAL);
                     }
@@ -109,7 +121,11 @@ public class IntentRouter extends IntentService {
                     else if(!isAlreadyScheduled(getScheduleIntent())){
                         if(now - lastSample >= SAMPLING_INTERVAL - 100){
                             Logger.d(TAG, "Sampler has been dead for a long while, sampling now");
-                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> {
+                                if(wl.isHeld()){
+                                    wl.release();
+                                }
+                            });
                         }
                         Logger.d(TAG, "Revived sampler");
                         scheduleNextSample(SAMPLING_INTERVAL);

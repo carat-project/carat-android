@@ -77,7 +77,9 @@ public class LocationReceiver extends Service implements LocationListener{
 
         Logger.d(TAG, "Distance traveled: " + distance);
         Logger.d(TAG, "Last known location: " + locationJSON);
-        wl.release();
+        if(wl.isHeld()){
+            wl.release();
+        }
 
         // Enable for maximum energy efficiency
         stopSelf();
