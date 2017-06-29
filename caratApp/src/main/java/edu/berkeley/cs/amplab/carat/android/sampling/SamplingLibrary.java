@@ -78,6 +78,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import edu.berkeley.cs.amplab.carat.android.BuildConfig;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
@@ -412,48 +413,6 @@ public final class SamplingLibrary {
 	}
 
 	/**
-	 * Return misc system details that we might want to use later. Currently
-	 * does nothing.
-	 * 
-	 * @return
-	 */
-	public static Map<String, String> getSystemDetails() {
-		Map<String, String> results = new HashMap<String, String>();
-		// TODO: Some of this should be added to registration to identify the
-		// device and OS.
-		// Cyanogenmod and others may have different kernels etc that affect
-		// performance.
-
-		/*
-		 * Logger.d("SetModel", "board:" + android.os.Build.BOARD);
-		 * Logger.d("SetModel", "bootloader:" + android.os.Build.BOOTLOADER);
-		 * Logger.d("SetModel", "brand:" + android.os.Build.BRAND);
-		 * Logger.d("SetModel", "CPU_ABI 1 and 2:" + android.os.Build.CPU_ABI +
-		 * ", " + android.os.Build.CPU_ABI2); Logger.d("SetModel", "dev:" +
-		 * android.os.Build.DEVICE); Logger.d("SetModel", "disp:" +
-		 * android.os.Build.DISPLAY); Logger.d("SetModel", "FP:" +
-		 * android.os.Build.FINGERPRINT); Logger.d("SetModel", "HW:" +
-		 * android.os.Build.HARDWARE); Logger.d("SetModel", "host:" +
-		 * android.os.Build.HOST); Logger.d("SetModel", "ID:" +
-		 * android.os.Build.ID); Logger.d("SetModel", "manufacturer:" +
-		 * android.os.Build.MANUFACTURER); Logger.d("SetModel", "prod:" +
-		 * android.os.Build.PRODUCT); Logger.d("SetModel", "radio:" +
-		 * android.os.Build.RADIO); // FIXME: SERIAL not available on 2.2 //
-		 * Logger.d("SetModel", "ser:" + android.os.Build.SERIAL);
-		 * Logger.d("SetModel", "tags:" + android.os.Build.TAGS); Logger.d("SetModel",
-		 * "time:" + android.os.Build.TIME); Logger.d("SetModel", "type:" +
-		 * android.os.Build.TYPE); Logger.d("SetModel", "unknown:" +
-		 * android.os.Build.UNKNOWN); Logger.d("SetModel", "user:" +
-		 * android.os.Build.USER); Logger.d("SetModel", "model:" +
-		 * android.os.Build.MODEL); Logger.d("SetModel", "codename:" +
-		 * android.os.Build.VERSION.CODENAME); Logger.d("SetModel", "release:" +
-		 * android.os.Build.VERSION.RELEASE);
-		 */
-
-		return results;
-	}
-
-	/**
 	 * Read memory information from /proc/meminfo. Return used, free, inactive,
 	 * and active memory.
 	 * 
@@ -638,7 +597,7 @@ public final class SamplingLibrary {
 		for (RunningAppProcessInfo pi : runningAppProcesses) {
 			if(pi != null){
 				String processName = pi.processName;
-				String packageName = ProcessUtil.trimProcessName(processName)[0];
+				String packageName = Util.trimProcessName(processName)[0];
 				HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
 						processes.get(packageName) : new HashMap<String, PackageProcess>();
 				PackageProcess process;
@@ -706,9 +665,7 @@ public final class SamplingLibrary {
 							break;
 					}
 				}
-				if(launchCount == 0){
-				    launchCount = 1;
-                }
+				if(foreground == 0 || launchCount == 0) continue;
                 process.setProcessName(packageName);
 				process.setForegroundTime(foreground);
 				process.setLaunchCount(launchCount);
@@ -732,7 +689,7 @@ public final class SamplingLibrary {
 				if (component != null && !Util.isNullOrEmpty(component.getPackageName())) {
 					packageName = component.getPackageName();
 				} else {
-					packageName = ProcessUtil.trimProcessName(serviceInfo.process)[0];
+					packageName = Util.trimProcessName(serviceInfo.process)[0];
 				}
 
 				HashMap<String, PackageProcess> processes = services.containsKey(packageName) ?
@@ -779,7 +736,7 @@ public final class SamplingLibrary {
 	}
 
 	private static String serviceToProcessName(String serviceName){
-		String[] split = ProcessUtil.trimProcessName(serviceName);
+		String[] split = Util.trimProcessName(serviceName);
 		if(split.length >= 2){
 			return split[0] + "@" + split[1];
 		}
@@ -838,14 +795,26 @@ public final class SamplingLibrary {
 	 * @return true if the application is running, false otherwise.
 	 */
 	public static boolean isRunning(Context context, String appName) {
-		long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
-		List<ProcessInfo> runningProcesses = getRunningProcessInfoForSample(context, recent);
-		for(ProcessInfo p : runningProcesses){
-			String importance = p.getImportance();
-			String packageName = ProcessUtil.trimProcessName(p.pName)[0];
-			if(packageName != null && appName.equals(packageName)
-					&& !importance.equals("Not running")){
-				return true;
+		Map<String, List<PackageProcess>> runningProcesses = getRunningNow(context);
+		for (String pkg  : runningProcesses.keySet()) {
+			for(PackageProcess process : runningProcesses.get(pkg)) {
+				String processName = Util.trimProcessName(process.getProcessName())[0];
+				int importance = process.getImportance();
+				if(importance != RunningAppProcessInfo.IMPORTANCE_EMPTY &&
+						(((processName != null) && processName.equals(appName))
+						||  pkg.equals(appName))){
+					return true;
+				}
+			}
+		}
+		
+		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
+		for (String pkg : runningServices.keySet()){
+			for(PackageProcess service : runningServices.get(pkg)){
+				String processName = Util.trimProcessName(service.processName)[0];
+				if(!service.sleeping && (pkg.equals(appName) || pkg.equals(processName))){
+					return true;
+				}
 			}
 		}
 		return false;
@@ -1294,7 +1263,7 @@ public final class SamplingLibrary {
 				try {
 					installationSource = pm.getInstallerPackageName(packageName);
 				} catch (IllegalArgumentException iae) {
-					Logger.d(STAG, "Could not get installer for " + packageName);
+					Logger.e(STAG, "Could not get installer for " + packageName);
 				}
 			}
 			processInfo.setInstallationPkg(installationSource == null
@@ -1363,7 +1332,6 @@ public final class SamplingLibrary {
 			e.apply();
 		}
 
-		Logger.d(TAG, "Finished fetching processes");
 		return result;
 	}
 
