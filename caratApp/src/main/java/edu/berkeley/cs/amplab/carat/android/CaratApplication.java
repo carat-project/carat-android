@@ -162,9 +162,6 @@ public class CaratApplication extends Application {
         }.start();
 
         super.onCreate();
-        for(ProcessInfo pi : SamplingLibrary.getRunningProcessInfoForSample(getApplicationContext(), System.currentTimeMillis()-3600000)){
-            Logger.d(TAG, pi.toString());
-        }
         // SamplingLibrary.getRunningProcessesFromEventLog(getApplicationContext(), System.currentTimeMillis()-600000);
     }
 
