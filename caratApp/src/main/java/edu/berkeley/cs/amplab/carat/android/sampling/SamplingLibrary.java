@@ -597,7 +597,7 @@ public final class SamplingLibrary {
 		for (RunningAppProcessInfo pi : runningAppProcesses) {
 			if(pi != null){
 				String processName = pi.processName;
-				String packageName = Util.trimProcessName(processName)[0];
+				String packageName = ProcessUtil.trimProcessName(processName)[0];
 				HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
 						processes.get(packageName) : new HashMap<String, PackageProcess>();
 				PackageProcess process;
@@ -665,7 +665,9 @@ public final class SamplingLibrary {
 							break;
 					}
 				}
-				if(foreground == 0 || launchCount == 0) continue;
+				if(launchCount == 0){
+				    launchCount = 1;
+                }
                 process.setProcessName(packageName);
 				process.setForegroundTime(foreground);
 				process.setLaunchCount(launchCount);
@@ -689,7 +691,7 @@ public final class SamplingLibrary {
 				if (component != null && !Util.isNullOrEmpty(component.getPackageName())) {
 					packageName = component.getPackageName();
 				} else {
-					packageName = Util.trimProcessName(serviceInfo.process)[0];
+					packageName = ProcessUtil.trimProcessName(serviceInfo.process)[0];
 				}
 
 				HashMap<String, PackageProcess> processes = services.containsKey(packageName) ?
@@ -736,7 +738,7 @@ public final class SamplingLibrary {
 	}
 
 	private static String serviceToProcessName(String serviceName){
-		String[] split = Util.trimProcessName(serviceName);
+		String[] split = ProcessUtil.trimProcessName(serviceName);
 		if(split.length >= 2){
 			return split[0] + "@" + split[1];
 		}
@@ -795,26 +797,14 @@ public final class SamplingLibrary {
 	 * @return true if the application is running, false otherwise.
 	 */
 	public static boolean isRunning(Context context, String appName) {
-		Map<String, List<PackageProcess>> runningProcesses = getRunningNow(context);
-		for (String pkg  : runningProcesses.keySet()) {
-			for(PackageProcess process : runningProcesses.get(pkg)) {
-				String processName = Util.trimProcessName(process.getProcessName())[0];
-				int importance = process.getImportance();
-				if(importance != RunningAppProcessInfo.IMPORTANCE_EMPTY &&
-						(((processName != null) && processName.equals(appName))
-						||  pkg.equals(appName))){
+		long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
+		List<ProcessInfo> runningProcesses = getRunningProcessInfoForSample(context, recent);
+		for(ProcessInfo p : runningProcesses){
+			String importance = p.getImportance();
+			String packageName = ProcessUtil.trimProcessName(p.pName)[0];
+			if(packageName != null && appName.equals(packageName)
+					&& !importance.equals("Not running")){
 					return true;
-				}
-			}
-		}
-		
-		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
-		for (String pkg : runningServices.keySet()){
-			for(PackageProcess service : runningServices.get(pkg)){
-				String processName = Util.trimProcessName(service.processName)[0];
-				if(!service.sleeping && (pkg.equals(appName) || pkg.equals(processName))){
-					return true;
-				}
 			}
 		}
 		return false;
@@ -1263,7 +1253,7 @@ public final class SamplingLibrary {
 				try {
 					installationSource = pm.getInstallerPackageName(packageName);
 				} catch (IllegalArgumentException iae) {
-					Logger.e(STAG, "Could not get installer for " + packageName);
+					Logger.d(STAG, "Could not get installer for " + packageName);
 				}
 			}
 			processInfo.setInstallationPkg(installationSource == null
@@ -1332,6 +1322,7 @@ public final class SamplingLibrary {
 			e.apply();
 		}
 
+		Logger.d(TAG, "Finished fetching processes");
 		return result;
 	}
 
@@ -1931,8 +1922,6 @@ public final class SamplingLibrary {
 				PackageInfo p = getPackageInfo(context, packageName);
 				// Log.v(STAG, "Trying to kill proc=" + packageName + " pak=" +
 				// p.packageName);
-				//FlurryAgent.logEvent("Killing app=" + (label == null ? "null" : label) + " proc=" + packageName
-				//		+ " pak=" + (p == null ? "null" : p.packageName));
 				am.killBackgroundProcesses(packageName);
 				/*Toast.makeText(context, context.getResources().getString(R.string.stopping) + ((label == null) ? "" : " "+label),
 						Toast.LENGTH_SHORT).show();*/
@@ -1980,8 +1969,6 @@ public final class SamplingLibrary {
 		}
 		try{
 			context.startActivity(intent);
-			/*Toast.makeText(context,  context.getResources().getString(R.string.opening_manager),
-					Toast.LENGTH_SHORT).show();*/
 		} catch(Exception e){
 			if(e.getLocalizedMessage() != null){
 				Toast.makeText(context,  context.getResources().getString(R.string.opening_manager_failed),
@@ -2126,7 +2113,7 @@ public final class SamplingLibrary {
 		if(voltage == -1){
 			return voltage;
 		}
-		return voltage / 1000; // Convert mv to V
+		return voltage / 1000.0; // Convert mv to V
 	}
 
 	/**
@@ -2571,23 +2558,51 @@ public final class SamplingLibrary {
 	 */
 	public static List<Feature> getExtras(Context context) {
 		LinkedList<Feature> res = new LinkedList<Feature>();
-		res.add(getVmVersion(context));
+		res.add(getVmVersion());
+		res.add(versionCode());
+		res.add(versionName());
 		return res;
 	}
+
+	private static Feature versionName(){
+		return feature("carat.version.name", BuildConfig.VERSION_NAME);
+	}
+
+	private static Feature versionCode(){
+		return feature("carat.version.code", BuildConfig.VERSION_CODE + "");
+	}
+
+	/**
+	 * Helper to create Feature objects for e.g. Sample Extras.
+	 * @param key Name of the field
+	 * @param value value of the field
+	 * @return
+	 */
+	public static Feature feature(String key, String value){
+		Feature f = new Feature();
+		f.setKey(key);
+		f.setValue(value);
+		return f;
+	}
+
+	//TODO: disabled for debugging
+//	private static TrafficRecord getAppTraffic(Integer uid) {
+//		TrafficRecord trafficRecord = new TrafficRecord();
+//		trafficRecord.setTx(TrafficStats.getUidTxBytes(uid));
+//		trafficRecord.setRx(TrafficStats.getUidRxBytes(uid));
+//		return trafficRecord;
+//	}
 
 	/**
 	 * Get the java.vm.version system property as a Feature("vm", version).
 	 * @param context the Context.
 	 * @return a Feature instance with the key "vm" and value of the "java.vm.version" system property. 
 	 */
-	private static Feature getVmVersion(Context context) {
+	private static Feature getVmVersion() {
 		String vm = System.getProperty("java.vm.version");
 		if (vm == null)
 			vm = "";
-		Feature vmVersion = new Feature();
-		vmVersion.setKey("vm");
-		vmVersion.setValue(vm);
-		return vmVersion;
+		return feature("vm", vm);
 	}
 
 	public static List<String> getSignatures(PackageInfo pak) {
