@@ -48,7 +48,7 @@ public class Sampler {
         if(sample != null && !essentiallyIdentical(sample, lastSample)){
             long id = db.putSample(sample);
             Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
-            preferences.edit().putLong(Keys.lastSampleTimestamp, (long)sample.getTimestamp()).apply();
+            preferences.edit().putLong(Keys.lastSampleTimestamp, System.currentTimeMillis()).apply();
             success = true;
         }
         int sampleCount = SampleDB.getInstance(context).countSamples();

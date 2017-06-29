@@ -66,7 +66,7 @@ public class IntentRouter extends IntentService {
         String action = intent.getStringExtra(Keys.intentReceiverAction);
         if(action != null){
             Logger.d(TAG, "Routing intent for " + action);
-            long now = (long)(System.currentTimeMillis()/1000.0);
+            long now = System.currentTimeMillis();
             long lastSample = preferences.getLong(Keys.lastSampleTimestamp, 0);
             switch(action){
                 case Constants.SCHEDULED_SAMPLE:
@@ -83,15 +83,18 @@ public class IntentRouter extends IntentService {
                     scheduleNextSample(SAMPLING_INTERVAL);
                     break;
                 default:
-                    Logger.i(TAG, "Waken up by " + action + " to check schedule");
                     long future = preferences.getLong(Keys.nextSamplingTime, 0);
+                    Logger.i(TAG, "Waken up by " + action + " to check schedule," +
+                            "next scheduled sample in " + (future-now)/1000.0 +"s");
 
                     // First condition takes care of the scenario where we have woken up to check
                     // schedule but found out that the time is either really soon or already passed.
                     // If the time is really soon, we might not get an alarm for that since we woke
                     // up now, and if it's already due, might as well do it now.
-                    if(isAlreadyScheduled(getScheduleIntent()) && (future - now < SAMPLING_INTERVAL/4.0 || now > future)){
-                        Logger.d(TAG, "Next scheduled sampling time either soon or already passed, sampling now");
+                    if(isAlreadyScheduled(getScheduleIntent()) && (future - now < SAMPLING_INTERVAL/4.0
+                            || now > future || future-now >= SAMPLING_INTERVAL*1.25 /* Safety check */)){
+                        Logger.d(TAG, "Next scheduled sampling time either soon, too far in " +
+                                "the future or already passed, sampling now");
                         cancelScheduledSample();
                         if(now - lastSample >= SAMPLING_INTERVAL - 100){
                             Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
