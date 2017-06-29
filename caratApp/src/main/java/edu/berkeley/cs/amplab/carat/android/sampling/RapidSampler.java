@@ -21,6 +21,7 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 import static android.app.PendingIntent.*;
 
@@ -29,6 +30,7 @@ import static android.app.PendingIntent.*;
  */
 public class RapidSampler extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final int ID = 48908227;
+    private static final String TAG = RapidSampler.class.getSimpleName();
     private SharedPreferences preferences;
 
     private BroadcastReceiver batteryChangeReceiver = new BroadcastReceiver() {

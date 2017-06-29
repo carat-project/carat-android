@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
@@ -134,8 +135,8 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
     }
 
     private void setValues() {
-        if (mainActivity.getJScore() == -1 || mainActivity.getJScore() == 0) {
-            cd.setCustomText(new String[]{"N/A"});
+        if (mainActivity.getJScore() == -1) {
+            cd.setCustomText(new String[]{"..."});
         } else {
             cd.showValue((float) mainActivity.getJScore(), 99f, false);
         }

@@ -87,6 +87,7 @@ import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
@@ -596,7 +597,7 @@ public final class SamplingLibrary {
 		for (RunningAppProcessInfo pi : runningAppProcesses) {
 			if(pi != null){
 				String processName = pi.processName;
-				String packageName = Util.trimProcessName(processName)[0];
+				String packageName = ProcessUtil.trimProcessName(processName)[0];
 				HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
 						processes.get(packageName) : new HashMap<String, PackageProcess>();
 				PackageProcess process;
@@ -656,7 +657,7 @@ public final class SamplingLibrary {
 								// Switches shorter than 1 seconds are most likely not human.
 								if(session >= Constants.MIN_FOREGROUND_SESSION){
 									launchCount++;
-			}
+								}
 							}
 							break;
 						case UsageEvents.Event.MOVE_TO_FOREGROUND:
@@ -676,7 +677,7 @@ public final class SamplingLibrary {
 			}
 		}
 		return result;
-		}
+	}
 
 	public static Map<String, List<PackageProcess>> getRunningServices(Context context){
 		Map<String, List<PackageProcess>> result = new HashMap<>();
@@ -690,9 +691,9 @@ public final class SamplingLibrary {
 				if (component != null && !Util.isNullOrEmpty(component.getPackageName())) {
 					packageName = component.getPackageName();
 				} else {
-					packageName = Util.trimProcessName(serviceInfo.process)[0];
+					packageName = ProcessUtil.trimProcessName(serviceInfo.process)[0];
 				}
-				
+
 				HashMap<String, PackageProcess> processes = services.containsKey(packageName) ?
 						services.get(packageName) : new HashMap<String, PackageProcess>();
 				PackageProcess process;
@@ -737,7 +738,7 @@ public final class SamplingLibrary {
 	}
 
 	private static String serviceToProcessName(String serviceName){
-		String[] split = Util.trimProcessName(serviceName);
+		String[] split = ProcessUtil.trimProcessName(serviceName);
 		if(split.length >= 2){
 			return split[0] + "@" + split[1];
 		}
@@ -796,26 +797,14 @@ public final class SamplingLibrary {
 	 * @return true if the application is running, false otherwise.
 	 */
 	public static boolean isRunning(Context context, String appName) {
-		Map<String, List<PackageProcess>> runningProcesses = getRunningNow(context);
-		for (String pkg  : runningProcesses.keySet()) {
-			for(PackageProcess process : runningProcesses.get(pkg)) {
-				String processName = Util.trimProcessName(process.getProcessName())[0];
-				int importance = process.getImportance();
-				if(importance != RunningAppProcessInfo.IMPORTANCE_EMPTY &&
-						(((processName != null) && processName.equals(appName))
-						||  pkg.equals(appName))){
-				return true;
-				}
-			}
-		}
-		
-		Map<String, List<PackageProcess>> runningServices = getRunningServices(context);
-		for (String pkg : runningServices.keySet()){
-			for(PackageProcess service : runningServices.get(pkg)){
-				String processName = Util.trimProcessName(service.processName)[0];
-				if(!service.sleeping && (pkg.equals(appName) || pkg.equals(processName))){
-		        return true;
-		}
+		long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
+		List<ProcessInfo> runningProcesses = getRunningProcessInfoForSample(context, recent);
+		for(ProcessInfo p : runningProcesses){
+			String importance = p.getImportance();
+			String packageName = ProcessUtil.trimProcessName(p.pName)[0];
+			if(packageName != null && appName.equals(packageName)
+					&& !importance.equals("Not running")){
+					return true;
 			}
 		}
 		return false;
@@ -1125,7 +1114,7 @@ public final class SamplingLibrary {
 	 * NOTE: This method returns a list of currently running processes for devices running on
 	 * older versions of Android. Starting from version 5.0, a list of processes that have been
 	 * observed running since last sample is returned instead.
-	 * 
+	 *
 	 * Information sources are prioritized as follows: Event log > Currently running > Installed.
 	 * This is to make sure the highest level of accuracy and amount of information is obtained.
 	 * Installed applications are only returned when this method is first used.
@@ -1135,6 +1124,7 @@ public final class SamplingLibrary {
 	 * @return list of process information for all running processes.
 	 */
 	public static List<ProcessInfo> getRunningProcessInfoForSample(Context context, long lastSample) {
+		Logger.d(TAG, "Fetching running processes");
 		List<ProcessInfo> result = new ArrayList<>();
 		PackageManager pm = context.getPackageManager();
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -1157,7 +1147,7 @@ public final class SamplingLibrary {
 		}
 
 		for(String pkgName : packageNames){
-			String packageName = Util.trimProcessName(pkgName)[0]; // Just in case
+			String packageName = ProcessUtil.trimProcessName(pkgName)[0]; // Just in case
 			ProcessInfo processInfo = new ProcessInfo();
 			processInfo.setPName(packageName);
 			processInfo.setPId(-1); // Default values are expected to change during method
@@ -1207,7 +1197,7 @@ public final class SamplingLibrary {
 					String processName = application.getProcessName();
 					if(addedServices.contains(processName)){
 					    continue;
-			}
+                    }
 
 					// Keep track of the lowest importance which is the most important one.
 					if(lowestImportance != -1) {
@@ -1263,7 +1253,7 @@ public final class SamplingLibrary {
 				try {
 					installationSource = pm.getInstallerPackageName(packageName);
 				} catch (IllegalArgumentException iae) {
-					Logger.e(STAG, "Could not get installer for " + packageName);
+					Logger.d(STAG, "Could not get installer for " + packageName);
 				}
 			}
 			processInfo.setInstallationPkg(installationSource == null
@@ -1332,6 +1322,7 @@ public final class SamplingLibrary {
 			e.apply();
 		}
 
+		Logger.d(TAG, "Finished fetching processes");
 		return result;
 	}
 
@@ -2051,17 +2042,17 @@ public final class SamplingLibrary {
 		}
 		int id = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
 		switch(id){
-		case BatteryManager.BATTERY_STATUS_CHARGING:
+			case BatteryManager.BATTERY_STATUS_CHARGING:
 				return true;
-		case BatteryManager.BATTERY_STATUS_DISCHARGING:
-		case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+			case BatteryManager.BATTERY_STATUS_DISCHARGING:
+			case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
             case BatteryManager.BATTERY_STATUS_FULL:
 				return false;
-		case BatteryManager.BATTERY_STATUS_UNKNOWN:
-		default:
+			case BatteryManager.BATTERY_STATUS_UNKNOWN:
+			default:
 				return lastState.equals("Charging");
 		}
-		}
+	}
 
 
 	public static Intent getLastBatteryIntent(Context context){
@@ -2099,7 +2090,7 @@ public final class SamplingLibrary {
 	}
 
     @SuppressLint("PrivateApi")
-	public static double getBatteryCapacity(Context context) {
+    public static double getBatteryCapacity(Context context) {
 		try {
 			// Please note: Uses reflection, API not available on all devices
 			Class<?> powerProfile = Class.forName("com.android.internal.os.PowerProfile");
@@ -2646,35 +2637,35 @@ public final class SamplingLibrary {
 				String al = pkPublic.getAlgorithm();
 				switch (al) {
 					case "RSA": {
-					md = MessageDigest.getInstance("SHA-256");
-					RSAPublicKey rsa = (RSAPublicKey) pkPublic;
-					byte[] data = rsa.getModulus().toByteArray();
-					if (data[0] == 0) {
-						byte[] copy = new byte[data.length - 1];
-						System.arraycopy(data, 1, copy, 0, data.length - 1);
-						md.update(copy);
-					} else
-						md.update(data);
-					dig = md.digest();
-					// Add SHA-256 of modulus
-					sigList.add(convertToHex(dig));
+						md = MessageDigest.getInstance("SHA-256");
+						RSAPublicKey rsa = (RSAPublicKey) pkPublic;
+						byte[] data = rsa.getModulus().toByteArray();
+						if (data[0] == 0) {
+							byte[] copy = new byte[data.length - 1];
+							System.arraycopy(data, 1, copy, 0, data.length - 1);
+							md.update(copy);
+						} else
+							md.update(data);
+						dig = md.digest();
+						// Add SHA-256 of modulus
+						sigList.add(convertToHex(dig));
 						break;
 					}
 					case "DSA": {
-					DSAPublicKey dsa = (DSAPublicKey) pkPublic;
-					md = MessageDigest.getInstance("SHA-256");
-					byte[] data = dsa.getY().toByteArray();
-					if (data[0] == 0) {
-						byte[] copy = new byte[data.length - 1];
-						System.arraycopy(data, 1, copy, 0, data.length - 1);
-						md.update(copy);
-					} else
-						md.update(data);
-					dig = md.digest();
-					// Add SHA-256 of public key (DSA)
-					sigList.add(convertToHex(dig));
+						DSAPublicKey dsa = (DSAPublicKey) pkPublic;
+						md = MessageDigest.getInstance("SHA-256");
+						byte[] data = dsa.getY().toByteArray();
+						if (data[0] == 0) {
+							byte[] copy = new byte[data.length - 1];
+							System.arraycopy(data, 1, copy, 0, data.length - 1);
+							md.update(copy);
+						} else
+							md.update(data);
+						dig = md.digest();
+						// Add SHA-256 of public key (DSA)
+						sigList.add(convertToHex(dig));
 						break;
-				}
+					}
 					default:
 						Logger.e("SamplingLibrary", "Weird algorithm: " + al + " for " + pak.packageName);
 						break;

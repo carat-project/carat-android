@@ -34,6 +34,10 @@ public class Sampler {
 
     public static boolean sample(Context context, String trigger, Runnable releaseWl){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if(!preferences.contains(Keys.registeredUUID)){
+            Logger.i(TAG, "Not registered yet, skippping");
+            return false;
+        }
         boolean success = false;
         SampleDB db = SampleDB.getInstance(context);
         Sample lastSample = db.getLastSample(context);
@@ -44,7 +48,7 @@ public class Sampler {
         if(sample != null && !essentiallyIdentical(sample, lastSample)){
             long id = db.putSample(sample);
             Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
-            preferences.edit().putLong(Keys.lastSampleTimestamp, (long)sample.getTimestamp()).apply();
+            preferences.edit().putLong(Keys.lastSampleTimestamp, System.currentTimeMillis()).apply();
             success = true;
         }
         int sampleCount = SampleDB.getInstance(context).countSamples();
@@ -111,7 +115,7 @@ public class Sampler {
         BatteryDetails details = new BatteryDetails();
         details.setBatteryHealth(getHealthString(intent));
         details.setBatteryTechnology(intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY));
-        details.setBatteryTemperature(intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 100);
+        details.setBatteryTemperature(intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10.0);
         details.setBatteryVoltage(intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000.0);
         details.setBatteryCharger(getChargerString(intent));
         details.setBatteryCapacity(SamplingLibrary.getBatteryCapacity(context));

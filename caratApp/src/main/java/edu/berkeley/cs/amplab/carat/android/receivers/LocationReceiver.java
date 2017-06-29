@@ -81,6 +81,7 @@ public class LocationReceiver extends Service implements LocationListener{
 
         // Enable for maximum energy efficiency
         stopSelf();
+        Logger.d(TAG, "Location service shutting down");
     }
 
     @Override

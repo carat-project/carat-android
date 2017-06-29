@@ -10,13 +10,20 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -28,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import edu.berkeley.cs.amplab.carat.android.receivers.AsyncSuccess;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
@@ -108,22 +116,49 @@ public class UsageManager {
     }
 
     public static void promptPermission(Context context){
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Permission request");
-        builder.setMessage("Allow Carat to monitor running applications by enabling usage access in settings.");
-        builder.setPositiveButton("OK", (dialog, which) -> {
-            Toast.makeText(context, "Enable the permission and return with the back button", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-            context.startActivity(intent);
-        });
-        builder.setIcon(R.drawable.carat_material_icon);
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
-            Toast.makeText(context, "You can enable this option in the settings.", Toast.LENGTH_SHORT).show();
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(248, 176, 58));
-        dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(Color.rgb(248, 176, 58));
+        promptPermission(context, null);
+    }
+
+    public static void promptPermission(Context context, AsyncSuccess callback){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if(preferences.getBoolean(Keys.promptUsageStats, true)){
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.permission_request);
+            builder.setView(R.layout.permission_prompt);
+            builder.setMessage(R.string.allow_usagestats);
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                Toast.makeText(context, R.string.return_with_back, Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                context.startActivity(intent);
+                if(callback != null){
+                    callback.complete(true);
+                }
+            });
+            builder.setIcon(R.drawable.carat_material_icon);
+            builder.setNegativeButton(R.string.dialog_cancel, (dialog, which) -> {
+                Toast.makeText(context, R.string.enable_later, Toast.LENGTH_SHORT).show();
+                Window window = ((AlertDialog) dialog).getWindow();
+                if(window != null){
+                    CheckBox remindCheckbox = (CheckBox)window.findViewById(R.id.remember_checkbox);
+                    preferences.edit().putBoolean(Keys.promptUsageStats, !remindCheckbox.isChecked()).apply();
+                }
+                if(callback != null){
+                    callback.complete(false);
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+            dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(248, 176, 58));
+            dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(Color.rgb(248, 176, 58));
+            Window window = dialog.getWindow();
+            if(window != null){
+                View custom = window.findViewById(R.id.custom);
+                if(custom != null){
+                    View parent = (View)custom.getParent();
+                    parent.setMinimumHeight(0);
+                }
+            }
+        }
     }
 
     @SuppressLint("WrongConstant") // Usage

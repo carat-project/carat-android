@@ -24,6 +24,7 @@ import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.components.CircleDisplay;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 
 /**
  * Created by Valto on 30.9.2015.
@@ -147,8 +148,8 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     }
 
     public void setValues() {
-        if (mainActivity.getJScore() == -1 || mainActivity.getJScore() == 0) {
-            cd.setCustomText(new String[]{"N/A"});
+        if (mainActivity.getJScore() == -1) {
+            cd.setCustomText(new String[]{"..."});
         } else {
             cd.setCustomText(null);
             cd.showValue((float) mainActivity.getJScore(), 99f, false);
@@ -296,12 +297,12 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
                     SimpleHogBug[] h = CaratApplication.getStorage().getHogReport();
                     SimpleHogBug[] b = CaratApplication.getStorage().getBugReport();
                     if (h != null) {
-                        hogsCount = CaratApplication.filterByVisibility(h).size();
-                        actionsAmount += CaratApplication.filterByRunning(h).size();
+                        hogsCount = ProcessUtil.filterByVisibility(h).size();
+                        actionsAmount += ProcessUtil.filterByRunning(h, getContext()).size();
                     }
                     if (b != null) {
-                        bugsCount = CaratApplication.filterByVisibility(b).size();
-                        actionsAmount += CaratApplication.filterByRunning(b).size();
+                        bugsCount = ProcessUtil.filterByVisibility(b).size();
+                        actionsAmount += ProcessUtil.filterByRunning(b, getContext()).size();
                     }
 
                     // Subtract the 'help carat collect data' from action count if needed.

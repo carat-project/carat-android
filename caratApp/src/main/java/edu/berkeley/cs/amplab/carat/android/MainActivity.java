@@ -1,9 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android;
 
 import android.annotation.SuppressLint;
-import android.app.usage.UsageEvents;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -51,6 +48,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragment;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 
@@ -113,6 +111,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             getWindow().setStatusBarColor(getResources().getColor(R.color.statusbar_color));
+            if(!UsageManager.isPermissionGranted(this)) {
+                UsageManager.promptPermission(this);
+            }
         }
 
         p = PreferenceManager.getDefaultSharedPreferences(this);
@@ -162,12 +163,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if(!UsageManager.isPermissionGranted(this)){
-                UsageManager.promptPermission(this);
-            }
-        }
     }
 
     @Override
@@ -351,16 +346,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SimpleHogBug[] h = CaratApplication.getStorage().getHogReport();
         int actionsAmount = 0;
         if (b != null) {
-            int bugsAmount = CaratApplication.filterByVisibility(b).size();
+            int bugsAmount = ProcessUtil.filterByVisibility(b).size();
             setBugAmount(String.valueOf(bugsAmount));
-            actionsAmount += CaratApplication.filterByRunning(b).size();
+            actionsAmount += ProcessUtil.filterByRunning(b, getApplicationContext()).size();
         } else {
             setBugAmount("0");
         }
         if (h != null) {
-            int hogsAmount = CaratApplication.filterByVisibility(h).size();
+            int hogsAmount = ProcessUtil.filterByVisibility(h).size();
             setHogAmount(String.valueOf(hogsAmount));
-            actionsAmount += CaratApplication.filterByRunning(h).size();
+            actionsAmount += ProcessUtil.filterByRunning(h, getApplicationContext()).size();
         } else {
             setHogAmount("0");
         }

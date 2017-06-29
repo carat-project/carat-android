@@ -239,7 +239,8 @@
 
     <!-- PROCESS LIST -->
     <string name="version">Versio</string>
-    <string name="process_list_message">Prosessilista näyttää käynnissä olevat sovellukset ja palvelut. Yleensä suurempi määrä käynnissä olevia sovelluksia ja palveluita johtaa huonompaan akunkestoon.</string>
+    <string name="process_list_message">Prosessilista näyttää käynnissä olevat sovellukset ja palvelut. Suurempi määrä sovelluksia johtaa yleensä huonompaan akunkestoon.</string>
+    <string name="process_list_message_lp">Prosessilista näyttää äskettäin käynnissä olleet sovellukset. Suurempi määrä sovelluksia johtaa yleensä huonompaan akunkestoon.</string>
 
     <!-- PREFERENCES LIST -->
     <string name="show_all">Näytä kaikki</string>
@@ -369,6 +370,19 @@
     <string name="battery_cost">Vaikutus:</string>
     <string name="stop">Pysäytä</string>
     <string name="manage">Hallinnoi</string>
+    <string name="remember_my_choice">Muista valintani</string>
+    <string name="prompt_usage_stats">Myönnä lupa käyttötietoihin</string>
+    <string name="monitor_apps">Muuta asetuksia</string>
+    <string name="enable_later">Voit myöntää luvan myöhemmin asetuksissa.</string>
+    <string name="return_with_back">Myönnä käyttöoikeus ja palaa takaisin-painikkeella.</string>
+    <string name="allow_usagestats">Salli Caratin tarkkailla käynnissä olevia sovelluksia myöntämällä käyttöoikeus.</string>
+    <string name="permission_request">Lupapyyntö</string>
+    <string name="service">Taustapalvelu</string>
+    <string name="services">Taustapalvelua</string>
+    <string name="activity">Näkymä</string>
+    <string name="activities">Näkymää</string>
+    <string name="disable_charging_mode">Älä mittaa akun latausta</string>
+    <string name="charging_not_collected">Poista ilmoitus käytöstä</string>
 </resources>
 
 

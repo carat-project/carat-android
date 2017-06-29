@@ -245,6 +245,7 @@
     <!-- PROCESS LIST -->
     <string name="version">Version</string>
     <string name="process_list_message">The process list shows currently running applications and services. More active applications and services usually leads to worse battery life.</string>
+    <string name="process_list_message_lp">Process list shows which applications have been recently running. More active applications and services usually leads to worse battery life.</string>
 
     <!-- PREFERENCES LIST -->
     <string name="show_all">Show all</string>
@@ -399,4 +400,7 @@ delete these from your file.
     <!-- TODO: Remove or change this placeholder text -->
 
     <string name="title_activity_dashboard">DASHBOARD</string>
+    <string name="battery_cost">Impact:</string>
+    <string name="stop">Stop</string>
+    <string name="manage">Manage</string>
 </resources>
