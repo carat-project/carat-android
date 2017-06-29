@@ -59,6 +59,7 @@ public class LocationReceiver extends Service implements LocationListener{
     @Override
     public void onLocationChanged(Location location) {
         PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        Util.safeReleaseWakelock(wl);
         wl.acquire(10*60*1000L /*10 minutes*/);
         Logger.d(TAG, "Received a location update");
 

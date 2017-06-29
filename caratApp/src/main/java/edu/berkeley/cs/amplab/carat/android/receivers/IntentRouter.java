@@ -54,6 +54,7 @@ public class IntentRouter extends IntentService {
         // This is a bit hacky, intent service should handle the wakelock by itself but
         // we are enforcing our own lock here just in case.
         PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        Util.safeReleaseWakelock(wl);
         wl.acquire(10*60*1000L /*10 minutes*/);
 
         // Start up a location receiver in case it has died, it should stay up long enough
