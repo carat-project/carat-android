@@ -123,11 +123,11 @@ public class UsageManager {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if(preferences.getBoolean(Keys.promptUsageStats, true)){
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle("Permission request");
+            builder.setTitle(R.string.permission_request);
             builder.setView(R.layout.permission_prompt);
-            builder.setMessage("Allow Carat to monitor running applications by enabling usage access in settings.");
+            builder.setMessage(R.string.allow_usagestats);
             builder.setPositiveButton("OK", (dialog, which) -> {
-                Toast.makeText(context, "Enable the permission and return with the back button", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.return_with_back, Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
                 context.startActivity(intent);
                 if(callback != null){
@@ -135,8 +135,8 @@ public class UsageManager {
                 }
             });
             builder.setIcon(R.drawable.carat_material_icon);
-            builder.setNegativeButton("Cancel", (dialog, which) -> {
-                Toast.makeText(context, "You can enable this option in the settings.", Toast.LENGTH_SHORT).show();
+            builder.setNegativeButton(R.string.dialog_cancel, (dialog, which) -> {
+                Toast.makeText(context, R.string.enable_later, Toast.LENGTH_SHORT).show();
                 Window window = ((AlertDialog) dialog).getWindow();
                 if(window != null){
                     CheckBox remindCheckbox = (CheckBox)window.findViewById(R.id.remember_checkbox);

@@ -153,7 +153,7 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
         int aCount = item.getActivityCount();
         int sCount = item.getServiceCount();
 
-        if(aCount == 0){
+        if(aCount <= 0){
             activityCount.setVisibility(View.GONE);
             activityDesc.setVisibility(View.GONE);
             activityIndicator.setBackgroundColor(v.getResources().getColor(R.color.gray));
@@ -161,15 +161,17 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
             activityCount.setVisibility(View.VISIBLE);
             activityDesc.setVisibility(View.VISIBLE);
             activityIndicator.setBackgroundColor(v.getResources().getColor(R.color.accent));
+            activityDesc.setText(aCount > 1 ? R.string.activities : R.string.activity);
             activityCount.setText(String.valueOf(aCount));
         }
 
-        if(sCount == 0){
+        if(sCount <= 0){
             serviceCount.setVisibility(View.GONE);
             serviceDesc.setVisibility(View.GONE);
         } else {
             serviceCount.setVisibility(View.VISIBLE);
             serviceDesc.setVisibility(View.VISIBLE);
+            serviceDesc.setText(sCount > 1 ? R.string.services : R.string.service);
             serviceCount.setText(String.valueOf(sCount));
         }
 

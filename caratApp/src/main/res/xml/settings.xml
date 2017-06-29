@@ -23,8 +23,8 @@
         android:defaultValue="false" />
     <android.support.v7.preference.SwitchPreferenceCompat
         android:key="rapidSamplingDisabled"
-        android:title="Disable charging mode"
-        android:summary="Charging data will not be collected"
+        android:title="@string/disable_charging_mode"
+        android:summary="@string/charging_not_collected"
         android:defaultValue="false" />
     <android.support.v7.preference.ListPreference
         android:key="@string/hog_hide_threshold"
@@ -33,6 +33,14 @@
         android:entries="@array/ImpactOptions"
         android:entryValues="@array/ImpactValues"
         android:defaultValue="0"/>
+    <android.support.v7.preference.Preference
+        android:persistent="false"
+        android:key="pref_usagestats"
+        android:title="@string/prompt_usage_stats"
+        android:summary="@string/monitor_apps"
+        android:id="@+id/preference3">
+        <intent android:action="android.settings.USAGE_ACCESS_SETTINGS"/>
+    </android.support.v7.preference.Preference>
     <android.support.v7.preference.Preference
         android:persistent="false"
         android:key="pref_website"
