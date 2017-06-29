@@ -1294,7 +1294,7 @@ public final class SamplingLibrary {
 				try {
 					installationSource = pm.getInstallerPackageName(packageName);
 				} catch (IllegalArgumentException iae) {
-					Logger.e(STAG, "Could not get installer for " + packageName);
+					Logger.d(STAG, "Could not get installer for " + packageName);
 				}
 			}
 			processInfo.setInstallationPkg(installationSource == null

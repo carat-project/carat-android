@@ -403,4 +403,5 @@ delete these from your file.
     <string name="battery_cost">Impact:</string>
     <string name="stop">Stop</string>
     <string name="manage">Manage</string>
+    <string name="remember_my_choice">Remember my choice</string>
 </resources>

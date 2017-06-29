@@ -370,6 +370,7 @@
     <string name="battery_cost">Vaikutus:</string>
     <string name="stop">Pysäytä</string>
     <string name="manage">Hallinnoi</string>
+    <string name="remember_my_choice">Muista valintani</string>
 </resources>
 
 
