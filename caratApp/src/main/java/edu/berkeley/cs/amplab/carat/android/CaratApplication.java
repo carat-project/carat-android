@@ -66,7 +66,7 @@ public class CaratApplication extends Application {
 
     // Used to map importances to human readable strings for sending samples to
     // the server, and showing them in the process list.
-    public static final SparseArray<String> importanceToString = new SparseArray<String>();
+    public static final HashMap<Integer, String> importanceToString = new HashMap<>();
 
     {
         importanceToString.put(RunningAppProcessInfo.IMPORTANCE_EMPTY, "Not running");

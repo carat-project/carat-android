@@ -209,6 +209,11 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
             String pName = pi.getPName();
             String localizedName = CaratApplication.labelForApp(context, pName);
             String importance = pi.getImportance();
+            if(CaratApplication.importanceToString.values().contains(importance)){
+                // Skip importances used by analysis
+                // TODO: Why do these get to client?
+                continue;
+            }
             int serviceCount = 0;
             int activityCount = 0;
             if(pi.isSetProcesses()){
