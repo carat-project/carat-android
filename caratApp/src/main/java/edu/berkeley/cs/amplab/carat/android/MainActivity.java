@@ -194,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.setAction(Constants.CHECK_SCHEDULE);
         sendBroadcast(intent);
         resumeTasksAndUpdate();
+
         super.onResume();
     }
 
