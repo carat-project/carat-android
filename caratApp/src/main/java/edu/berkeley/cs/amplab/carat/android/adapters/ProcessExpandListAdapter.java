@@ -209,7 +209,10 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
             String pName = pi.getPName();
             String localizedName = CaratApplication.labelForApp(context, pName);
             String importance = pi.getImportance();
-            if(CaratApplication.importanceToString.values().contains(importance)){
+            if(importance != null && (importance.equals(SamplingLibrary.UNINSTALLED)
+                    || importance.equals(SamplingLibrary.REPLACED)
+                    || importance.equals(SamplingLibrary.DISABLED)
+                    || importance.equals(SamplingLibrary.INSTALLED))){
                 // Skip importances used by analysis
                 // TODO: Why do these get to client?
                 continue;
