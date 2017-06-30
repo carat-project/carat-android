@@ -2,8 +2,10 @@ package edu.berkeley.cs.amplab.carat.android.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.PowerManager;
+import android.net.Uri;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -103,5 +105,15 @@ public class Util {
                 .setCrashCount(ERR_VAL)
                 .setLastStartSinceBoot(ERR_VAL)
                 .setLastStartTimestamp(ERR_VAL);
+    }
+
+    public static void openStorePage(Context context, String packageName){
+        try {
+            Intent marketIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + packageName));
+            context.startActivity(marketIntent);
+        } catch (android.content.ActivityNotFoundException anfe) {
+            Intent playIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
+            context.startActivity(playIntent);
+        }
     }
 }

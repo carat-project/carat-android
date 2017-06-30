@@ -2,6 +2,7 @@ package edu.berkeley.cs.amplab.carat.android.protocol;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Security;
 import java.util.Properties;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -11,6 +12,7 @@ import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import android.content.Context;
 import android.util.Log;
