@@ -28,7 +28,7 @@ import static android.app.PendingIntent.*;
 /**
  * Created by Jonatan Hamberg on 6/26/17.
  */
-public class RapidSampler extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class RapidSampler extends Service {
     private static final int ID = 48908227;
     private static final String TAG = RapidSampler.class.getSimpleName();
     private SharedPreferences preferences;
@@ -89,13 +89,11 @@ public class RapidSampler extends Service implements SharedPreferences.OnSharedP
 
         startForeground(ID, notification);
         this.registerReceiver(batteryChangeReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-        preferences.registerOnSharedPreferenceChangeListener(this);
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        preferences.unregisterOnSharedPreferenceChangeListener(this);
         this.unregisterReceiver(batteryChangeReceiver);
         super.onDestroy();
     }
@@ -104,14 +102,5 @@ public class RapidSampler extends Service implements SharedPreferences.OnSharedP
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if(key.equals(Keys.rapidSamplingDisabled)){
-            if(sharedPreferences.getBoolean(Keys.rapidSamplingDisabled, false)){
-                stopSelf();
-            }
-        }
     }
 }

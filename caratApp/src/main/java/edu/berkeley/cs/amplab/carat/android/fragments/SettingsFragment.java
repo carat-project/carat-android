@@ -24,6 +24,7 @@ import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.UsageManager;
+import edu.berkeley.cs.amplab.carat.android.sampling.RapidSampler;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.PreferenceUtil;
 
@@ -106,6 +107,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     mainActivity.deleteQuestionnaires();
                 }
                 globalPreferences.edit().putBoolean(key, (Boolean) value).apply();
+            }
+        }
+        if(key.equals(Keys.rapidSamplingDisabled)){
+            boolean enabled = sharedPreferences.getBoolean(Keys.rapidSamplingDisabled, false);
+            if(enabled){
+                Context context = getContext();
+                context.stopService(new Intent(context, RapidSampler.class));
             }
         }
     }
