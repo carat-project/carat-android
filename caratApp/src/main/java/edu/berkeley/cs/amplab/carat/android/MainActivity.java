@@ -50,6 +50,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragme
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
+import edu.berkeley.cs.amplab.carat.android.utils.VersionGater;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -106,6 +107,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         schedulerRunning = false;
         getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getWindow().requestFeature(Window.FEATURE_PROGRESS);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            // TODO: What about devices < HONEYCOMB?
+            VersionGater.checkVersion(this);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);

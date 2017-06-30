@@ -2,9 +2,10 @@ package edu.berkeley.cs.amplab.carat.android.utils;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
-import android.view.View;
 import android.widget.Button;
 
 import org.json.JSONException;
@@ -31,28 +32,32 @@ public class VersionGater {
         this.context = activity.getApplicationContext();
     }
 
-    private static void checkVersion(Activity activity){
+    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
+    public static void checkVersion(Activity activity){
         VersionGater versionGater = new VersionGater(activity);
         versionGater.check();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     private void check(){
         String json = JsonParser.getJSONFromUrl("carat.cs.helsinki.fi/questionnaires.json");
         if(!Util.isNullOrEmpty(json)){
-            try {
-                JSONObject jsonObject = new JSONObject(json);
-                versionCode = jsonObject.getInt("versionCode");
-                mustUpdate = jsonObject.getBoolean("mustUpdate");
-                packageName = jsonObject.getString("packageName");
-                message = jsonObject.getString("message");
-                title = jsonObject.getString("title");
-                if(isVersionTooOld(versionCode)){
-                    displayDialog();
-                }
-            } catch (JSONException e) {
-                Logger.e(TAG, "Error parsing version gating JSON");
-                e.printStackTrace();
-            }
+                AsyncTask.execute(() -> {
+                    try {
+                        JSONObject jsonObject = new JSONObject(json);
+                        versionCode = jsonObject.getInt("versionCode");
+                        mustUpdate = jsonObject.getBoolean("mustUpdate");
+                        packageName = jsonObject.getString("packageName");
+                        message = jsonObject.getString("message");
+                        title = jsonObject.getString("title");
+                        if(isVersionTooOld(versionCode)){
+                            displayDialog();
+                        }
+                    } catch (JSONException e) {
+                        Logger.e(TAG, "Error parsing version gating JSON");
+                        e.printStackTrace();
+                    }
+                });
         }
     }
 
@@ -78,7 +83,9 @@ public class VersionGater {
             });
             negativeButton.setOnClickListener(v -> {
                 if(mustUpdate){
-                    activity.finish();
+                    if(activity != null){
+                        activity.finish();
+                    }
                     System.exit(0);
                 } else {
                     alertDialog.dismiss();
