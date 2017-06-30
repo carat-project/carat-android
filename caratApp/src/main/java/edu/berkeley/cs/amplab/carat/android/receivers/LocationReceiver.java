@@ -62,7 +62,7 @@ public class LocationReceiver extends Service implements LocationListener{
         Logger.d(TAG, "Received a location update");
 
         Context context = getApplicationContext();
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final SharedPreferences prefs = getSharedPreferences(Constants.PREFERENCE_LOCATION_NAME, MODE_PRIVATE);
         long distance = prefs.getLong(Keys.distanceTraveled, 0);
         String locationJSON = prefs.getString(Keys.lastKnownLocation, "");
 

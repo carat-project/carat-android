@@ -31,6 +31,7 @@ public class Constants {
 
     // for caching summary statistics fetched from server
     public static final String PREFERENCE_FILE_NAME = "caratPrefs";
+    public static final String PREFERENCE_LOCATION_NAME = "locationPrefs";
     public static final String STATS_WELLBEHAVED_COUNT_PREFERENCE_KEY = "wellbehavedPrefKey";
     public static final String STATS_HOGS_COUNT_PREFERENCE_KEY = "hogsPrefKey";
     public static final String STATS_BUGS_COUNT_PREFERENCE_KEY = "bugsPrefKey";
