@@ -78,6 +78,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import edu.berkeley.cs.amplab.carat.android.BuildConfig;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
@@ -409,48 +410,6 @@ public final class SamplingLibrary {
 	 */
 	public static String getBrand() {
 		return android.os.Build.BRAND;
-	}
-
-	/**
-	 * Return misc system details that we might want to use later. Currently
-	 * does nothing.
-	 * 
-	 * @return
-	 */
-	public static Map<String, String> getSystemDetails() {
-		Map<String, String> results = new HashMap<String, String>();
-		// TODO: Some of this should be added to registration to identify the
-		// device and OS.
-		// Cyanogenmod and others may have different kernels etc that affect
-		// performance.
-
-		/*
-		 * Logger.d("SetModel", "board:" + android.os.Build.BOARD);
-		 * Logger.d("SetModel", "bootloader:" + android.os.Build.BOOTLOADER);
-		 * Logger.d("SetModel", "brand:" + android.os.Build.BRAND);
-		 * Logger.d("SetModel", "CPU_ABI 1 and 2:" + android.os.Build.CPU_ABI +
-		 * ", " + android.os.Build.CPU_ABI2); Logger.d("SetModel", "dev:" +
-		 * android.os.Build.DEVICE); Logger.d("SetModel", "disp:" +
-		 * android.os.Build.DISPLAY); Logger.d("SetModel", "FP:" +
-		 * android.os.Build.FINGERPRINT); Logger.d("SetModel", "HW:" +
-		 * android.os.Build.HARDWARE); Logger.d("SetModel", "host:" +
-		 * android.os.Build.HOST); Logger.d("SetModel", "ID:" +
-		 * android.os.Build.ID); Logger.d("SetModel", "manufacturer:" +
-		 * android.os.Build.MANUFACTURER); Logger.d("SetModel", "prod:" +
-		 * android.os.Build.PRODUCT); Logger.d("SetModel", "radio:" +
-		 * android.os.Build.RADIO); // FIXME: SERIAL not available on 2.2 //
-		 * Logger.d("SetModel", "ser:" + android.os.Build.SERIAL);
-		 * Logger.d("SetModel", "tags:" + android.os.Build.TAGS); Logger.d("SetModel",
-		 * "time:" + android.os.Build.TIME); Logger.d("SetModel", "type:" +
-		 * android.os.Build.TYPE); Logger.d("SetModel", "unknown:" +
-		 * android.os.Build.UNKNOWN); Logger.d("SetModel", "user:" +
-		 * android.os.Build.USER); Logger.d("SetModel", "model:" +
-		 * android.os.Build.MODEL); Logger.d("SetModel", "codename:" +
-		 * android.os.Build.VERSION.CODENAME); Logger.d("SetModel", "release:" +
-		 * android.os.Build.VERSION.RELEASE);
-		 */
-
-		return results;
 	}
 
 	/**
@@ -1963,8 +1922,6 @@ public final class SamplingLibrary {
 				PackageInfo p = getPackageInfo(context, packageName);
 				// Log.v(STAG, "Trying to kill proc=" + packageName + " pak=" +
 				// p.packageName);
-				//FlurryAgent.logEvent("Killing app=" + (label == null ? "null" : label) + " proc=" + packageName
-				//		+ " pak=" + (p == null ? "null" : p.packageName));
 				am.killBackgroundProcesses(packageName);
 				/*Toast.makeText(context, context.getResources().getString(R.string.stopping) + ((label == null) ? "" : " "+label),
 						Toast.LENGTH_SHORT).show();*/
@@ -2012,8 +1969,6 @@ public final class SamplingLibrary {
 		}
 		try{
 			context.startActivity(intent);
-			/*Toast.makeText(context,  context.getResources().getString(R.string.opening_manager),
-					Toast.LENGTH_SHORT).show();*/
 		} catch(Exception e){
 			if(e.getLocalizedMessage() != null){
 				Toast.makeText(context,  context.getResources().getString(R.string.opening_manager_failed),
@@ -2158,7 +2113,7 @@ public final class SamplingLibrary {
 		if(voltage == -1){
 			return voltage;
 		}
-		return voltage / 1000; // Convert mv to V
+		return voltage / 1000.0; // Convert mv to V
 	}
 
 	/**
@@ -2603,23 +2558,51 @@ public final class SamplingLibrary {
 	 */
 	public static List<Feature> getExtras(Context context) {
 		LinkedList<Feature> res = new LinkedList<Feature>();
-		res.add(getVmVersion(context));
+		res.add(getVmVersion());
+		res.add(versionCode());
+		res.add(versionName());
 		return res;
 	}
+
+	private static Feature versionName(){
+		return feature("carat.version.name", BuildConfig.VERSION_NAME);
+	}
+
+	private static Feature versionCode(){
+		return feature("carat.version.code", BuildConfig.VERSION_CODE + "");
+	}
+
+	/**
+	 * Helper to create Feature objects for e.g. Sample Extras.
+	 * @param key Name of the field
+	 * @param value value of the field
+	 * @return
+	 */
+	public static Feature feature(String key, String value){
+		Feature f = new Feature();
+		f.setKey(key);
+		f.setValue(value);
+		return f;
+	}
+
+	//TODO: disabled for debugging
+//	private static TrafficRecord getAppTraffic(Integer uid) {
+//		TrafficRecord trafficRecord = new TrafficRecord();
+//		trafficRecord.setTx(TrafficStats.getUidTxBytes(uid));
+//		trafficRecord.setRx(TrafficStats.getUidRxBytes(uid));
+//		return trafficRecord;
+//	}
 
 	/**
 	 * Get the java.vm.version system property as a Feature("vm", version).
 	 * @param context the Context.
 	 * @return a Feature instance with the key "vm" and value of the "java.vm.version" system property. 
 	 */
-	private static Feature getVmVersion(Context context) {
+	private static Feature getVmVersion() {
 		String vm = System.getProperty("java.vm.version");
 		if (vm == null)
 			vm = "";
-		Feature vmVersion = new Feature();
-		vmVersion.setKey("vm");
-		vmVersion.setValue(vm);
-		return vmVersion;
+		return feature("vm", vm);
 	}
 
 	public static List<String> getSignatures(PackageInfo pak) {

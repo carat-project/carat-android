@@ -739,15 +739,8 @@ public class CommunicationManager {
 			System.exit(1);
 			return features;
 		}
-		Feature feature = new Feature();
-		feature.setKey(key1);
-		feature.setValue(val1);
-		features.add(feature);
-
-		feature = new Feature();
-		feature.setKey(key2);
-		feature.setValue(val2);
-		features.add(feature);
+		features.add(SamplingLibrary.feature(key1, val1));
+		features.add(SamplingLibrary.feature(key2, val2));
 		return features;
 	}
 }

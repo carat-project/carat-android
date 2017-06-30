@@ -54,6 +54,7 @@ public class IntentRouter extends IntentService {
         // This is a bit hacky, intent service should handle the wakelock by itself but
         // we are enforcing our own lock here just in case.
         PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        Util.safeReleaseWakelock(wl);
         wl.acquire(10*60*1000L /*10 minutes*/);
 
         // Start up a location receiver in case it has died, it should stay up long enough
@@ -71,7 +72,7 @@ public class IntentRouter extends IntentService {
             switch(action){
                 case Constants.SCHEDULED_SAMPLE:
                     if(now - lastSample >= SAMPLING_INTERVAL - 100){
-                        Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                        Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
                     }
                     scheduleNextSample(SAMPLING_INTERVAL);
                     break;
@@ -79,7 +80,7 @@ public class IntentRouter extends IntentService {
                 case Intent.ACTION_POWER_DISCONNECTED:
                 case Intent.ACTION_BATTERY_CHANGED:
                     cancelScheduledSample();
-                    Sampler.sample(context, action, wl::release);
+                    Sampler.sample(context, action, () -> Util.safeReleaseWakelock(wl));
                     scheduleNextSample(SAMPLING_INTERVAL);
                     break;
                 default:
@@ -97,7 +98,7 @@ public class IntentRouter extends IntentService {
                                 "the future or already passed, sampling now");
                         cancelScheduledSample();
                         if(now - lastSample >= SAMPLING_INTERVAL - 100){
-                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
                         }
                         scheduleNextSample(SAMPLING_INTERVAL);
                     }
@@ -109,7 +110,7 @@ public class IntentRouter extends IntentService {
                     else if(!isAlreadyScheduled(getScheduleIntent())){
                         if(now - lastSample >= SAMPLING_INTERVAL - 100){
                             Logger.d(TAG, "Sampler has been dead for a long while, sampling now");
-                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, wl::release);
+                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
                         }
                         Logger.d(TAG, "Revived sampler");
                         scheduleNextSample(SAMPLING_INTERVAL);

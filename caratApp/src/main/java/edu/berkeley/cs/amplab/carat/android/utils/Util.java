@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.os.PowerManager;
 import android.net.Uri;
 
 import java.io.IOException;
@@ -78,6 +79,16 @@ public class Util {
     public static boolean isSystemApp(int flags){
         return (flags & ApplicationInfo.FLAG_SYSTEM) > 0
                 || (flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) > 0;
+    }
+
+    public static synchronized void safeReleaseWakelock(PowerManager.WakeLock wl){
+        try{
+            if(wl.isHeld()){
+                wl.release();
+            }
+        } catch(Throwable th){
+            Logger.d(TAG, "Releasing wakelock failed: " + th);
+        }
     }
 
     public static PackageProcess getDefaultPackageProcess(){

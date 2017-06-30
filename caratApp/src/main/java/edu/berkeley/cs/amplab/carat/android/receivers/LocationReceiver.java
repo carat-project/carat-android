@@ -21,6 +21,7 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 /**
  * Created by Jonatan Hamberg on 26.4.2017.
@@ -58,6 +59,7 @@ public class LocationReceiver extends Service implements LocationListener{
     @Override
     public void onLocationChanged(Location location) {
         PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        Util.safeReleaseWakelock(wl);
         wl.acquire(10*60*1000L /*10 minutes*/);
         Logger.d(TAG, "Received a location update");
 
@@ -77,7 +79,7 @@ public class LocationReceiver extends Service implements LocationListener{
 
         Logger.d(TAG, "Distance traveled: " + distance);
         Logger.d(TAG, "Last known location: " + locationJSON);
-        wl.release();
+        Util.safeReleaseWakelock(wl);
 
         // Enable for maximum energy efficiency
         stopSelf();
