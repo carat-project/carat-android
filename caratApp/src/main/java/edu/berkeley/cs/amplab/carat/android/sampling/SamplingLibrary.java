@@ -804,7 +804,7 @@ public final class SamplingLibrary {
 			String packageName = ProcessUtil.trimProcessName(p.pName)[0];
 			if(packageName != null && appName.equals(packageName)
 					&& !importance.equals("Not running")){
-				return true;
+					return true;
 			}
 		}
 		return false;
