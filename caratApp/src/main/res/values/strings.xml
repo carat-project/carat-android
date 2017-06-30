@@ -412,8 +412,8 @@ delete these from your file.
     <string name="permission_request">Permission request</string>
     <string name="service">Service</string>
     <string name="services">Services</string>
-    <string name="activity">Activity</string>
-    <string name="activities">Activities</string>
+    <string name="activity">View</string>
+    <string name="activities">Views</string>
     <string name="disable_charging_mode">Disable charging measurements</string>
     <string name="charging_not_collected">No data will be collected</string>
 </resources>
