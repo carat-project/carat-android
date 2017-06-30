@@ -25,6 +25,7 @@ import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.models.SimpleProcessInfo;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 
@@ -32,7 +33,7 @@ import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
  * Created by Valto on 7.10.2015.
  */
 public class ProcessExpandListAdapter extends BaseExpandableListAdapter implements View.OnClickListener, ExpandableListView.OnGroupClickListener {
-
+    private static final String TAG = ProcessExpandListAdapter.class.getSimpleName();
     private MainActivity mainActivity;
     private CaratApplication caratApplication;
     private SimpleProcessInfo[] processInfoList;
@@ -209,12 +210,12 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
             String pName = pi.getPName();
             String localizedName = CaratApplication.labelForApp(context, pName);
             String importance = pi.getImportance();
-            if(importance != null && (importance.equals(SamplingLibrary.UNINSTALLED)
-                    || importance.equals(SamplingLibrary.REPLACED)
-                    || importance.equals(SamplingLibrary.DISABLED)
-                    || importance.equals(SamplingLibrary.INSTALLED))){
-                // Skip importances used by analysis
-                // TODO: Why do these get to client?
+            if(importance != null &&
+                    (importance.equalsIgnoreCase("uninstalled")
+                    || importance.equalsIgnoreCase("replaced")
+                    || importance.equalsIgnoreCase("disabled")
+                    || importance.equalsIgnoreCase("installed"))){
+                Logger.d(TAG, "Skipping " + pName + " since importance is " + importance);
                 continue;
             }
             int serviceCount = 0;
