@@ -125,7 +125,7 @@ public class CommunicationManager {
 
 			safeClose(instance);
 		} catch (Throwable th) {
-			Logger.e(TAG, "Error refreshing main reports.", th);
+			Logger.e(TAG, "Error uplading samples.", th);
 			safeClose(instance);
 		}
 		// Do not try again. It can cause a massive sample attack on the server.

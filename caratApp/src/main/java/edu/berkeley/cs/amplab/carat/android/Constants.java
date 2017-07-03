@@ -59,7 +59,7 @@ public class Constants {
     public static final String CHECK_SCHEDULE = "edu.berkeley.cs.amplab.carat.android.CHECK_SCHEDULE";
     public static final String RAPID_SAMPLING = "edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING";
 
-    public static final int SAMPLES_MAX_BACKLOG = 250;
+    public static final int SAMPLES_MAX_BACKLOG = 500;
     // If true, install Sampling events to occur at boot. Currently not used.
 
 

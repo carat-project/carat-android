@@ -75,7 +75,7 @@ public class ProtocolClient {
                 String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
                 params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
                 transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_GLOBAL, 8443, Constants.THRIFT_CONNECTION_TIMEOUT, params);
-                protocol = new TCompactProtocol(transport, Long.MAX_VALUE, Long.MAX_VALUE);
+                protocol = new TCompactProtocol(transport); // Do not set limits here.
             } else {
                 transport = new TSocket(SERVER_ADDRESS_GLOBAL, SERVER_PORT_GLOBAL, Constants.THRIFT_CONNECTION_TIMEOUT);
                 protocol = new TBinaryProtocol(transport, true, true);
