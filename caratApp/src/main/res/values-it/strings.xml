@@ -125,8 +125,8 @@ nella maggior parte dei dispositivi. Terminarle può migliorare la durata della 
     <string name="no_hogs_title">Non hai hog.</string>
     <string name="no_hogs_message">Per cortesia, riprova fra una settimana.\n\n
 Le tue app si stanno comportando normalmente quindi non hai hog.\n\n
-Se una applicazione incominciasse a consumare parecchia più energia sul tuo dispositivo in confronto
-agli altri, sarà elencata qui.</string>
+Se una applicazione incominciasse a consumare parecchia energia sul tuo dispositivo come
+sugli altri, sarà elencata qui.</string>
 
     <!-- MY DEVICE -->
     <string name="carat_id_title">Carat ID</string>
