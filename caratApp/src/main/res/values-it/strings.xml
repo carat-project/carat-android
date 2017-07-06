@@ -200,7 +200,7 @@ Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l
     <string name="packageName">Package:</string>
     <string name="reported_by">Segnalato da:</string>
     <string name="by_users">utilizzatori</string>
-    <string name="hog_stats_description">Queste sono le maggiori Hogs installate sui dispostivi che hanno Carat.
+    <string name="hog_stats_description">Queste sono le 200 maggiori Hogs installate sui dispostivi che hanno Carat.
 Hanno un gran consumo di energia su molti dispositivi.
 Puoi verificare se una app è presente.</string>
     <string name="query_hint">Cerca</string>
