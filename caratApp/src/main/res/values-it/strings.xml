@@ -295,12 +295,12 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
         <item>Descrizione</item>
     </string-array>
     <!-- Updating etc -->
-    <string name="samplesreported">Invio dei campioni</string>
+    <string name="samplesreported">Invio campioni</string>
     <string name="updating">Aggiorno</string>
     <string name="updated">Aggiornato </string>
     <string name="neverupdated">Non aggiornato</string>
     <string name="updatedjustnow">Appena aggiornato</string>
-    <string name="didntget">Errore di comunicazione</string>
+    <string name="didntget">Errore comunicazione</string>
     <string name="blacklist">Blacklist</string>
     <string name="finishing">Sto finendo</string>
     <!--- Time quantity strings -->
@@ -310,7 +310,7 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
         <item quantity="other">%d settimane</item>
     </plurals>
     <plurals name="days">
-        <item quantity="one">al giorno</item>
+        <item quantity="one">a un giorno</item>
         <item quantity="other">%d giorni</item>
     </plurals>
     <plurals name="hours">
