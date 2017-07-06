@@ -200,7 +200,7 @@ Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l
     <string name="packageName">Package:</string>
     <string name="reported_by">Segnalato da:</string>
     <string name="by_users">utilizzatori</string>
-    <string name="hog_stats_description">Questa è la top-200 globale degli Hogs.
+    <string name="hog_stats_description">Queste sono le 200 maggiori Hogs installate sui dispostivi che hanno Carat.
 Hanno un gran consumo di energia su molti dispositivi.
 Puoi verificare se una app è presente.</string>
     <string name="query_hint">Cerca</string>
@@ -208,7 +208,7 @@ Puoi verificare se una app è presente.</string>
     <!-- ACTIONS -->
     <string name="stop_app_title">TERMINA</string>
     <string name="app_manager_title">GESTISCI</string>
-    <string name="actions_list_message">Le azioni ti indicano cosa puoi fare per preservare la tua batteria e di quanto può migliorare.</string>
+    <string name="actions_list_message">Le azioni ti indicano cosa puoi fare per preservare la tua batteria e di quanto può migliorare. Agisci solo sulle app che conosci.</string>
     <string name="actions_expanded_info">Chiudendo una applicazione, questa non può più consumare ulteriore
 batteria. Alcune applicazioni che funzionano anche in background, come ad esempio Facebook, possono riavviarsi autonomamnete anche
 dopo che le hai terminate.\n\nSe una applicazione non può essere fermata, puoi provare ancora a fermarla o disinstallarla attraverso il
