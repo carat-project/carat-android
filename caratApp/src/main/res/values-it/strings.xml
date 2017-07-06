@@ -246,7 +246,9 @@ ma non si riavvia se viene chiusa (per liberare risorse) o dopo un restart del d
     <!-- PROCESS LIST -->
     <string name="version">Versione</string>
     <string name="process_list_message">La lista dei processi mostra applicazioni e i servizi correntemente attivi.
-Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durata della batteria.</string>
+Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durata della batteria.
+Una applicazione può contenere più processi, suddivisi in "View" cioè con interazione con l'utilizzatore,
+e "Service", cioè autonomi nella loro funzionalità</string>
 
     <!-- PREFERENCES LIST -->
     <string name="show_all">Mostra tutto</string>
