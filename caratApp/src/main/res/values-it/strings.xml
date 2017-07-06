@@ -105,7 +105,7 @@ Per utilizzare questa applicazione dovete accettare il contratto di Licenza uten
     <string name="menu_hide_apps">Soglia per la segnalazione</string>
     <string name="menu_feedback">Invia un feedback</string>
     <string name="menu_settings">Impostazioni</string>
-    <string name="menu_about">Descrizione</string>
+    <string name="menu_about">Informazioni</string>
     <string name="menu_website">Visita il sito web</string>
 
     <!-- BUGS -->
