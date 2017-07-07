@@ -208,6 +208,7 @@ Puoi verificare se una app è presente.</string>
     <!-- ACTIONS -->
     <string name="stop_app_title">TERMINA</string>
     <string name="app_manager_title">GESTISCI</string>
+    <string name="uninstall_app_title">RIMUOVI</string>
     <string name="actions_list_message">Le azioni ti indicano cosa puoi fare per preservare la tua batteria e di quanto può migliorare. Agisci solo sulle app che conosci.</string>
     <string name="actions_expanded_info">Chiudendo una applicazione, questa non può più consumare ulteriore
 batteria. Alcune applicazioni che funzionano anche in background, come ad esempio Facebook, possono riavviarsi autonomamnete anche
@@ -246,7 +247,9 @@ ma non si riavvia se viene chiusa (per liberare risorse) o dopo un restart del d
     <!-- PROCESS LIST -->
     <string name="version">Versione</string>
     <string name="process_list_message">La lista dei processi mostra applicazioni e i servizi correntemente attivi.
-Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durata della batteria.</string>
+Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durata della batteria.
+Una applicazione può contenere più processi, suddivisi in "View" cioè con interazione con l'utilizzatore,
+e "Service", cioè autonomi nella loro funzionalità</string>
 
     <!-- PREFERENCES LIST -->
     <string name="show_all">Mostra tutto</string>
@@ -347,6 +350,21 @@ Più applicazioni e servizi attivi di norma contribuiscono a peggiorare la durat
     <string name="dialog_text">Carat ha bisogno della connessione Internet per ricevere i tuoi report personalizzati.</string>
     <string name="dialog_enable">Abilita il Wifi</string>
     <string name="dialog_cancel">Cancella</string>
-
-    <string name="title_activity_dashboard">RIEPILOGO</string>
+    <string name="battery_cost">Impatto:</string>
+    <string name="stop">Arresta</string>
+    <string name="manage">Cambia</string>
+    <string name="remember_my_choice">Non mostrare più</string>
+    <string name="prompt_usage_stats">Abilita accesso utilizzo</string>
+    <string name="monitor_apps">Vai alle impostazioni</string>
+    <string name="enable_later">Puoi abilitare il permesso nelle impostazioni.</string>
+    <string name="return_with_back">Abilita il permesso e torna col tasto indietro.</string>
+    <string name="allow_usagestats">Permetti a Carat di monitorare le applicazioni attive attraverso l'abilitazione dell\'accesso utilizzo.</string>
+    <string name="permission_request">E' richiesto questo permesso</string>
+    <string name="service">Service</string>
+    <string name="services">Service</string>
+    <string name="activity">View</string>
+    <string name="activities">View</string>
+    <string name="disable_charging_mode">Disabilita le misure durante la ricarica</string>
+    <string name="charging_not_collected">Non saranno raccolti dati</string>
+    <string name="title_activity_dashboard">   RIEPILOGO</string>
 </resources>
