@@ -253,10 +253,10 @@ e "Service", cioè autonomi nella loro funzionalità</string>
 
     <!-- PREFERENCES LIST -->
     <string name="show_all">Mostra tutto</string>
-    <string name="five">Impatto &lt; 5 min</string>
-    <string name="ten">Impatto &lt; 10 min</string>
-    <string name="twenty">Impatto &lt; 20 min</string>
-    <string name="hour">Impatto &lt; 1 hour</string>
+    <string name="five">Impatto &gt; 5 min</string>
+    <string name="ten">Impatto &gt; 10 min</string>
+    <string name="twenty">Impatto &gt; 20 min</string>
+    <string name="hour">Impatto &gt; 1 hour</string>
 
     <string name="hogs_camel">Hogs</string>
     <string name="bugs_camel">Bugs</string>
