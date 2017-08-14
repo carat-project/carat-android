@@ -29,12 +29,12 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
 public class LocationReceiver extends Service implements LocationListener{
     private final static String TAG = LocationReceiver.class.getSimpleName();
     private Context context;
-    private PowerManager powerManager;
+    private LocationManager locationManager;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         context = getApplicationContext();
-        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         requestLocationUpdates();
         super.onStartCommand(intent, flags, startId);
         return START_STICKY;
@@ -47,20 +47,20 @@ public class LocationReceiver extends Service implements LocationListener{
     }
 
     public void requestLocationUpdates() {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        List<String> providers = SamplingLibrary.getEnabledLocationProviders(context);
-        if (providers != null) {
-            for (String provider : providers) {
-                locationManager.requestLocationUpdates(provider, Constants.FRESHNESS_TIMEOUT, 0, this);
+        if(locationManager == null){
+            stop();
+        } else {
+            List<String> providers = SamplingLibrary.getEnabledLocationProviders(context);
+            if (providers != null) {
+                for (String provider : providers) {
+                    locationManager.requestLocationUpdates(provider, Constants.FRESHNESS_TIMEOUT, 0, this);
+                }
             }
         }
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-        Util.safeReleaseWakelock(wl);
-        wl.acquire(10*60*1000L /*10 minutes*/);
         Logger.d(TAG, "Received a location update");
 
         Context context = getApplicationContext();
@@ -79,11 +79,18 @@ public class LocationReceiver extends Service implements LocationListener{
 
         Logger.d(TAG, "Distance traveled: " + distance);
         Logger.d(TAG, "Last known location: " + locationJSON);
-        Util.safeReleaseWakelock(wl);
 
         // Enable for maximum energy efficiency
-        stopSelf();
         Logger.d(TAG, "Location service shutting down");
+        stop();
+    }
+
+    public void stop(){
+        if(locationManager != null){
+            locationManager.removeUpdates(this);
+            locationManager = null;
+        }
+        stopSelf();
     }
 
     @Override
