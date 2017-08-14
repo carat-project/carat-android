@@ -3,7 +3,6 @@ package edu.berkeley.cs.amplab.carat.android.utils;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -11,7 +10,6 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
-import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -20,7 +18,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.berkeley.cs.amplab.carat.android.BuildConfig;
+import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 
 /**
  * Created by Jonatan Hamberg on 6/30/17.
@@ -52,7 +52,9 @@ public class VersionGater {
     private void check(){
         AsyncTask.execute(() -> {
             try {
-                String json = JsonParser.getJSONFromUrl("http://carat.cs.helsinki.fi/version.json");
+                boolean online = NetworkingUtil.isOnline(context);
+                String json = getVersionGateJSON(online);
+
                 if(!Util.isNullOrEmpty(json)) {
                     JSONObject jsonObject = new JSONObject(json);
                     versionCode = jsonObject.getInt("versionCode");
@@ -69,6 +71,22 @@ public class VersionGater {
                 e.printStackTrace();
             }
         });
+    }
+
+    private String getVersionGateJSON(boolean online){
+        CaratDataStorage storage = CaratApplication.getStorage();
+        String json = null;
+        if(online){
+            json = JsonParser.getJSONFromUrl("http://carat.cs.helsinki.fi/version.json");
+            if(storage != null && !Util.isNullOrEmpty(json)){
+                storage.writeVersionGateJSON(json);
+            }
+        } else {
+            if(storage != null){
+                json = storage.getVersionGateJSON();
+            }
+        }
+        return json;
     }
 
     private boolean isVersionTooOld(int versionCode){
