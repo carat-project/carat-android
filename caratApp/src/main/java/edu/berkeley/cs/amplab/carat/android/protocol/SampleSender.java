@@ -17,6 +17,7 @@ import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 /**
@@ -42,19 +43,11 @@ public class SampleSender {
     public static boolean sendSamples(CaratApplication app) {
         synchronized(sendLock){
             Context c = app.getApplicationContext();
-    
-            String networkStatus = SamplingLibrary.getNetworkStatus(c);
-            String networkType = SamplingLibrary.getNetworkType(c);
-    
-            final SharedPreferences p = PreferenceManager
-                    .getDefaultSharedPreferences(c);
-            final boolean useWifiOnly = p.getBoolean(c.getString(R.string.wifi_only_key), false);
-            //Logger.i("SampleSender", String.valueOf(useWifiOnly));
-    
-            boolean connected = (!useWifiOnly && networkStatus == SamplingLibrary.NETWORKSTATUS_CONNECTED)
-                    || networkType.equals("WIFI");
+
+            final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(c);
+            boolean online = NetworkingUtil.isOnline(c);
             
-            if (connected) {
+            if (online) {
                 SampleDB db = SampleDB.getInstance(c);
                 int samples = db.countSamples();
                 

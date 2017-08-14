@@ -63,6 +63,9 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
         androidMap = new HashMap<>();
         iosMap = new HashMap<>();
         try {
+            // This looks like an unsafe call, but wifi-only mode is actually checked by
+            // the caller which for now is main activity. Doesn't feel right.
+            // TODO: Separate network layer
             if (CaratApplication.isInternetAvailable()) {
                 serverResponseJson = JsonParser
                         .getJSONFromUrl("http://carat.cs.helsinki.fi/statistics-data/stats.json");

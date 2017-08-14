@@ -23,6 +23,7 @@ import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.HogStats;
 import edu.berkeley.cs.amplab.carat.android.adapters.HogStatsExpandAdapter;
+import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 
 /**
  * Created by Jonatan Hamberg on 2.5.2016.
@@ -101,10 +102,15 @@ public class HogStatsFragment extends Fragment{
     }
 
     public void updateHogStatsAsynchronously(){
-        AsyncStats fetchHogStats = new AsyncStats(getMainActivity());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-            fetchHogStats.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        } else fetchHogStats.execute();
+        boolean online = NetworkingUtil.isOnline(getContext());
+        if (online){
+            AsyncStats fetchHogStats = new AsyncStats(getMainActivity());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                fetchHogStats.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                fetchHogStats.execute();
+            }
+        }
     }
 
     public HogStatsExpandAdapter setupAdapter(){

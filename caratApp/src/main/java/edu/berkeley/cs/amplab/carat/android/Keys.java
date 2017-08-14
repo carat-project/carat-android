@@ -16,4 +16,5 @@ public class Keys {
     public static String lastSampleNotify = "lastSampleNotify";
     public static String rapidSamplingDisabled = "rapidSamplingDisabled";
     public static String promptUsageStats = "promptUsageStats";
+    public static String useWifiOnly = "wifionly";
 }

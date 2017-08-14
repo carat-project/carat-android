@@ -60,6 +60,7 @@ public class IntentRouter extends IntentService {
         // Start up a location receiver in case it has died, it should stay up long enough
         // to get at least one update, which is enough for the coarse location sampling
         // we do for distance traveled.
+        // TODO: Is this too often?
         if(!ProcessUtil.isServiceRunning(context, LocationReceiver.class)){
             startService(new Intent(this, LocationReceiver.class));
         }

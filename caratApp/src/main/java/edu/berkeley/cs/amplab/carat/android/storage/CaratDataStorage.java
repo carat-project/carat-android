@@ -38,6 +38,7 @@ public class CaratDataStorage {
     public static final String FILENAME = "carat-reports.dat";
     public static final String BLACKLIST_FILE = "carat-blacklist.dat";
     public static final String QUESTIONNAIRE_URL_FILE = "questionnaire-url.txt";
+    public static final String VERSION_GATE_FILE = "version-gate.json";
     public static final String QUESTIONNAIRE_FILE = "carat-questionnaire.dat";
     public static final String QUESTIONNAIRE_ANSWERS_FILE = "carat-questionnaire-answers";
     public static final String QUESTIONNAIRE_FRESHNESS = "carat-questionnaire-freshness";
@@ -77,6 +78,7 @@ public class CaratDataStorage {
     private WeakReference<HashMap<Integer, Questionnaire>> questionnaires = null;
     private WeakReference<HashMap<Integer, Answers>> answers = null;
     private WeakReference<SortedMap<Long, ChargingSession>> sessions = null;
+    private WeakReference<String> versionGateJSON = null;
 
     public CaratDataStorage(Context a) {
         this.a = a;
@@ -774,6 +776,23 @@ public class CaratDataStorage {
                 writeObject(list, SETTINGSFILE);
             }
         }
+    }
+
+    public void writeVersionGateJSON(String json){
+        writeText(json, VERSION_GATE_FILE);
+    }
+
+    public String getVersionGateJSON(){
+        String json;
+        if (versionGateJSON != null && versionGateJSON.get() != null){
+            json = versionGateJSON.get();
+            if(json != null){
+               return json;
+            }
+        }
+        json = readText(VERSION_GATE_FILE);
+        versionGateJSON = new WeakReference<>(json);
+        return json;
     }
 
 

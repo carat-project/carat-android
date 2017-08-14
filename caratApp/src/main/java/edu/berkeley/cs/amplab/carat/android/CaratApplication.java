@@ -41,6 +41,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
@@ -573,7 +574,7 @@ public class CaratApplication extends Application {
         }
 
         // Check network status and data freshness, then update
-        if(isNetworkReady()){
+        if(NetworkingUtil.isOnline(getApplicationContext())){
             boolean success = false;
             main.runOnUiThread(new Runnable() {
                 @Override

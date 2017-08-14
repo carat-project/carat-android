@@ -43,6 +43,7 @@ import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefetchData;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
@@ -137,7 +138,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tracker.trackUser("caratstarted", getTitle());
 
         // TODO SHOW DIALOG, NOT FRAGMENT
-        if (!CaratApplication.isInternetAvailable()) {
+        boolean online = NetworkingUtil.isOnline(getApplicationContext());
+        if (!online) {
             EnableInternetDialogFragment dialog = new EnableInternetDialogFragment();
             dialog.show(getSupportFragmentManager(), "dialog");
         }
@@ -180,7 +182,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // from Eula Activity without invoking super.onResume()
     public void resumeTasksAndUpdate(){
         this.onBackground = false;
-        if ((!isStatsDataAvailable()) && CaratApplication.isInternetAvailable()) {
+        boolean online = NetworkingUtil.isOnline(getApplicationContext());
+        if ((!isStatsDataAvailable()) && online) {
             getStatsFromServer();
         }
         // Refresh reports and upload samples every 15 minutes, but only
@@ -542,16 +545,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressLint("NewApi")
     private void getStatsFromServer() {
-        PrefetchData prefetchData = new PrefetchData(this);
-        AsyncStats hogStats = new AsyncStats(this);
-        // run this asyncTask in a new thread [from the thread pool] (run in parallel to other asyncTasks)
-        // (do not wait for them to finish, it takes a long time)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-            prefetchData.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            hogStats.executeOnExecutor(AsyncStats.THREAD_POOL_EXECUTOR);
-        } else {
-            hogStats.execute();
-            prefetchData.execute();
+        boolean online = NetworkingUtil.isOnline(getApplicationContext());
+        if(online){
+            PrefetchData prefetchData = new PrefetchData(this);
+            AsyncStats hogStats = new AsyncStats(this);
+            // run this asyncTask in a new thread [from the thread pool] (run in parallel to other asyncTasks)
+            // (do not wait for them to finish, it takes a long time)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+                prefetchData.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                hogStats.executeOnExecutor(AsyncStats.THREAD_POOL_EXECUTOR);
+            } else {
+                hogStats.execute();
+                prefetchData.execute();
+            }
         }
     }
 
