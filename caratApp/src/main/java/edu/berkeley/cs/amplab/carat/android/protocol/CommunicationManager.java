@@ -144,7 +144,7 @@ public class CommunicationManager {
 					// "new" uuid
 					uuId = SamplingLibrary.getUuid(a);
 				} else {
-					// Time-based ID scheme
+                    // Time-based ID scheme
 					uuId = SamplingLibrary.getTimeBasedUuid(a);
 					if (Constants.DEBUG)
 					    Logger.d("CommunicationManager", "Generated a new time-based UUID: " + uuId);
@@ -548,9 +548,10 @@ public class CommunicationManager {
 		double freshness = CaratApplication.getStorage().getQuestionnaireFreshness();
 		if(System.currentTimeMillis() - freshness < Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE) {
 			if(Constants.DEBUG){
-				long waitFor = (long)(Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE - (System.currentTimeMillis() - freshness));
-				Logger.d(TAG, "Still need to wait "+ TimeUnit.MILLISECONDS.toSeconds(waitFor) +"s for next questionnaire check.");
+				return true;
 			}
+            long waitFor = (long)(Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE - (System.currentTimeMillis() - freshness));
+            Logger.d(TAG, "Still need to wait "+ TimeUnit.MILLISECONDS.toSeconds(waitFor) +"s for next questionnaire check.");
 			return false;
 		}
 		if(Constants.DEBUG){

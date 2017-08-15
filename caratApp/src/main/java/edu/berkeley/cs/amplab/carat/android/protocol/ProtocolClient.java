@@ -76,7 +76,8 @@ public class ProtocolClient {
             protocol = new TCompactProtocol(transport); // Do not set limits here.
         }
         else if(location == ServerLocation.EU){
-            if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null){
+            if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null)
+            {
                 if(!loadSSLProperties(c)){
                     Logger.e(TAG,"Failed loading SSL properties!");
                     return null; // Failed to load SSL properties
@@ -87,7 +88,7 @@ public class ProtocolClient {
             String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
             params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
             transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_EU, SERVER_PORT_EU, Constants.THRIFT_CONNECTION_TIMEOUT, params);
-            protocol = new TBinaryProtocol(transport, true, true);
+            protocol = new TCompactProtocol(transport);
         }
 
         CaratService.Client instance = new CaratService.Client(protocol);
