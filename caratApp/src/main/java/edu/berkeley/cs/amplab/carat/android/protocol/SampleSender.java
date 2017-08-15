@@ -3,6 +3,7 @@ package edu.berkeley.cs.amplab.carat.android.protocol;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -18,6 +19,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 /**
@@ -30,12 +32,9 @@ import edu.berkeley.cs.amplab.carat.thrift.Sample;
 public class SampleSender {
     
     private static final String TAG = "sendSamples";
-    private static final String TRY_AGAIN = " will try again later.";
     private static final Object sendLock = new Object();
 
     public static boolean sendingSamples = false;
-
-    CaratApplication app = null;
 
     // Prevent instantiation
     private SampleSender(){}
@@ -43,107 +42,43 @@ public class SampleSender {
     public static boolean sendSamples(CaratApplication app) {
         synchronized(sendLock){
             Context c = app.getApplicationContext();
-
-            final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(c);
             boolean online = NetworkingUtil.isOnline(c);
             
             if (online) {
                 SampleDB db = SampleDB.getInstance(c);
-                int samples = db.countSamples();
-                
-                /* Click Tracking: Track sample sending. */
-                String uuId = p.getString(CaratApplication.getRegisteredUuid(), "UNKNOWN");
-                HashMap<String, String> options = new HashMap<String, String>();
-                options.put("count", samples+"");
-                ClickTracking.track(uuId, "sendingsamples", options, c);
-                /* End Click Tracking: Track sample sending. */
-
-
-                int successSum = 0;
-                for (int batches = 0; batches < Constants.COMMS_MAX_BATCHES
-                        && batches < samples
-                                / Constants.COMMS_MAX_UPLOAD_BATCH + 1; batches++) {
-                    SortedMap<Long, Sample> map = SampleDB.getInstance(c)
-                            .queryOldestSamples(
-                                    Constants.COMMS_MAX_UPLOAD_BATCH);
-                    if (map.size() > 0) {
-                        int progress = (int) (successSum * 1.0 / samples * 100.0);
-                        sendingSamples = true;
-                        CaratApplication.setStatus(successSum + "/" + samples +" "+ app.getString(R.string.samplesreported));
-                        if (app.commManager != null) {
-                            int tries = 0;
-                            while (tries < 2) {
-                                try {
-                                    int success = app.commManager.uploadSamples(map.values());
-    
-                                    tries = 2;
-                                    if (Constants.DEBUG)
-                                        Logger.d(TAG, "Uploaded " + success
-                                            + " samples out of " + map.size());
-                                    if (success > 0)
-                                        CaratApplication.getStorage().samplesReported(success);
-                                    Sample last = map.get(map.lastKey());
-                                    
-									/*
-									 * converting (to human readable date-time format) 
-									 * the "timestamp" of the last sample (which is
-									 * uploaded now, and should be deleted along the other 
-									 * uploaded samples). The "timestamp" is computed this way:
-									 * CurrentTimeMillis / 1000 
-									 * (see sample() in SamplingLibrary)
-									 */ 
-                                    long lastSampleTime = (long) last.getTimestamp() * 1000; // in currentTimeMillis
-                                    SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");
-                                    Date resultdate = new Date(lastSampleTime);
-                                    if (Constants.DEBUG)
-                                        Logger.d(TAG,
-                                            "Deleting " + success
-                                                    + " samples older than "
-                                                    + sdf.format(resultdate));
-                                    /*
-                                     * Logger.i(TAG, "Sent samples:"); for (Sample k:
-                                     * map.values()){ Logger.i(TAG, k.getTimestamp() +
-                                     * " " + k.getBatteryLevel()); }
-                                     */
-                                    SortedSet<Long> uploaded = new TreeSet<Long>();
-                                    int i = 0;
-                                    for (Long s : map.keySet()) {
-                                        if (i < success)
-                                            uploaded.add(s);
-                                        i += 1;
-                                    }
-                                    int deleted = SampleDB.getInstance(c)
-                                            .deleteSamples(uploaded);
-                                    // Logger.d(TAG, "Deleted " + deleted + " samples.");
-                                    successSum += success;
-                                } catch (Throwable th) {
-                                    // Any sort of malformed response, too short
-                                    // string, etc...
-                                    Log.w(TAG, "Failed to refresh reports: "
-                                            + th
-                                            + (tries < 1 ? "Trying again now"
-                                                    : TRY_AGAIN), th);
-                                    tries++;
-                                }
-                            }
-                        } else {
-                            Log.w(TAG, "CommunicationManager is not ready yet."
-                                    + TRY_AGAIN);
-                        }
-                        sendingSamples = false;
-                    } else {
-                        Log.w(TAG, "No samples to send." + TRY_AGAIN);
-                    }
+                CommunicationManager manager = app.commManager;
+                if(manager == null){
+                    Logger.d(TAG, "Communication manager is not ready yet");
+                    return false;
                 }
-                
-                /* Click Tracking: Track sample sending. */
-                options.put("count", successSum+"");
-                ClickTracking.track(uuId, "sentsamples", options, c);
-                /* End Click Tracking: Track sample sending. */
+                int sampleCount = db.countSamples();
+                int successSum = 0;
+                int failures = 0;
+                SortedMap<Long, Sample> batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
+                sendingSamples = true;
+                while(batch.size() > 0 && failures <= 3){
+                    int sent = manager.uploadSamples(batch.values());
+                    if(sent > 0){
+                        failures = 0; // Reset tries
+                        successSum += sent;
+                        int progress = (int)(successSum / (sampleCount * 100.0));
+                        String progressString = progress + "% " + app.getString(R.string.samplesreported);
+                        CaratApplication.setStatus(progressString);
 
-                return (db.countSamples() == 0 || successSum == samples);
+                        // Delete samples that were sent successfully
+                        Set<Long> sentRowIds = Util.firstEntries(sent, batch).keySet();
+                        db.deleteSamples(sentRowIds);
+                    } else {
+                        Log.d(TAG, "Failed sending batch, increasing failures to " + failures);
+                        failures++;
+                    }
+                    batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
+                }
+                sendingSamples = false;
+                return db.countSamples() == 0 || successSum == sampleCount;
+            } else {
+                Logger.d(TAG, "Not online, cannot send samples");
             }
-            
             return false;
         }
     }

@@ -52,6 +52,8 @@ public class CommunicationManager {
 	private boolean gettingReports = false;
 	private SharedPreferences p = null;
 
+	private ProtocolClient instance;
+
 	public CommunicationManager(CaratApplication a) {
 		this.a = a;
 		p = PreferenceManager.getDefaultSharedPreferences(this.a);

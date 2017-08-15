@@ -62,7 +62,6 @@ public class CaratDataStorage {
     private long freshness = 0;
     private long blacklistFreshness = 0;
     private long quickHogsFreshness = 0;
-    private long samples_reported = 0;
     private long hogStatsFreshness = 0;
     private long questionnaireFreshness = 0;
     private long lastUploadTimestamp = 0;
@@ -89,7 +88,6 @@ public class CaratDataStorage {
         readBugReport();
         readHogReport();
         readBlacklist();
-        samples_reported = readSamplesReported();
     }
 
     public void writeReports(Reports reports) {
@@ -669,30 +667,6 @@ public class CaratDataStorage {
             return;
         questionnaireUrl = url;
         writeText(url, QUESTIONNAIRE_URL_FILE);
-    }
-
-    public void samplesReported(int howmany) {
-        samples_reported += howmany;
-        writeText(samples_reported + "", SAMPLES_REPORTED);
-    }
-
-
-    public long readSamplesReported() {
-        String s = readText(SAMPLES_REPORTED);
-        if (Constants.DEBUG)
-            Logger.d(TAG, "Read samples reported: " + s);
-        // here is the bug. s is null!
-        if (s != null)
-            return Long.parseLong(s);
-        else
-            return -1;
-    }
-
-    /**
-     * @return the freshness
-     */
-    public long getSamplesReported() {
-        return samples_reported;
     }
 
     /**

@@ -52,8 +52,8 @@ public class Constants {
 
     // When waking up from screen off, wait 5 seconds for wifi etc to come up
     public static final long COMMS_WIFI_WAIT = 5 * 1000;
-    // Send up to 10 samples at a time
-    public static final int COMMS_MAX_UPLOAD_BATCH = 10;
+    // Send up to 100 samples at a time
+    public static final int COMMS_MAX_UPLOAD_BATCH = 100;
 
     public static final String SCHEDULED_SAMPLE = "edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE";
     public static final String CHECK_SCHEDULE = "edu.berkeley.cs.amplab.carat.android.CHECK_SCHEDULE";
