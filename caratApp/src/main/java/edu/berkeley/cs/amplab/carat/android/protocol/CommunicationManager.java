@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -52,7 +53,7 @@ public class CommunicationManager {
 	private boolean gettingReports = false;
 	private SharedPreferences p = null;
 
-	private ProtocolClient instance;
+	private CaratService.Client rpcService;
 
 	public CommunicationManager(CaratApplication a) {
 		this.a = a;
@@ -104,35 +105,34 @@ public class CommunicationManager {
 	}
 
 	public int uploadSamples(Collection<Sample> samples) {
-		CaratService.Client instance = null;
-		int succeeded = 0;
-		ArrayList<Sample> samplesLeft = new ArrayList<Sample>();
+		int successCount = 0;
 		registerLocal();
-		try {
-			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
-			registerOnFirstRun(instance);
-
-			for (Sample s : samples) {
-				boolean success = false;
-				try {
-					success = instance.uploadSample(s);
-				} catch (Throwable th) {
-					Logger.e(TAG, "Error uploading sample.", th);
-				}
-				if (success)
-					succeeded++;
-				else
-					samplesLeft.add(s);
+		if(rpcService == null){
+			try{
+				rpcService = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
+			} catch(TTransportException e){
+				Logger.e(TAG, "Failed getting an instance of CaratService", e);
+				safeClose(rpcService);
+				return successCount;
 			}
-
-			safeClose(instance);
-		} catch (Throwable th) {
-			Logger.e(TAG, "Error uplading samples.", th);
-			safeClose(instance);
 		}
-		// Do not try again. It can cause a massive sample attack on the server.
-		return succeeded;
+		registerOnFirstRun(rpcService);
+		for(Sample sample : samples){
+			try {
+				if(rpcService.uploadSample(sample)){
+					successCount++;
+				}
+			} catch (Throwable th) {
+				Logger.e(TAG, "Error uploading sample", th);
+			}
+		}
+		return successCount;
 	}
+
+	public void disposeRpcService(){
+	    safeClose(rpcService);
+	    rpcService = null;
+    }
 
 	private void registerLocal() {
 		if (register) {

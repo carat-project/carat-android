@@ -1,21 +1,13 @@
 package edu.berkeley.cs.amplab.carat.android.protocol;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
-import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
@@ -46,8 +38,8 @@ public class SampleSender {
             
             if (online) {
                 SampleDB db = SampleDB.getInstance(c);
-                CommunicationManager manager = app.commManager;
-                if(manager == null){
+                CommunicationManager commManager = app.commManager;
+                if(commManager == null){
                     Logger.d(TAG, "Communication manager is not ready yet");
                     return false;
                 }
@@ -57,7 +49,7 @@ public class SampleSender {
                 SortedMap<Long, Sample> batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
                 sendingSamples = true;
                 while(batch.size() > 0 && failures <= 3){
-                    int sent = manager.uploadSamples(batch.values());
+                    int sent = commManager.uploadSamples(batch.values());
                     if(sent > 0){
                         failures = 0; // Reset tries
                         successSum += sent;
@@ -74,6 +66,7 @@ public class SampleSender {
                     }
                     batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
                 }
+                commManager.disposeRpcService(); //
                 sendingSamples = false;
                 return db.countSamples() == 0 || successSum == sampleCount;
             } else {
