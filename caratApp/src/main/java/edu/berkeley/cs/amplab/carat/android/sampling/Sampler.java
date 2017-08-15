@@ -35,7 +35,7 @@ public class Sampler {
     public static boolean sample(Context context, String trigger, Runnable releaseWl){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if(!preferences.contains(Keys.registeredUUID)){
-            Logger.i(TAG, "Not registered yet, skippping");
+            Logger.i(TAG, "Not registered yet, skipping");
             return false;
         }
         boolean success = false;
