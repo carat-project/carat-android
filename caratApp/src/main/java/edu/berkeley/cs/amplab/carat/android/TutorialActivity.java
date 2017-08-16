@@ -86,6 +86,7 @@ public class TutorialActivity extends ActionBarActivity implements View.OnClickL
 
         acceptButton = (Button) findViewById(R.id.tutorial_accept_button);
         acceptButton.setOnClickListener(this);
+        acceptButton.setText(getString(R.string.continueText).toUpperCase());
         //acceptButton.setClickable(false);
     }
 
@@ -132,27 +133,35 @@ public class TutorialActivity extends ActionBarActivity implements View.OnClickL
 
     @Override
     public void onPageSelected(int position) {
+        String continueText = getString(R.string.continueText).toUpperCase();
         if (position == 0) {
             dot0.setImageResource(R.drawable.dot_selected);
             dot1.setImageResource(R.drawable.dot);
             dot2.setImageResource(R.drawable.dot);
             dot3.setImageResource(R.drawable.dot);
+            acceptButton.setBackgroundResource(R.drawable.button_rounded_gray);
+            acceptButton.setText(continueText);
         } else if (position == 1) {
             dot0.setImageResource(R.drawable.dot);
             dot1.setImageResource(R.drawable.dot_selected);
             dot2.setImageResource(R.drawable.dot);
             dot3.setImageResource(R.drawable.dot);
+            acceptButton.setBackgroundResource(R.drawable.button_rounded_gray);
+            acceptButton.setText(continueText);
         } else if (position == 2) {
             dot0.setImageResource(R.drawable.dot);
             dot1.setImageResource(R.drawable.dot);
             dot2.setImageResource(R.drawable.dot_selected);
             dot3.setImageResource(R.drawable.dot);
+            acceptButton.setBackgroundResource(R.drawable.button_rounded_gray);
+            acceptButton.setText(continueText);
         } else if (position == 3) {
             dot0.setImageResource(R.drawable.dot);
             dot1.setImageResource(R.drawable.dot);
             dot2.setImageResource(R.drawable.dot);
             dot3.setImageResource(R.drawable.dot_selected);
             acceptButton.setBackgroundResource(R.drawable.button_rounded_orange);
+            acceptButton.setText(R.string.tutorial_accept);
         }
     }
 
