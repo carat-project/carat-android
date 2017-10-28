@@ -1,5 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.protocol;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class Action {
@@ -32,7 +33,18 @@ public class Action {
 		this.options = options;
 	}
 
-	
-	
+	public String toJson(){
+		StringBuilder b =new StringBuilder();
+		b.append("{\"name\": \""+name+"\", ");
+        b.append("\"username\": \""+username+"\", ");
+        String[] opts = options.keySet().toArray(new String[options.keySet().size()]);
+        Arrays.sort(opts);
+        for (String option: opts) {
+            b.append(", ");
+            b.append("\""+option+"\": \"" + options.get(option)+ "\"");
+        }
+        b.append("}");
+        return b.toString();
+	}
 }
 

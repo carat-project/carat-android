@@ -10,11 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.apache.http.entity.StringEntity;
-import org.codehaus.jackson.map.ObjectMapper;
-
 import edu.berkeley.cs.amplab.carat.android.Constants;
-import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 import android.annotation.SuppressLint;
@@ -56,20 +52,18 @@ public class ClickTracking {
             client.setRequestProperty("Content-type", "application/json; charset=UTF-8");
 
             // 3. build json String using Jackson
-            String json = "";
-            ObjectMapper mapper = new ObjectMapper();
-            json = mapper.writeValueAsString(action);
+            String json = action.toJson();
             if (Constants.DEBUG)
                 Logger.d(TAG, "JSON=\n" + json);
             // 5. set json to StringEntity
-            StringEntity se = new StringEntity(json, "UTF-8");
+            //StringEntity se = new StringEntity(json, "UTF-8");
 
 
             // 6. set httpPost Entity
             client.setDoOutput(true);
             client.setDoInput(true);
             DataOutputStream out = new DataOutputStream(client.getOutputStream());
-            out.writeUTF(se.toString());
+            out.writeUTF(json);
 
             // 9. receive response as inputStream
             DataInputStream in = new DataInputStream(client.getInputStream());
