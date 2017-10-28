@@ -6,3 +6,7 @@
 -dontwarn org.apache.commons.**
 ##---junit
 -dontwarn android.test.**
+-keep class edu.berkeley.cs.amplab.carat.** { *; }
+-keepclassmembers class edu.berkeley.cs.amplab.carat.** {
+    private <fields>;
+}
