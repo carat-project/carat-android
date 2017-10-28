@@ -1,0 +1,8 @@
+-keep class org.bouncycastle.** { *; }
+-dontwarn org.bouncycastle.**
+-keep class org.apache.thrift.** { *; }
+-dontwarn org.apache.thrift.**
+-keep class org.apache.commons.** { *; }
+-dontwarn org.apache.commons.**
+##---junit
+-dontwarn android.test.**

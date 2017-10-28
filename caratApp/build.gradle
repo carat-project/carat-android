@@ -5,8 +5,8 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        versionCode 121
-        versionName "2.17.7"
+        versionCode 122
+        versionName "2.17.8"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 10
         //noinspection OldTargetApi
@@ -32,8 +32,9 @@ android {
         }
         release {
             //signingConfig signingConfigs.release
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'testProguard-rules.txt'
         }
     }
 
