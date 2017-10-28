@@ -32,7 +32,7 @@ android {
         }
         release {
             //signingConfig signingConfigs.release
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'testProguard-rules.txt'
         }
