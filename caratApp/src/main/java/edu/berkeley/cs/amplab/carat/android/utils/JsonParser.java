@@ -18,7 +18,7 @@ public class JsonParser {
 		try {
             // Set up HTTP post
             HttpURLConnection httpPost = (HttpURLConnection) new URL(url).openConnection();
-            httpPost.setRequestMethod("POST");
+            httpPost.setRequestMethod("GET");
             httpPost.setDoInput(true);
 
             final int bufferSize = 1024;
