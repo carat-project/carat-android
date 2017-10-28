@@ -68,8 +68,8 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
             // TODO: Separate network layer
             if (CaratApplication.isInternetAvailable()) {
                 serverResponseJson = JsonParser
-                        .getJSONFromUrl("http://carat.cs.helsinki.fi/statistics-data/stats.json");
-                serverResponseJsonDevices = JsonParser.getJSONFromUrl("http://carat.cs.helsinki.fi/statistics-data/shares.json");
+                        .getJSONFromUrl(Constants.WEBSITE+"statistics-data/stats.json");
+                serverResponseJsonDevices = JsonParser.getJSONFromUrl(Constants.WEBSITE+"statistics-data/shares.json");
             }
         } catch (Exception e) {
         }

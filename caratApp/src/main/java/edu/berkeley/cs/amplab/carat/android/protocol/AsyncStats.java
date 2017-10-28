@@ -120,7 +120,7 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
     }
 
     public JSONObject getPlatformData(String platformName){
-        String url = "http://carat.cs.helsinki.fi/statistics-data/apps/data.json";
+        String url = Constants.WEBSITE+"statistics-data/apps/data.json";
         String jsonData = JsonParser.getJSONFromUrl(url);
         if(jsonData == null || jsonData.isEmpty()) return null;
         try{
@@ -148,7 +148,7 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
     }
 
     private ArrayList<HogStats> getHogStats(){
-        String url = "http://carat.cs.helsinki.fi/statistics-data/apps/" + date + "-android.json";
+        String url = Constants.WEBSITE+"statistics-data/apps/" + date + "-android.json";
         String jsonData = JsonParser.getJSONFromUrl(url);
         ArrayList<HogStats> result = new ArrayList<>();
         if(jsonData == null || jsonData.isEmpty()) return null;

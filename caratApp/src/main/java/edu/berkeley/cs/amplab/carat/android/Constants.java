@@ -24,6 +24,9 @@ public class Constants {
 
     public static final int THRIFT_CONNECTION_TIMEOUT = (int)TimeUnit.MINUTES.toMillis(1);
 
+    // Carat Website address.
+    public static final String WEBSITE = "http://carat.cs.helsinki.fi/";
+
     public static final String PREFERENCE_FIRST_RUN = "carat.first.run";
     public static final String REGISTERED_UUID = "carat.registered.uuid";
     public static final String REGISTERED_OS = "carat.registered.os";

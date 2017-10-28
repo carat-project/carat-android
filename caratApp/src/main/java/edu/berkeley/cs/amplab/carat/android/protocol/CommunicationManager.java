@@ -41,7 +41,7 @@ import edu.berkeley.cs.amplab.carat.android.protocol.ProtocolClient.ServerLocati
 public class CommunicationManager {
 
 	private static final String TAG = "CommsManager";
-	private static final String DAEMONS_URL = "http://carat.cs.helsinki.fi/daemons.txt";
+	private static final String DAEMONS_URL = Constants.WEBSITE+"daemons.txt";
 	private static final String QUESTIONNAIRE_URL = "http://www.cs.helsinki.fi/u/lagerspe/caratapp/questionnaire-url.txt";
 
 	private CaratApplication a = null;

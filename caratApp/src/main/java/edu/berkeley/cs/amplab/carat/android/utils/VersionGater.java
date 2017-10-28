@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import edu.berkeley.cs.amplab.carat.android.BuildConfig;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
+import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 
@@ -77,7 +78,7 @@ public class VersionGater {
         CaratDataStorage storage = CaratApplication.getStorage();
         String json = null;
         if(online){
-            json = JsonParser.getJSONFromUrl("http://carat.cs.helsinki.fi/version.json");
+            json = JsonParser.getJSONFromUrl(Constants.WEBSITE+"version.json");
             if(storage != null && !Util.isNullOrEmpty(json)){
                 storage.writeVersionGateJSON(json);
             }

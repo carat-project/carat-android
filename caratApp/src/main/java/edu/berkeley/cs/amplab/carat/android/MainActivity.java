@@ -583,8 +583,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Facebook doesn't allow prefilled text, but since custom URIs are allowed,
         // we could instead have dynamic content.
         long appId = 258193747569113L;
-        String website = "http://carat.cs.helsinki.fi/";
-        Uri uri = Uri.parse("https://www.facebook.com/dialog/share?app_id="+appId+ "&display=popup&href="+website);
+        Uri uri = Uri.parse("https://www.facebook.com/dialog/share?app_id="+appId+ "&display=popup&href="+Constants.WEBSITE);
         startActivity(new Intent(Intent.ACTION_VIEW, uri));
     }
 
