@@ -62,8 +62,6 @@
     <!-- MENU -->
 
     <!-- ACTIVITIES -->
-    <string name="title_activity_tutorial">TutorialActivity</string>
-    <string name="save_accept_eula">save_accept_eula</string>
 
     <!-- DASHBOARD -->
     <string name="dashboard_text_loading">tietoja</string>
