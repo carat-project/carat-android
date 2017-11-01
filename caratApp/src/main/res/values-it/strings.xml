@@ -356,7 +356,7 @@ e "Service", cioè autonomi nella loro funzionalità</string>
     <string name="monitor_apps">Vai alle impostazioni</string>
     <string name="enable_later">Puoi abilitare il permesso nelle impostazioni.</string>
     <string name="return_with_back">Abilita il permesso e torna col tasto indietro.</string>
-    <string name="allow_usagestats">Permetti a Carat di monitorare le applicazioni attive attraverso l'abilitazione dell\'accesso utilizzo.</string>
+    <string name="allow_usagestats">Abilita Carat all\'accesso utilizzo per monitorare le app attive.</string>
     <string name="permission_request">E' richiesto questo permesso</string>
     <string name="service">Service</string>
     <string name="services">Service</string>
