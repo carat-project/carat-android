@@ -40,6 +40,10 @@ public class ProtocolClient {
     public static String TRUSTSTORE_NAME = null;
     public static String TRUSTSTORE_PASS = null;
 
+    public static boolean legacy = true; // HOTFIX for protocol issues. Remove when new protocol works again.
+    public static final int LEGACY_PORT = 8080;
+
+
     public enum ServerLocation {GLOBAL, EU, USA}
 
     /**
@@ -69,11 +73,17 @@ public class ProtocolClient {
                     return null; // Failed to load SSL properties
                 }
             }
-            TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
-            String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
-            params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
-            transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_GLOBAL, 8443, Constants.THRIFT_CONNECTION_TIMEOUT, params);
-            protocol = new TCompactProtocol(transport); // Do not set limits here.
+
+            if (legacy){
+                transport = new TSocket(SERVER_ADDRESS_GLOBAL, LEGACY_PORT);
+                protocol = new TBinaryProtocol(transport, true, true);
+            }else {
+                TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
+                String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
+                params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
+                transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_GLOBAL, 8443, Constants.THRIFT_CONNECTION_TIMEOUT, params);
+                protocol = new TCompactProtocol(transport); // Do not set limits here.
+            }
         }
         else if(location == ServerLocation.EU){
             if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null)
