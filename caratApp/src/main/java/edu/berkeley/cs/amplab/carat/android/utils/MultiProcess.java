@@ -1,0 +1,160 @@
+package edu.berkeley.cs.amplab.carat.android.utils;
+
+import android.content.ContentProvider;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.UriMatcher;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.net.Uri;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import java.util.Map.Entry;
+
+import edu.berkeley.cs.amplab.carat.android.CaratApplication;
+
+/**
+ * Created by Jonatan Hamberg on 8.11.2017.
+ */
+public class MultiProcess extends ContentProvider{
+    private static final Class contextClass = CaratApplication.class;
+    private static final String AUTHORITY = "edu.berkeley.cs.amplab.carat.PREFERENCE_AUTHORITY";
+    private static final int MATCH_CODE = 1;
+    private static Uri BASE_URI;
+    private static UriMatcher matcher;
+
+    private static void initialize(Context context){
+        context = verifyContext(context);
+        matcher = new UriMatcher(UriMatcher.NO_MATCH);
+        matcher.addURI(AUTHORITY, "*/*", MATCH_CODE);
+        BASE_URI = Uri.parse("content://" + AUTHORITY);
+    }
+
+    @Override
+    public boolean onCreate() {
+        initialize(getContext());
+        return false;
+    }
+
+    private static Context verifyContext(Context context){
+        if(context != null && !contextClass.isInstance(context)){
+            context = context.getApplicationContext();
+        }
+        return context;
+    }
+
+    private SharedPreferences getSharedPreferences(){
+
+        return PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
+    @Nullable
+    @Override
+    public Cursor query(@NonNull Uri uri, @Nullable String[] strings, @Nullable String s, @Nullable String[] strings1, @Nullable String s1) {
+        MatrixCursor cursor = null;
+        if(matcher.match(uri) == MATCH_CODE){
+            String key = uri.getPathSegments().get(0);
+            String type = uri.getPathSegments().get(1);
+            cursor = new MatrixCursor(new String[]{key});
+            SharedPreferences preferences = getSharedPreferences();
+            if(!preferences.contains(key)){
+                return cursor;
+            }
+            MatrixCursor.RowBuilder rowBuilder = cursor.newRow();
+            Object object = null;
+            if("string".equals(type)){
+                object = preferences.getString(key, null);
+            } else if("boolean".equals(type)){
+                object = preferences.getBoolean(key, false) ? 1 : 0; // Convert to int
+            } else if("long".equals(type)){
+                object = preferences.getLong(key, 0L);
+            } else if("integer".equals(type)){
+                object = preferences.getInt(key, 0);
+            } else if("float".equals(type)){
+                object = preferences.getFloat(key, 0f);
+            }
+            rowBuilder.add(object);
+        } else {
+            throw new IllegalArgumentException("Unsupported type");
+        }
+        return cursor;
+    }
+
+    @Nullable
+    @Override
+    public String getType(@NonNull Uri uri) {
+        return ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + AUTHORITY + ".item";
+    }
+
+    @Nullable
+    @Override
+    public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
+        if(matcher.match(uri) == MATCH_CODE){
+            SharedPreferences.Editor editor = getSharedPreferences().edit();
+            for(Entry<String, Object> entry : contentValues.valueSet()){
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if(value == null){
+                    editor.remove(key).apply();
+                } else if(value instanceof Boolean){
+                    editor.putBoolean(key, (Boolean) value);
+                } else if(value instanceof Integer){
+                    editor.putInt(key, (Integer) value);
+                } else if(value instanceof Float){
+                    editor.putFloat(key, (Float) value);
+                } else if(value instanceof Long){
+                    editor.putLong(key, (Long) value);
+                } else if(value instanceof String){
+                    editor.putString(key, (String) value);
+                } else {
+                    throw new IllegalArgumentException("Unsupported type");
+                }
+            }
+            editor.apply();
+        } else {
+            throw new IllegalArgumentException("Unmatched uri " + uri);
+        }
+        return null; // This value can be null
+    }
+
+    @Override
+    public int delete(@NonNull Uri uri, @Nullable String s, @Nullable String[] strings) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String s, @Nullable String[] strings) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static class Editor{
+        private Context context;
+        private ContentValues values;
+        private Editor(Context context){
+            this.context = context;
+            this.values = new ContentValues();
+        }
+
+        public void apply(){
+            // TODO: context.getContentResolver().insert(getContentUri(context, ))
+        }
+    }
+
+    public static class Preferences {
+        private Context context;
+        private Preferences(Context context){
+            this.context = context;
+        }
+    }
+
+    private static Uri getContentUri(Context context, String key, String type){
+        if(BASE_URI == null){
+            initialize(context);
+        }
+        return BASE_URI.buildUpon().appendPath(key).appendPath(type).build();
+    }
+}
