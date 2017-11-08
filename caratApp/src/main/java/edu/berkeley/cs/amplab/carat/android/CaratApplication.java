@@ -606,15 +606,15 @@ public class CaratApplication extends Application {
 
     public void checkAndSendSamples(){
         long lastUploaded = getStorage().getLastUploadTimestamp();
-        Logger.d(TAG, "Last uploaded timestamp: " + lastUploaded);
+        Logger.d(Constants.SF, "Last uploaded timestamp: " + lastUploaded);
         long elapsed = System.currentTimeMillis() - lastUploaded;
-        Logger.d(TAG, "Time elapsed since last upload: " + elapsed);
+        Logger.d(Constants.SF, "Time elapsed since last upload: " + elapsed);
         if(elapsed > Constants.FRESHNESS_TIMEOUT){
             if(SampleSender.sendSamples(CaratApplication.this)){
                 getStorage().writeLastUploadTimestamp();
             }
         } else {
-            Logger.d(TAG, "Elapsed < " + Constants.FRESHNESS_TIMEOUT);
+            Logger.d(Constants.SF, "Elapsed < " + Constants.FRESHNESS_TIMEOUT);
         }
     }
 

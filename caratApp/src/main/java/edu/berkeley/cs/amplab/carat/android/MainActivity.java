@@ -251,8 +251,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 CaratApplication application = (CaratApplication) getApplication();
                 if(application != null){
+                    Logger.d(Constants.SF, "Entering checkAndRefreshReports()");
                     application.checkAndRefreshReports();
-                    Logger.d(TAG, "Checked reports, sending samples");
+                    Logger.d(Constants.SF, "Checked reports, sending samples");
                     application.checkAndSendSamples();
                     runOnUiThread(new Runnable() {
                         @Override

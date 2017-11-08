@@ -32,11 +32,11 @@ public class SampleSender {
     private SampleSender(){}
     
     public static boolean sendSamples(CaratApplication app) {
-        Logger.d(TAG, "Awaiting for sendLock...");
+        Logger.d(Constants.SF, "Awaiting for sendLock...");
         synchronized(sendLock){
             Context c = app.getApplicationContext();
             boolean online = NetworkingUtil.isOnline(c);
-            Logger.d(TAG, "SampleSender online: " + online);
+            Logger.d(Constants.SF, "SampleSender online: " + online);
             if (online) {
                 SampleDB db = SampleDB.getInstance(c);
                 CommunicationManager commManager = app.commManager;
@@ -48,7 +48,7 @@ public class SampleSender {
                 int successSum = 0;
                 int failures = 0;
                 SortedMap<Long, Sample> batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
-                Logger.d(TAG, "Queried a batch of samples of size: " + batch.size());
+                Logger.d(Constants.SF, "Queried a batch of samples of size: " + batch.size());
                 sendingSamples = true;
                 while(batch.size() > 0 && failures <= 3){
                     int sent = commManager.uploadSamples(batch.values());

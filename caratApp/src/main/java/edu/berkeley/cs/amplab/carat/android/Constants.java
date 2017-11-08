@@ -7,7 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 public class Constants {
     // Whether to output debug messages.
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
+
+    // Temporary tag for SamplingFix logging
+    public static final String SF = "SamplingFix";
 
     public static final long DUPLICATE_INTERVAL = 60;
 
