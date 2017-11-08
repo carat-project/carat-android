@@ -594,34 +594,36 @@ public final class SamplingLibrary {
 		Map<String, HashMap<String, PackageProcess>> processes = new HashMap<>();
 		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
 		List<RunningAppProcessInfo> runningAppProcesses = am.getRunningAppProcesses();
-		for (RunningAppProcessInfo pi : runningAppProcesses) {
-			if(pi != null){
-				String processName = pi.processName;
-				String packageName = ProcessUtil.trimProcessName(processName)[0];
-				HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
-						processes.get(packageName) : new HashMap<String, PackageProcess>();
-				PackageProcess process;
-				if(p.containsKey(processName)){
-					process = p.get(processName);
-					process.setProcessCount(process.getProcessCount()+1);
-				} else {
-				    if(pi.importance == RunningAppProcessInfo.IMPORTANCE_SERVICE){
-				        processName = serviceToProcessName(processName);
-                    } else if(pi.importance == Constants.IMPORTANCE_FOREGROUND_SERVICE){
-				        processName = serviceToProcessName(processName);
-                    }
-					process = Util.getDefaultPackageProcess()
-							.setProcessName(processName)
-							.setImportance(pi.importance)
-                            .setProcessCount(1);
+		if(runningAppProcesses != null){
+			for (RunningAppProcessInfo pi : runningAppProcesses) {
+				if(pi != null){
+					String processName = pi.processName;
+					String packageName = ProcessUtil.trimProcessName(processName)[0];
+					HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
+							processes.get(packageName) : new HashMap<String, PackageProcess>();
+					PackageProcess process;
+					if(p.containsKey(processName)){
+						process = p.get(processName);
+						process.setProcessCount(process.getProcessCount()+1);
+					} else {
+						if(pi.importance == RunningAppProcessInfo.IMPORTANCE_SERVICE){
+							processName = serviceToProcessName(processName);
+						} else if(pi.importance == Constants.IMPORTANCE_FOREGROUND_SERVICE){
+							processName = serviceToProcessName(processName);
+						}
+						process = Util.getDefaultPackageProcess()
+								.setProcessName(processName)
+								.setImportance(pi.importance)
+								.setProcessCount(1);
+					}
+					p.put(processName, process);
+					processes.put(packageName, p);
 				}
-				p.put(processName, process);
-				processes.put(packageName, p);
 			}
-		}
-		for(String packageName : processes.keySet()){
-			List<PackageProcess> list = new ArrayList<>(processes.get(packageName).values());
-			result.put(packageName, list);
+			for(String packageName : processes.keySet()){
+				List<PackageProcess> list = new ArrayList<>(processes.get(packageName).values());
+				result.put(packageName, list);
+			}
 		}
 		return result;
 	}
@@ -953,8 +955,16 @@ public final class SamplingLibrary {
 	 */
 	private static Map<String, PackageInfo> getPackages(Context context) {
 		List<android.content.pm.PackageInfo> packagelist = null;
+		boolean cached = packages != null;
 
-		if (packages == null || packages.get() == null || packages.get().size() == 0) {
+		if(cached){
+			Map<String, PackageInfo> mp = packages.get();
+			if(mp == null || mp.size() == 0){
+				cached = false;
+			}
+		}
+
+		if (!cached) {
 			Map<String, PackageInfo> mp = new HashMap<String, PackageInfo>();
 			PackageManager pm = context.getPackageManager();
 			if (pm == null)

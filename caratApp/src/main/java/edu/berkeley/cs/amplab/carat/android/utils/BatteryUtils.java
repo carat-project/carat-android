@@ -20,6 +20,10 @@ public class BatteryUtils {
     }
 
     public static double getBatteryLevel(Intent intent){
+        if(intent == null){
+            return -1;
+        }
+
         double level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         double scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
