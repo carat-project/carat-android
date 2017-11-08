@@ -227,7 +227,7 @@ public class CommunicationManager {
 				", checking need for registerLocal()");
 		registerLocal();
 		// Do not refresh if not connected
-		if (NetworkingUtil.isOnline(a.getApplicationContext())){
+		if (!NetworkingUtil.isOnline(a.getApplicationContext())){
 			Logger.d(Constants.SF, "Not online, not refreshing reports right now");
 			return false;
 		}

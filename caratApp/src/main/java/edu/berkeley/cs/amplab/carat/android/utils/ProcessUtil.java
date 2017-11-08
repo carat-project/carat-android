@@ -107,4 +107,17 @@ public class ProcessUtil {
         }
         return processes;
     }
+
+    public static String getCurrentProcessName(Context context){
+        int pid = android.os.Process.myPid();
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningAppProcessInfo processInfo : manager.getRunningAppProcesses())
+        {
+            if (processInfo.pid == pid)
+            {
+                return processInfo.processName;
+            }
+        }
+        return "Unknown";
+    }
 }
