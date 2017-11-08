@@ -109,12 +109,15 @@ public class CommunicationManager {
 		registerLocal();
 		if(rpcService == null){
 			try{
+				Logger.d(TAG, "Need a new ProtocolClient");
 				rpcService = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
 			} catch(TTransportException e){
 				Logger.e(TAG, "Failed getting an instance of CaratService", e);
 				safeClose(rpcService);
 				return successCount;
 			}
+		} else {
+			Logger.d(TAG, "Attempting to use instantated ProtocolClient");
 		}
 		registerOnFirstRun(rpcService);
 		for(Sample sample : samples){
