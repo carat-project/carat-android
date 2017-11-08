@@ -70,9 +70,11 @@ public class CommunicationManager {
 		registered = !p.getBoolean(Constants.PREFERENCE_FIRST_RUN, true);
 		register = !registered;
 		String storedUuid = p.getString(CaratApplication.getRegisteredUuid(), null);
+		Logger.d(Constants.SF, "Stored UUID: " + storedUuid);
 		if (!register) {
-			if (storedUuid == null)
+			if (storedUuid == null){
 				register = true;
+			}
 			else {
 				String storedOs = p.getString(Constants.REGISTERED_OS, null);
 				String storedModel = p.getString(Constants.REGISTERED_MODEL, null);
@@ -87,6 +89,7 @@ public class CommunicationManager {
 						|| uuid == null || !(storedOs.equals(os) && storedModel.equals(model));
 			}
 		}
+		Logger.d(Constants.SF, "Register is " + register + " after creating comm. manager");
 	}
 
 	private void registerMe(CaratService.Client instance, String uuId, String os, String model, String countryCode) throws TException {
