@@ -8,6 +8,7 @@ import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,11 +20,9 @@ import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -45,6 +44,7 @@ import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 public class UsageManager {
     private final static String TAG = UsageManager.class.getSimpleName();
     private static WeakReference<HashMap<String, TreeMap<Long, Integer>>> events;
+    private static Intent menuIntent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
 
     public static List<Event> getEvents(Context context, long beginTime){
         UsageStatsManager usm = getUsageStatsManager(context);
@@ -115,11 +115,25 @@ public class UsageManager {
         return granted;
     }
 
+    public static boolean isMenuAvailable(Context context) {
+        PackageManager pm = context.getPackageManager();
+        return pm != null && menuIntent.resolveActivity(pm) != null;
+    }
+
     public static void promptPermission(Context context){
         promptPermission(context, null);
     }
 
     public static void promptPermission(Context context, AsyncSuccess callback){
+        // Some devices have disabled this menu
+        // TODO: Should we notify the user?
+        if(!isMenuAvailable(context)){
+            if(callback != null){
+                callback.complete(false);
+            }
+            return;
+        }
+
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         if(preferences.getBoolean(Keys.promptUsageStats, true)){
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -128,8 +142,8 @@ public class UsageManager {
             builder.setMessage(R.string.allow_usagestats);
             builder.setPositiveButton("OK", (dialog, which) -> {
                 Toast.makeText(context, R.string.return_with_back, Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-                context.startActivity(intent);
+
+                context.startActivity(menuIntent);
                 if(callback != null){
                     callback.complete(true);
                 }
