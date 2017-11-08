@@ -26,6 +26,7 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -141,6 +142,7 @@ public class CommunicationManager {
     }
 
 	private void registerLocal() {
+		Logger.d(Constants.SF, "In registerLocal, register is " + register);
 		if (register) {
 			String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
 			if (uuId == null) {
@@ -159,6 +161,7 @@ public class CommunicationManager {
 					// fails we have a stable UUID.
 					p.edit().putString(CaratApplication.getRegisteredUuid(), uuId).commit();
 					p.edit().putBoolean(Constants.PREFERENCE_TIME_BASED_UUID, true).commit();
+					Logger.d(Constants.SF, "Saved time based uuid " + uuId + " to app sharedprefs");
 					timeBasedUuid = true;
 				}
 			}
@@ -176,12 +179,13 @@ public class CommunicationManager {
 				uuId = SamplingLibrary.getUuid(a);
 			} else {
 				// Time-based ID scheme
-				if (uuId == null)
+					if (uuId == null)
 					uuId = SamplingLibrary.getTimeBasedUuid(a);
 				if (Constants.DEBUG)
 				    Logger.d("CommunicationManager", "Generated a new time-based UUID: " + uuId);
 				// This needs to be saved now, so that if server communication
 				// fails we have a stable UUID.
+				Logger.d(Constants.SF, "About to save " + uuId + " to prefs in RegOnFirstRun");
 				p.edit().putString(CaratApplication.getRegisteredUuid(), uuId).commit();
 				p.edit().putBoolean(Constants.PREFERENCE_TIME_BASED_UUID, true).commit();
 				timeBasedUuid = true;
@@ -192,7 +196,9 @@ public class CommunicationManager {
 			if (Constants.DEBUG)
 			    Logger.d("CommunicationManager", "First run, registering this device: " + uuId + ", " + os + ", " + model);
 			try {
+				Logger.d(Constants.SF, "RegisterMe called at " + System.currentTimeMillis()/1000);
 				registerMe(instance, uuId, os, model, countryCode);
+				Logger.d(Constants.SF, "RegisterMe finished at " + System.currentTimeMillis()/1000);
 				p.edit().putBoolean(Constants.PREFERENCE_FIRST_RUN, false).commit();
 				register = false;
 				registered = true;
@@ -217,9 +223,12 @@ public class CommunicationManager {
 	 * @throws TException
 	 */
 	public synchronized boolean refreshAllReports() {
+		Logger.d(Constants.SF, "Entered refreshAllReports at " + System.currentTimeMillis()/1000 +
+				", checking need for registerLocal()");
 		registerLocal();
 		// Do not refresh if not connected
-		if (!SamplingLibrary.networkAvailable(a.getApplicationContext())){
+		if (NetworkingUtil.isOnline(a.getApplicationContext())){
+			Logger.d(Constants.SF, "Not online, not refreshing reports right now");
 			return false;
 		}
 		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT){
@@ -231,10 +240,14 @@ public class CommunicationManager {
 		}
 		// Establish connection
 		if (register) {
+			Logger.d(Constants.SF, "Report refresh needs to register, trying to get ProtocolClient and call" +
+					" registerOnFirstRun() at " + System.currentTimeMillis()/1000);
 			CaratService.Client instance = null;
 			try {
 				instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
+				Logger.d(Constants.SF, "Got protocolClient instance at " + System.currentTimeMillis()/1000);
 				registerOnFirstRun(instance);
+				Logger.d(Constants.SF, "Finished registering at " + System.currentTimeMillis()/1000);
 				safeClose(instance);
 			} catch (Throwable th) {
 				Logger.e(TAG, "Error refreshing main reports.", th);

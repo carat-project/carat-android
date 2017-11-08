@@ -190,7 +190,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // if user has accepted EULA.
         acceptedEula = p.getBoolean(getResources().getString(R.string.save_accept_eula), false);
         if(acceptedEula){
+            Logger.d(Constants.SF, "EULA is accepted, waiting to access scheduleRefresh block");
             synchronized (this){
+                Logger.d(Constants.SF, "In scheduleRefresh block");
                 scheduleRefresh(Constants.FRESHNESS_TIMEOUT);
             }
         }
@@ -208,11 +210,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void scheduleRefresh(final long interval){
+        Logger.d(Constants.SF, "ScheduleRefresh called, calling immediate refresh");
         // This method is primarily called by onResume, meaning that a
         // timer might already be running. In that case we still want
         // to force a refresh to make the UI feel responsive.
         refresh();
         if(schedulerRunning){
+            Logger.d(Constants.SF, "Scheduler is already running");
             return;
         }
 
@@ -229,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 boolean allowBackground = p.getBoolean(getString(R.string.enable_background), false);
                 schedulerRunning = !isOnBackground() || allowBackground;
                 if(schedulerRunning){
+                    Logger.d(Constants.SF, "Scheduled refresh()");
                     refresh();
                     timer.postDelayed(this, interval);
                 } else if(Constants.DEBUG){

@@ -131,6 +131,8 @@ public class CaratApplication extends Application {
      */
     @Override
     public void onCreate() {
+
+        Logger.d(Constants.SF, "Application spawned");
         // Ensure SSL compatibility with older Android versions
         Security.addProvider(new BouncyCastleProvider());
 
@@ -156,8 +158,10 @@ public class CaratApplication extends Application {
 
         //SamplingStarter.from(getApplicationContext()).run();
 
+        Logger.d(Constants.SF, "Starting a new thread to spawn CommunicationManager");
         new Thread() {
             public void run() {
+                Logger.d(Constants.SF, "In thread, creating CommunicationManager");
                 commManager = new CommunicationManager(CaratApplication.this);
             }
         }.start();
@@ -582,8 +586,10 @@ public class CaratApplication extends Application {
                     main.setProgressCircle(true);
                 }
             });
+            Logger.d(Constants.SF, "Spinning the progress indicator wheel");
             CaratApplication.setActionInProgress();
             try {
+                Logger.d(Constants.SF, "Calling refreshAllReports() at " + System.currentTimeMillis()/1000);
                 success = commManager.refreshAllReports();
             } catch (Throwable th){
                 // Any sort of malformed response
@@ -593,6 +599,7 @@ public class CaratApplication extends Application {
             main.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Logger.d(Constants.SF, "Stopping the progress indicator wheel");
                     main.setStatusText(getString(R.string.finishing));
                     main.setProgressCircle(false);
                 }
