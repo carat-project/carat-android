@@ -27,8 +27,7 @@ public class MultiProcess extends ContentProvider{
     private static Uri BASE_URI;
     private static UriMatcher matcher;
 
-    private static void initialize(Context context){
-        context = verifyContext(context);
+    private static void initialize(){
         matcher = new UriMatcher(UriMatcher.NO_MATCH);
         matcher.addURI(AUTHORITY, "*/*", MATCH_CODE);
         BASE_URI = Uri.parse("content://" + AUTHORITY);
@@ -36,8 +35,17 @@ public class MultiProcess extends ContentProvider{
 
     @Override
     public boolean onCreate() {
-        initialize(getContext());
+        if(matcher == null){
+            initialize();
+        }
         return false;
+    }
+
+    private static Uri getContentUri(String key, String type){
+        if(BASE_URI == null){
+            initialize();
+        }
+        return BASE_URI.buildUpon().appendPath(key).appendPath(type).build();
     }
 
     private static Context verifyContext(Context context){
@@ -48,7 +56,7 @@ public class MultiProcess extends ContentProvider{
     }
 
     private SharedPreferences getSharedPreferences(){
-
+        Context context = verifyContext(getContext());
         return PreferenceManager.getDefaultSharedPreferences(context);
     }
 
@@ -131,16 +139,91 @@ public class MultiProcess extends ContentProvider{
         throw new UnsupportedOperationException();
     }
 
-    public static class Editor{
+    private static boolean getBoolean(Cursor cursor, boolean defaultValue){
+        boolean result = defaultValue;
+        if(cursor != null && cursor.moveToFirst()){
+            result = cursor.getInt(0) == 1;
+            cursor.close();
+        }
+        return result;
+    }
+
+    private static int getInt(Cursor cursor, int defaultValue){
+        int result = defaultValue;
+        if(cursor != null && cursor.moveToFirst()){
+            result = cursor.getInt(0);
+            cursor.close();
+        }
+        return result;
+    }
+
+    private static float getFloat(Cursor cursor, float defaultValue){
+        float result = defaultValue;
+        if(cursor != null && cursor.moveToFirst()){
+            result = cursor.getFloat(0);
+            cursor.close();
+        }
+        return result;
+    }
+
+    private static long getLong(Cursor cursor, long defaultValue){
+        long result = defaultValue;
+        if(cursor != null && cursor.moveToFirst()){
+            result = cursor.getLong(0);
+            cursor.close();
+        }
+        return result;
+    }
+
+    private static String getString(Cursor cursor, String defaultValue){
+        String result = defaultValue;
+        if(cursor != null && cursor.moveToFirst()){
+            result = cursor.getString(0);
+            cursor.close();
+        }
+        return result;
+    }
+
+    public static class Editor {
         private Context context;
         private ContentValues values;
+
         private Editor(Context context){
             this.context = context;
             this.values = new ContentValues();
         }
 
         public void apply(){
-            // TODO: context.getContentResolver().insert(getContentUri(context, ))
+            context.getContentResolver().insert(getContentUri("key", "type"), values);
+        }
+
+        public void commit(){
+            apply();
+        }
+
+        public Editor putBoolean(String key, Boolean value){
+            values.put(key, value);
+            return this;
+        }
+
+        public Editor putInteger(String key, Integer value){
+            values.put(key, value);
+            return this;
+        }
+
+        public Editor putFloat(String key, Float value){
+            values.put(key, value);
+            return this;
+        }
+
+        public Editor putLong(String key, Long value){
+            values.put(key, value);
+            return this;
+        }
+
+        public Editor putString(String key, String value){
+            values.put(key, value);
+            return this;
         }
     }
 
@@ -149,12 +232,39 @@ public class MultiProcess extends ContentProvider{
         private Preferences(Context context){
             this.context = context;
         }
-    }
 
-    private static Uri getContentUri(Context context, String key, String type){
-        if(BASE_URI == null){
-            initialize(context);
+        public Editor edit(){
+            return new Editor(context);
         }
-        return BASE_URI.buildUpon().appendPath(key).appendPath(type).build();
+
+        private Cursor query(String key, String type){
+            ContentResolver resolver = context.getContentResolver();
+            return resolver.query(getContentUri(key, "string"), null, null, null, null);
+        }
+
+        public boolean getBoolean(String key, boolean defaultValue){
+            Cursor cursor = query(key, "boolean");
+            return MultiProcess.getBoolean(cursor, defaultValue);
+        }
+
+        public int getInt(String key, int defaultValue){
+            Cursor cursor = query(key, "integer");
+            return MultiProcess.getInt(cursor, defaultValue);
+        }
+
+        public float getFloat(String key, float defaultValue){
+            Cursor cursor = query(key, "float");
+            return MultiProcess.getFloat(cursor, defaultValue);
+        }
+
+        public long getLong(String key, long defaultValue){
+            Cursor cursor = query(key, "long");
+            return MultiProcess.getLong(cursor, defaultValue);
+        }
+
+        public String getString(String key, String defaultValue){
+            Cursor cursor = query(key, "string");
+            return MultiProcess.getString(cursor, defaultValue);
+        }
     }
 }
