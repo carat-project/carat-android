@@ -20,7 +20,7 @@ import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 /**
  * Created by Jonatan Hamberg on 8.11.2017.
  */
-public class MultiProcess extends ContentProvider{
+public class PrefsManager extends ContentProvider{
     private static final Class contextClass = CaratApplication.class;
     private static final String AUTHORITY = "edu.berkeley.cs.amplab.carat.PREFERENCE_AUTHORITY";
     private static final int MATCH_CODE = 1;
@@ -181,6 +181,10 @@ public class MultiProcess extends ContentProvider{
         return result;
     }
 
+    public static MultiPrefs getPreferences(Context context){
+        return new MultiPrefs(context);
+    }
+
     public static class Editor {
         private Context context;
         private ContentValues values;
@@ -224,9 +228,9 @@ public class MultiProcess extends ContentProvider{
         }
     }
 
-    public static class Preferences {
+    public static class MultiPrefs {
         private Context context;
-        private Preferences(Context context){
+        private MultiPrefs(Context context){
             this.context = context;
         }
 
@@ -241,27 +245,27 @@ public class MultiProcess extends ContentProvider{
 
         public boolean getBoolean(String key, boolean defaultValue){
             Cursor cursor = query(key, "boolean");
-            return MultiProcess.getBoolean(cursor, defaultValue);
+            return PrefsManager.getBoolean(cursor, defaultValue);
         }
 
         public int getInt(String key, int defaultValue){
             Cursor cursor = query(key, "integer");
-            return MultiProcess.getInt(cursor, defaultValue);
+            return PrefsManager.getInt(cursor, defaultValue);
         }
 
         public float getFloat(String key, float defaultValue){
             Cursor cursor = query(key, "float");
-            return MultiProcess.getFloat(cursor, defaultValue);
+            return PrefsManager.getFloat(cursor, defaultValue);
         }
 
         public long getLong(String key, long defaultValue){
             Cursor cursor = query(key, "long");
-            return MultiProcess.getLong(cursor, defaultValue);
+            return PrefsManager.getLong(cursor, defaultValue);
         }
 
         public String getString(String key, String defaultValue){
             Cursor cursor = query(key, "string");
-            return MultiProcess.getString(cursor, defaultValue);
+            return PrefsManager.getString(cursor, defaultValue);
         }
     }
 }
