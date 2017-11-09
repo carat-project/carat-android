@@ -13,6 +13,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -37,6 +38,8 @@ import edu.berkeley.cs.amplab.carat.android.models.MyDeviceData;
 import edu.berkeley.cs.amplab.carat.android.models.CustomAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.android.protocol.SampleSender;
+import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
+import edu.berkeley.cs.amplab.carat.android.receivers.IntentRouter;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
@@ -165,6 +168,9 @@ public class CaratApplication extends Application {
                 commManager = new CommunicationManager(CaratApplication.this);
             }
         }.start();
+
+        // Make sure battery changes are registered
+        this.registerReceiver(new ActionReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
         super.onCreate();
         // SamplingLibrary.getRunningProcessesFromEventLog(getApplicationContext(), System.currentTimeMillis()-600000);
