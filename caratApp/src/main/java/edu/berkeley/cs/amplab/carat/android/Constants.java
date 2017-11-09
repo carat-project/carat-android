@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Constants {
     // Whether to output debug messages.
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     // Temporary tag for SamplingFix logging
     public static final String SF = "SamplingFix";
