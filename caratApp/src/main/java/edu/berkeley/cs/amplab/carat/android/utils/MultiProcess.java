@@ -27,12 +27,6 @@ public class MultiProcess extends ContentProvider{
     private static Uri BASE_URI;
     private static UriMatcher matcher;
 
-    private static void initialize(){
-        matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        matcher.addURI(AUTHORITY, "*/*", MATCH_CODE);
-        BASE_URI = Uri.parse("content://" + AUTHORITY);
-    }
-
     @Override
     public boolean onCreate() {
         if(matcher == null){
@@ -41,30 +35,19 @@ public class MultiProcess extends ContentProvider{
         return false;
     }
 
-    private static Uri getContentUri(String key, String type){
-        if(BASE_URI == null){
-            initialize();
-        }
-        return BASE_URI.buildUpon().appendPath(key).appendPath(type).build();
-    }
-
-    private static Context verifyContext(Context context){
-        if(context != null && !contextClass.isInstance(context)){
-            context = context.getApplicationContext();
-        }
-        return context;
-    }
-
     private SharedPreferences getSharedPreferences(){
-        Context context = verifyContext(getContext());
+        Context context = getContext();
+        if(context != null && !contextClass.isInstance(context)){
+            context = context.getApplicationContext(); // Make sure we use correct context
+        }
         return PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] strings, @Nullable String s, @Nullable String[] strings1, @Nullable String s1) {
-        MatrixCursor cursor = null;
-        if(matcher.match(uri) == MATCH_CODE){
+        MatrixCursor cursor;
+        if(matcher.match(uri) == MATCH_CODE){ // Matcher is always initialized by getContentUri
             String key = uri.getPathSegments().get(0);
             String type = uri.getPathSegments().get(1);
             cursor = new MatrixCursor(new String[]{key});
@@ -101,7 +84,8 @@ public class MultiProcess extends ContentProvider{
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
-        if(matcher.match(uri) == MATCH_CODE){
+        // Matcher is initialized by getContentUri
+        if(matcher.match(uri) == MATCH_CODE && contentValues != null){
             SharedPreferences.Editor editor = getSharedPreferences().edit();
             for(Entry<String, Object> entry : contentValues.valueSet()){
                 String key = entry.getKey();
@@ -124,7 +108,7 @@ public class MultiProcess extends ContentProvider{
             }
             editor.apply();
         } else {
-            throw new IllegalArgumentException("Unmatched uri " + uri);
+            throw new IllegalArgumentException("Unsupported uri or value");
         }
         return null; // This value can be null
     }
@@ -137,6 +121,19 @@ public class MultiProcess extends ContentProvider{
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String s, @Nullable String[] strings) {
         throw new UnsupportedOperationException();
+    }
+
+    private static void initialize(){
+        matcher = new UriMatcher(UriMatcher.NO_MATCH);
+        matcher.addURI(AUTHORITY, "*/*", MATCH_CODE);
+        BASE_URI = Uri.parse("content://" + AUTHORITY);
+    }
+
+    private static Uri getContentUri(String key, String type){
+        if(BASE_URI == null){
+            initialize();
+        }
+        return BASE_URI.buildUpon().appendPath(key).appendPath(type).build();
     }
 
     private static boolean getBoolean(Cursor cursor, boolean defaultValue){
