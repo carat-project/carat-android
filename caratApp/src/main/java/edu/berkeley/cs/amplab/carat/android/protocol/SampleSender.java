@@ -57,7 +57,7 @@ public class SampleSender {
                     if(sent > 0){
                         failures = 0; // Reset tries
                         successSum += sent;
-                        int progress = (int)(successSum / (sampleCount * 100.0));
+                        int progress = (int)(successSum*100.0 / sampleCount);
                         progressString = progress + "% " + app.getString(R.string.samplesreported);
                         CaratApplication.setStatus(progressString);
 
