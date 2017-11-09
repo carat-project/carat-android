@@ -66,6 +66,12 @@
             </intent-filter>
         </activity>
 
+        <!-- Providers -->
+        <provider
+            android:name=".utils.PrefsManager"
+            android:authorities="edu.berkeley.cs.amplab.carat.PREFERENCE_AUTHORITY"
+            android:exported="false" />
+
         <!--- Services -->
         <service
             android:name=".receivers.IntentRouter"
@@ -133,7 +139,6 @@
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".sampling.RapidSampler" />
     </application>
 
 </manifest>
