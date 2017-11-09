@@ -13,6 +13,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -37,6 +38,8 @@ import edu.berkeley.cs.amplab.carat.android.models.MyDeviceData;
 import edu.berkeley.cs.amplab.carat.android.models.CustomAction;
 import edu.berkeley.cs.amplab.carat.android.protocol.CommunicationManager;
 import edu.berkeley.cs.amplab.carat.android.protocol.SampleSender;
+import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
+import edu.berkeley.cs.amplab.carat.android.receivers.IntentRouter;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
@@ -131,6 +134,8 @@ public class CaratApplication extends Application {
      */
     @Override
     public void onCreate() {
+
+        Logger.d(Constants.SF, "Application spawned");
         // Ensure SSL compatibility with older Android versions
         Security.addProvider(new BouncyCastleProvider());
 
@@ -156,11 +161,16 @@ public class CaratApplication extends Application {
 
         //SamplingStarter.from(getApplicationContext()).run();
 
+        Logger.d(Constants.SF, "Starting a new thread to spawn CommunicationManager");
         new Thread() {
             public void run() {
+                Logger.d(Constants.SF, "In thread, creating CommunicationManager");
                 commManager = new CommunicationManager(CaratApplication.this);
             }
         }.start();
+
+        // Make sure battery changes are registered
+        this.registerReceiver(new ActionReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
         super.onCreate();
         // SamplingLibrary.getRunningProcessesFromEventLog(getApplicationContext(), System.currentTimeMillis()-600000);
@@ -582,8 +592,10 @@ public class CaratApplication extends Application {
                     main.setProgressCircle(true);
                 }
             });
+            Logger.d(Constants.SF, "Spinning the progress indicator wheel");
             CaratApplication.setActionInProgress();
             try {
+                Logger.d(Constants.SF, "Calling refreshAllReports() at " + System.currentTimeMillis()/1000);
                 success = commManager.refreshAllReports();
             } catch (Throwable th){
                 // Any sort of malformed response
@@ -593,6 +605,7 @@ public class CaratApplication extends Application {
             main.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Logger.d(Constants.SF, "Stopping the progress indicator wheel");
                     main.setStatusText(getString(R.string.finishing));
                     main.setProgressCircle(false);
                 }
@@ -606,11 +619,15 @@ public class CaratApplication extends Application {
 
     public void checkAndSendSamples(){
         long lastUploaded = getStorage().getLastUploadTimestamp();
+        Logger.d(Constants.SF, "Last uploaded timestamp: " + lastUploaded);
         long elapsed = System.currentTimeMillis() - lastUploaded;
+        Logger.d(Constants.SF, "Time elapsed since last upload: " + elapsed);
         if(elapsed > Constants.FRESHNESS_TIMEOUT){
             if(SampleSender.sendSamples(CaratApplication.this)){
                 getStorage().writeLastUploadTimestamp();
             }
+        } else {
+            Logger.d(Constants.SF, "Elapsed < " + Constants.FRESHNESS_TIMEOUT);
         }
     }
 

@@ -32,10 +32,11 @@ public class SampleSender {
     private SampleSender(){}
     
     public static boolean sendSamples(CaratApplication app) {
+        Logger.d(Constants.SF, "Awaiting for sendLock...");
         synchronized(sendLock){
             Context c = app.getApplicationContext();
             boolean online = NetworkingUtil.isOnline(c);
-            
+            Logger.d(Constants.SF, "SampleSender online: " + online);
             if (online) {
                 SampleDB db = SampleDB.getInstance(c);
                 CommunicationManager commManager = app.commManager;
@@ -44,17 +45,20 @@ public class SampleSender {
                     return false;
                 }
                 int sampleCount = db.countSamples();
+                String progressString = "0 of "+sampleCount +" "+ app.getString(R.string.samplesreported);
+                CaratApplication.setStatus(progressString);
                 int successSum = 0;
                 int failures = 0;
                 SortedMap<Long, Sample> batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
+                Logger.d(Constants.SF, "Queried a batch of samples of size: " + batch.size());
                 sendingSamples = true;
                 while(batch.size() > 0 && failures <= 3){
                     int sent = commManager.uploadSamples(batch.values());
                     if(sent > 0){
                         failures = 0; // Reset tries
                         successSum += sent;
-                        int progress = (int)(successSum / (sampleCount * 100.0));
-                        String progressString = progress + "% " + app.getString(R.string.samplesreported);
+                        int progress = (int)(successSum*100.0 / sampleCount);
+                        progressString = progress + "% " + app.getString(R.string.samplesreported);
                         CaratApplication.setStatus(progressString);
 
                         // Delete samples that were sent successfully
