@@ -240,7 +240,7 @@ public class PrefsManager extends ContentProvider{
 
         private Cursor query(String key, String type){
             ContentResolver resolver = context.getContentResolver();
-            return resolver.query(getContentUri(key, "string"), null, null, null, null);
+            return resolver.query(getContentUri(key, type), null, null, null, null);
         }
 
         public boolean getBoolean(String key, boolean defaultValue){

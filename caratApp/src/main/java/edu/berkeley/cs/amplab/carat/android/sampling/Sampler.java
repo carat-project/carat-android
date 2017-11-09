@@ -15,6 +15,7 @@ import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.PrefsManager;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
 import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
@@ -36,8 +37,8 @@ public class Sampler {
     public static boolean sample(Context context, String trigger, Runnable releaseWl){
         Logger.d(Constants.SF, "Sample called by " + trigger + " " +
                 "in process " + ProcessUtil.getCurrentProcessName(context));
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        if(!preferences.contains(Keys.registeredUUID)){
+        PrefsManager.MultiPrefs preferences = PrefsManager.getPreferences(context);
+        if(preferences.getString(Keys.registeredUUID, null) == null){
             Logger.i(TAG, "Not registered yet, skipping");
             return false;
         }

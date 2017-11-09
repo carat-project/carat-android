@@ -27,6 +27,7 @@ import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
+import edu.berkeley.cs.amplab.carat.android.utils.PrefsManager;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -52,13 +53,13 @@ public class CommunicationManager {
 	private boolean newuuid = false;
 	private boolean timeBasedUuid = false;
 	private boolean gettingReports = false;
-	private SharedPreferences p = null;
+	private PrefsManager.MultiPrefs p = null;
 
 	private CaratService.Client rpcService;
 
 	public CommunicationManager(CaratApplication a) {
 		this.a = a;
-		p = PreferenceManager.getDefaultSharedPreferences(this.a);
+		p = PrefsManager.getPreferences(this.a);
 
 		/*
 		 * Either: 1. Never registered -> register 2. registered, but no stored
