@@ -45,6 +45,8 @@ public class SampleSender {
                     return false;
                 }
                 int sampleCount = db.countSamples();
+                String progressString = "0 of "+sampleCount +" "+ app.getString(R.string.samplesreported);
+                CaratApplication.setStatus(progressString);
                 int successSum = 0;
                 int failures = 0;
                 SortedMap<Long, Sample> batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
@@ -56,7 +58,7 @@ public class SampleSender {
                         failures = 0; // Reset tries
                         successSum += sent;
                         int progress = (int)(successSum / (sampleCount * 100.0));
-                        String progressString = progress + "% " + app.getString(R.string.samplesreported);
+                        progressString = progress + "% " + app.getString(R.string.samplesreported);
                         CaratApplication.setStatus(progressString);
 
                         // Delete samples that were sent successfully
