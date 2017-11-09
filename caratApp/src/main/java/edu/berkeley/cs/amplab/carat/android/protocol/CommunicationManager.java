@@ -124,10 +124,15 @@ public class CommunicationManager {
 			Logger.d(Constants.SF, "Attempting to use instantated ProtocolClient");
 		}
 		registerOnFirstRun(rpcService);
+		int batchSize = samples.size();
 		for(Sample sample : samples){
 			try {
 				if(rpcService.uploadSample(sample)){
 					successCount++;
+					int progress = (int)(successCount*100.0 / batchSize);
+					String progressString = progress + "% " + CaratApplication.getAppContext().getString(R.string.samplesreported);
+					CaratApplication.setStatus(progressString);
+
 				}
 			} catch (Throwable th) {
 				Logger.e(TAG, "Error uploading sample", th);
