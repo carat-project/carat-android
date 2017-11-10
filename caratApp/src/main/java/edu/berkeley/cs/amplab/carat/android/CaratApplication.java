@@ -507,12 +507,12 @@ public class CaratApplication extends Application {
         int jscore = -1;
         if (reports != null) {
             jscore = (int)Math.round(reports.getJScore() * 100);
-            if(jscore <= 0){
+            /*if(jscore <= 0){
                 jscore = (int) Math.round(reports.model.getScore() * 100);
                 if(jscore >= 0){
                     Logger.d(TAG, "No personal J-score yet, using model score: " + jscore);
                 }
-            }
+            }*/
         }
         return jscore;
     }
