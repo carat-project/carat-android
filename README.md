@@ -2,6 +2,10 @@
 
 For details, visit http://carat.cs.helsinki.fi
 
+## APK Download for Devices Without Google Play
+
+(https://github.com/carat-project/carat-android/releases)[Release Downloads]
+
 ## Build instructions
 
 1. Download Android Studio: https://developer.android.com/studio/index.html
