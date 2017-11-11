@@ -4,7 +4,7 @@ For details, visit http://carat.cs.helsinki.fi
 
 ## APK Download for Devices Without Google Play
 
-(https://github.com/carat-project/carat-android/releases)[Release Downloads]
+[Release Downloads](https://github.com/carat-project/carat-android/releases)
 
 ## Build instructions
 
