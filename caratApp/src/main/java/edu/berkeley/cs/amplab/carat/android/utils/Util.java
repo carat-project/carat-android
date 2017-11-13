@@ -6,13 +6,16 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.PowerManager;
 import android.net.Uri;
+import android.util.Pair;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 
 import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 
@@ -22,6 +25,9 @@ import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
  */
 public class Util {
     private final static String TAG = Util.class.getSimpleName();
+    public interface Fallback<T> {
+        T call();
+    }
 
     public static double[] toArray(List<Double> list){
         double[] result = new double[list.size()];
@@ -40,6 +46,16 @@ public class Util {
             result.put(entry.getKey(), entry.getValue());
         }
         return result;
+    }
+
+    public static<T> T getWeakOrFallback(WeakReference<T> weakReference, Fallback<T> fallback){
+        if(weakReference != null && weakReference.get() != null){
+            T value = weakReference.get();
+            if(value != null){
+                return value;
+            }
+        }
+        return fallback.call();
     }
 
     public static int[][] readLines(RandomAccessFile reader, int maxRows, int maxColumns, String delim) throws IOException {
