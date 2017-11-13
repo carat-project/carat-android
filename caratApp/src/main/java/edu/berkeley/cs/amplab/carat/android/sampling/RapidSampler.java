@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.BatteryManager;
-import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -56,6 +55,14 @@ public class RapidSampler extends Service {
         }
     };
 
+    private BroadcastReceiver serviceStopReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Logger.d(TAG, "Received a shutdown request from IntentRouter");
+            stopService();
+        }
+    };
+
     private BroadcastReceiver chargingAnomalyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -78,6 +85,7 @@ public class RapidSampler extends Service {
         // This service is innocent, let them live
         convicted = false;
         if(deathRow != null){
+            Logger.d(TAG, "Saved RapidSampler from death row");
             deathRow.cancel();
         }
 
@@ -104,7 +112,6 @@ public class RapidSampler extends Service {
                 .setContentIntent(pendingIntent).build();
 
         scheduler = new Timer();
-        scheduler.cancel(); // Just in case
         scheduler.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -120,22 +127,32 @@ public class RapidSampler extends Service {
         }, Constants.RAPID_SAMPLING_INTERVAL, Constants.RAPID_SAMPLING_INTERVAL);
 
         startForeground(ID, notification);
+
+        // TODO: Is calling these multiple times a problem?
         this.registerReceiver(batteryChangeReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         this.registerReceiver(chargingAnomalyReceiver, new IntentFilter(CaratActions.CHARGING_ANOMALY));
+        this.registerReceiver(serviceStopReceiver, new IntentFilter(CaratActions.STOP_RAPID_SAMPLING));
         return START_STICKY;
     }
 
     public void stopService(){
+        if(convicted & deathRow != null){
+            Logger.d(TAG, "Already scheduled for shutdown");
+            return;
+        }
         if(chargingManager != null){
             chargingManager.handlePauseCharging();
         }
 
         convicted = true; // This allows onCreate to be called again
+        announceTermination();
+        Logger.d(TAG, "Set convicted as " + convicted);
         deathRow = new Timer();
         deathRow.schedule(new TimerTask() {
             @Override
             public void run() {
                 if(convicted){
+                    Logger.d(TAG, "Convicted was " + convicted);
                     if(scheduler != null) scheduler.cancel();
                     if(chargingManager != null) chargingManager.handleStopCharging();
                     stopSelf();
@@ -148,12 +165,21 @@ public class RapidSampler extends Service {
         Logger.d(TAG, "Scheduled for shutdown in " + SHUTDOWN_GRACE_PERIOD/1000.0 + "s");
     }
 
+    public void announceTermination(){
+        Logger.d(TAG, "Announcing termination to IntentRouter so it can revive us");
+        Intent intent = new Intent(CaratActions.RAPID_SAMPLER_DYING);
+        sendBroadcast(intent);
+    }
+
     @Override
     public void onDestroy() {
+        Logger.d(TAG, "Being destroyed..");
         if(chargingManager != null){
             chargingManager.handleStopCharging(); // Make sure this gets called
         }
         this.unregisterReceiver(batteryChangeReceiver);
+        this.unregisterReceiver(chargingAnomalyReceiver);
+        this.unregisterReceiver(serviceStopReceiver);
         super.onDestroy();
     }
 

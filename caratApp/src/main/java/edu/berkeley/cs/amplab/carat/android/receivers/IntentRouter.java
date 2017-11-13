@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.CaratActions;
-import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.sampling.RapidSampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
@@ -35,6 +34,7 @@ public class IntentRouter extends IntentService {
     private AlarmManager alarmManager;
     private PowerManager powerManager;
     private SharedPreferences preferences;
+    private boolean reviveRapidSampler = false;
 
     public IntentRouter(){
         super(TAG);
@@ -85,8 +85,11 @@ public class IntentRouter extends IntentService {
                 case Intent.ACTION_POWER_DISCONNECTED:
                 case Intent.ACTION_BATTERY_CHANGED:
                     cancelScheduledSample();
-                    Sampler.sample(context, action, () -> Util.safeReleaseWakelock(wl));
+                    Sampler.sample(context, action /*() -> Util.safeReleaseWakelock(wl)*/);
                     scheduleNextSample(SAMPLING_INTERVAL);
+                    break;
+                case CaratActions.RAPID_SAMPLER_DYING:
+                    reviveRapidSampler = true;
                     break;
                 default:
                     long future = preferences.getLong(Keys.nextSamplingTime, 0);
@@ -127,8 +130,10 @@ public class IntentRouter extends IntentService {
                         Logger.d(TAG, "Everything was fine with scheduling");
                     }
             }
+
+            Logger.d(TAG, "Done routing intent, checking rapid sampler");
             checkRapidSampler(context);
-            ActionReceiver.completeWakefulIntent(intent);
+            // ActionReceiver.completeWakefulIntent(intent);
         }
     }
 
@@ -139,13 +144,22 @@ public class IntentRouter extends IntentService {
         }
         Intent serviceIntent = new Intent(this, RapidSampler.class);
         boolean running = ProcessUtil.isServiceRunning(context, RapidSampler.class);
-        boolean revive = RapidSampler.isAwaitingShutdown();
+        Logger.d(TAG, "RapidSampler to be revived: " + reviveRapidSampler);
         boolean charging = SamplingLibrary.isDeviceCharging(context);
-        boolean canRun = !running || revive; // Either not running or waiting to be revived
+        if(!running){
+            reviveRapidSampler = false;
+        }
+        boolean canRun = !running || reviveRapidSampler; // Either not running or waiting to be revived
+        Logger.d(TAG, "RapidSampler, canRun: " + canRun + " charging: "
+                + charging + " disabled: " + disabled);
         if(canRun && charging && !disabled){
+            Logger.d(TAG, "Starting RapidSampler service");
             startService(serviceIntent);
+            reviveRapidSampler = false;
         } else if((running && !charging) || disabled){
-            stopService(serviceIntent);
+            Logger.d(TAG, "Stopping RapidSampler service");
+            Intent stopService = new Intent(CaratActions.STOP_RAPID_SAMPLING);
+            context.sendBroadcast(stopService);
         }
     }
 

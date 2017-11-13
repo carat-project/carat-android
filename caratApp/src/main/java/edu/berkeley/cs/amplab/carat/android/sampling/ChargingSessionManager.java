@@ -123,7 +123,7 @@ public class ChargingSessionManager {
         int level = (int)BatteryUtils.getBatteryLevel(intent);
         long now = System.currentTimeMillis();
 
-        if(!isValidChange(now, level)){
+        if(!session.isNew() && !isValidChange(now, level)){
             stopSaveSession();
             return; // Exit early
         }
@@ -174,7 +174,7 @@ public class ChargingSessionManager {
             Logger.d(TAG, "Too much time passed since last level change");
             return false;
         }
-        if(level <= session.getLastLevel()){ // Should be a safe call, session can't be new
+        if(level < session.getLastLevel()){ // Should be a safe call, session can't be new
             Logger.d(TAG, "New battery level was less than last one, discharging");
             return false;
         }
