@@ -17,6 +17,7 @@ public class ChargingSession implements Serializable {
 
     private List<Peak> peaks;
     private TreeMap<Integer, ChargingPoint> points;
+    private String plugState;
 
     private Long timestamp;
     private Boolean replaceOnZigZag = false;
@@ -24,6 +25,7 @@ public class ChargingSession implements Serializable {
     private ChargingSession(){
         points = new TreeMap<>();
         timestamp = System.currentTimeMillis();
+        plugState = "unknown";
     }
 
     public static ChargingSession create(){
@@ -32,6 +34,14 @@ public class ChargingSession implements Serializable {
     public ChargingSession setReplaceOnZigZag(Boolean replaceOnZigZag) {
         this.replaceOnZigZag = replaceOnZigZag;
         return this;
+    }
+
+    public void setPlugState(String state){
+        plugState = state;
+    }
+
+    public String getPlugState(){
+        return plugState;
     }
 
     public List<Peak> getPeaks() {
