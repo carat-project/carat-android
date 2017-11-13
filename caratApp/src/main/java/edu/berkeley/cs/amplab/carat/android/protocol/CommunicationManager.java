@@ -109,7 +109,14 @@ public class CommunicationManager {
 		instance.registerMe(registration);
 	}
 
-	public int uploadSamples(Collection<Sample> samples) {
+    /**
+     * Upload the given collection of Samples.
+     * @param samples
+     * @param countSoFar number of samples that have been sent so far this time around.
+     * @param sampleCount The total number of samples in the database to be sent this time around.
+     * @return Number of samples out out <code>samples</code> that were successfully sent.
+     */
+	public int uploadSamples(Collection<Sample> samples, double countSoFar, double sampleCount) {
 		int successCount = 0;
 		registerLocal();
 		if(rpcService == null){
@@ -130,10 +137,11 @@ public class CommunicationManager {
 			try {
 				if(rpcService.uploadSample(sample)){
 					successCount++;
-					int progress = (int)(successCount*100.0 / batchSize);
+					// This is only progress in batch
+					// int progress = (int)(successCount*100.0 / batchSize);
+                    long progress = Math.round((successCount+countSoFar)*100.0/sampleCount);
 					String progressString = progress + "% " + CaratApplication.getAppContext().getString(R.string.samplesreported);
 					CaratApplication.setStatus(progressString);
-
 				}
 			} catch (Throwable th) {
 				Logger.e(TAG, "Error uploading sample", th);

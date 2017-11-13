@@ -45,7 +45,7 @@ public class SampleSender {
                     return false;
                 }
                 int sampleCount = db.countSamples();
-                String progressString = "0 of "+sampleCount +" "+ app.getString(R.string.samplesreported);
+                String progressString = "0% of "+sampleCount +" "+ app.getString(R.string.samplesreported);
                 CaratApplication.setStatus(progressString);
                 int successSum = 0;
                 int failures = 0;
@@ -53,14 +53,16 @@ public class SampleSender {
                 Logger.d(Constants.SF, "Queried a batch of samples of size: " + batch.size());
                 sendingSamples = true;
                 while(batch.size() > 0 && failures <= 3){
-                    int sent = commManager.uploadSamples(batch.values());
+                    int sent = commManager.uploadSamples(batch.values(), successSum, sampleCount);
                     if(sent > 0){
                         failures = 0; // Reset tries
                         successSum += sent;
+                        /*
+                        Report this within uploadSamples for better granularity
                         int progress = (int)(successSum*100.0 / sampleCount);
                         progressString = progress + "% " + app.getString(R.string.samplesreported);
                         CaratApplication.setStatus(progressString);
-
+                        */
                         // Delete samples that were sent successfully
                         Set<Long> sentRowIds = Util.firstEntries(sent, batch).keySet();
                         db.deleteSamples(sentRowIds);
