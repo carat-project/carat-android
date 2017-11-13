@@ -26,6 +26,7 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.models.ChargingSession;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.HogBugReport;
 import edu.berkeley.cs.amplab.carat.thrift.HogsBugs;
@@ -296,13 +297,8 @@ public class CaratDataStorage {
     }
 
     public SortedMap<Long, ChargingSession> getChargingSessions(){
-        if(sessions != null && sessions.get() != null) {
-            SortedMap<Long, ChargingSession> map = sessions.get();
-            if (map != null) {
-                return map;
-            }
-        }
-        return readChargingSessions();
+        // TODO: This method can be used elsewhere in this class to debloat it
+        return Util.getWeakOrFallback(sessions, this::readChargingSessions);
     }
 
     @SuppressWarnings("unchecked")

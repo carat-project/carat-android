@@ -51,7 +51,7 @@ public class Util {
     public static<T> T getWeakOrFallback(WeakReference<T> weakReference, Fallback<T> fallback){
         if(weakReference != null && weakReference.get() != null){
             T value = weakReference.get();
-            if(value != null){
+            if(value != null){ // Might become null between instructions
                 return value;
             }
         }
