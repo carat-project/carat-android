@@ -87,6 +87,7 @@ public class RapidSampler extends Service {
         if(deathRow != null){
             Logger.d(TAG, "Saved RapidSampler from death row");
             deathRow.cancel();
+            unregisterListeners(); // Avoid leaking when registering again
         }
 
         StringBuilder chargingString = new StringBuilder("Device is charging");
@@ -128,7 +129,6 @@ public class RapidSampler extends Service {
 
         startForeground(ID, notification);
 
-        // TODO: Is calling these multiple times a problem?
         this.registerReceiver(batteryChangeReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         this.registerReceiver(chargingAnomalyReceiver, new IntentFilter(CaratActions.CHARGING_ANOMALY));
         this.registerReceiver(serviceStopReceiver, new IntentFilter(CaratActions.STOP_RAPID_SAMPLING));
@@ -177,10 +177,14 @@ public class RapidSampler extends Service {
         if(chargingManager != null){
             chargingManager.handleStopCharging(); // Make sure this gets called
         }
+        unregisterListeners();
+        super.onDestroy();
+    }
+
+    public void unregisterListeners(){
         this.unregisterReceiver(batteryChangeReceiver);
         this.unregisterReceiver(chargingAnomalyReceiver);
         this.unregisterReceiver(serviceStopReceiver);
-        super.onDestroy();
     }
 
     public static boolean isAwaitingShutdown(){
