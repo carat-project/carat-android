@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.BatteryManager;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -32,6 +33,11 @@ import static android.app.PendingIntent.*;
 public class RapidSampler extends Service {
     private static final String TAG = RapidSampler.class.getSimpleName();
     private static final int ID = 48908227;
+    private static final long SHUTDOWN_GRACE_PERIOD = 5000; // 5 seconds
+
+    private static boolean convicted = false;
+    private Timer scheduler;
+    private Timer deathRow;
     private SharedPreferences preferences;
     private ChargingSessionManager chargingManager;
 
@@ -69,6 +75,12 @@ public class RapidSampler extends Service {
         chargingManager = ChargingSessionManager.getInstance();
         chargingManager.handleStartCharging();
 
+        // This service is innocent, let them live
+        convicted = false;
+        if(deathRow != null){
+            deathRow.cancel();
+        }
+
         StringBuilder chargingString = new StringBuilder("Device is charging");
         switch(pluggedState){
             case BatteryManager.BATTERY_PLUGGED_AC:
@@ -91,7 +103,9 @@ public class RapidSampler extends Service {
                 .setContentText("Tap to open Carat.")
                 .setContentIntent(pendingIntent).build();
 
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+        scheduler = new Timer();
+        scheduler.cancel(); // Just in case
+        scheduler.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 long last = preferences.getLong(Keys.lastSampleTimestamp, 0);
@@ -100,7 +114,7 @@ public class RapidSampler extends Service {
                     Sampler.sample(context, CaratActions.RAPID_SAMPLING);
                 }
                 if(!SamplingLibrary.isDeviceCharging(context)){
-                    stopSelf();
+                    stopService();
                 }
             }
         }, Constants.RAPID_SAMPLING_INTERVAL, Constants.RAPID_SAMPLING_INTERVAL);
@@ -113,9 +127,25 @@ public class RapidSampler extends Service {
 
     public void stopService(){
         if(chargingManager != null){
-            chargingManager.handleStopCharging();
+            chargingManager.handlePauseCharging();
         }
-        stopSelf();
+
+        convicted = true; // This allows onCreate to be called again
+        deathRow = new Timer();
+        deathRow.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if(convicted){
+                    if(scheduler != null) scheduler.cancel();
+                    if(chargingManager != null) chargingManager.handleStopCharging();
+                    stopSelf();
+                } else {
+                    Logger.d(TAG, "Shutdown cancelled");
+                }
+            }
+        }, SHUTDOWN_GRACE_PERIOD);
+
+        Logger.d(TAG, "Scheduled for shutdown in " + SHUTDOWN_GRACE_PERIOD/1000.0 + "s");
     }
 
     @Override
@@ -125,6 +155,10 @@ public class RapidSampler extends Service {
         }
         this.unregisterReceiver(batteryChangeReceiver);
         super.onDestroy();
+    }
+
+    public static boolean isAwaitingShutdown(){
+        return convicted;
     }
 
     @Nullable

@@ -139,8 +139,10 @@ public class IntentRouter extends IntentService {
         }
         Intent serviceIntent = new Intent(this, RapidSampler.class);
         boolean running = ProcessUtil.isServiceRunning(context, RapidSampler.class);
+        boolean revive = RapidSampler.isAwaitingShutdown();
         boolean charging = SamplingLibrary.isDeviceCharging(context);
-        if(!running && charging && !disabled){
+        boolean canRun = !running || revive; // Either not running or waiting to be revived
+        if(canRun && charging && !disabled){
             startService(serviceIntent);
         } else if((running && !charging) || disabled){
             stopService(serviceIntent);
