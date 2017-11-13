@@ -58,6 +58,10 @@ public class ChargingSession implements Serializable {
         return lastLevel;
     }
 
+    public boolean isNew(){
+        return points.size() == 0;
+    }
+
     public Long getTimestamp() {
         return timestamp;
     }
