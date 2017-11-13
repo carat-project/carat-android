@@ -18,6 +18,7 @@ public class ChargingSession implements Serializable {
     private List<Peak> peaks;
     private TreeMap<Integer, ChargingPoint> points;
     private String plugState;
+    private long duration;
 
     private Long timestamp;
     private Boolean replaceOnZigZag = false;
@@ -26,6 +27,7 @@ public class ChargingSession implements Serializable {
         points = new TreeMap<>();
         timestamp = System.currentTimeMillis();
         plugState = "unknown";
+        duration = 0;
     }
 
     public static ChargingSession create(){
@@ -52,6 +54,14 @@ public class ChargingSession implements Serializable {
         return points;
     }
 
+    public long getDurationInSeconds(){
+        return duration;
+    }
+
+    public int getPointCount(){
+        return points.size();
+    }
+
     public Integer getLastLevel(){
         int lastLevel = points.lastKey();
         Logger.d(TAG, "Last level is " + lastLevel);
@@ -76,6 +86,7 @@ public class ChargingSession implements Serializable {
         Double cma = getMovingAverage(level, time);
         Double ss = getSquareSum(level, time, cma);
 
+        duration += time;
         if(points.containsKey(level) && !replaceOnZigZag){
             time += points.get(level).getTime();
             cma += points.get(level).getAverage();
@@ -84,6 +95,10 @@ public class ChargingSession implements Serializable {
 
         points.put(level, new ChargingPoint(time, cma, ss));
         peaks = PeakUtils.getPeaks(points);
+    }
+
+    public boolean hasPeaks(){
+        return peaks.size() > 0;
     }
 
     private Double getMovingAverage(int level, double value){
