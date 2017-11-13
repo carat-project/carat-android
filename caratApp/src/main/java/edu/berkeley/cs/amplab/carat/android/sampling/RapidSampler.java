@@ -18,6 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import edu.berkeley.cs.amplab.carat.android.CaratActions;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
@@ -52,6 +53,14 @@ public class RapidSampler extends Service {
             } else {
                 chargingManager.handleBatteryIntent(intent);
             }
+        }
+    };
+
+    private BroadcastReceiver chargingAnomalyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // TODO: Change notification at very least
+            Logger.d(TAG, "Notify user, charging is anomalous!");
         }
     };
 
@@ -94,7 +103,7 @@ public class RapidSampler extends Service {
                 long last = preferences.getLong(Keys.lastSampleTimestamp, 0);
                 long now = System.currentTimeMillis();
                 if(now-last >= Constants.RAPID_SAMPLING_INTERVAL - 100 /* Margin of error */){
-                    Sampler.sample(context, Constants.RAPID_SAMPLING);
+                    Sampler.sample(context, CaratActions.RAPID_SAMPLING);
                 }
                 if(!SamplingLibrary.isDeviceCharging(context)){
                     stopSelf();
@@ -104,6 +113,7 @@ public class RapidSampler extends Service {
 
         startForeground(ID, notification);
         this.registerReceiver(batteryChangeReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        this.registerReceiver(chargingAnomalyReceiver, new IntentFilter(CaratActions.CHARGING_ANOMALY));
         return START_STICKY;
     }
 
