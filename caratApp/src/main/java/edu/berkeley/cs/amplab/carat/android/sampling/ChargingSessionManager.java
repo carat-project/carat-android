@@ -5,6 +5,7 @@ import android.content.Intent;
 import java.lang.ref.WeakReference;
 import java.util.SortedMap;
 
+import edu.berkeley.cs.amplab.carat.android.CaratActions;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.models.ChargingSession;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
@@ -20,6 +21,8 @@ public class ChargingSessionManager {
     private static final String TAG = ChargingSessionManager.class.getSimpleName();
     private static final long MAX_PAUSE_BETWEEN_REPLUG = 10000; // 10 seconds
     private static final long MAX_PAUSE_BETWEEN_CHANGE = 600000; // 10 minutes
+    private static final long MINIMUM_SESSION_DURATION = 300000; // 5 minutes
+    private static final long MINIMUM_SESSION_POINTS = 5;
 
     private WeakReference<SortedMap<Long, ChargingSession>> sessions;
     private CaratDataStorage storage;
@@ -64,9 +67,12 @@ public class ChargingSessionManager {
         }
     }
 
-    private synchronized boolean validateSession(){
-        // TODO: Check length etc.
-        return session != null;
+    private synchronized boolean validateSession() {
+        boolean valid = session != null
+                && session.getPointCount() >= MINIMUM_SESSION_POINTS
+                && session.getDurationInSeconds() >= MINIMUM_SESSION_DURATION;
+        Logger.d(TAG, "Session is valid: " + valid);
+        return valid;
     }
 
     private synchronized  boolean saveSession(){
@@ -77,7 +83,7 @@ public class ChargingSessionManager {
                 storage.writeChargingSessions(result);
                 sessions = new WeakReference<>(result);
 
-                Logger.d(TAG, "Saved session " + session.getTimestamp() + " to storage");
+                Logger.d(TAG, "Saved session to storage: " + session);
                 return true;
             }
         }
@@ -120,8 +126,18 @@ public class ChargingSessionManager {
             lastTime = now;
             paused = false;
             lastLevel = level;
+            checkAnomalies();
         } else {
             Logger.d(TAG, "Same level as last one, skipping");
+        }
+    }
+
+    private void checkAnomalies(){
+        if(session != null && session.hasPeaks()){
+            // Inform application (mostly RapidSampler) about an ongoing anomaly
+            // TODO: Rework this? Static context and child processes seem bad together
+            Intent intent = new Intent(CaratActions.CHARGING_ANOMALY);
+            CaratApplication.getAppContext().sendBroadcast(intent);
         }
     }
 
