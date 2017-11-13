@@ -100,11 +100,15 @@ public class ChargingSessionManager {
         }
     }
 
-    public synchronized void handleStopCharging(){
+    public synchronized void handlePauseCharging(){
         if(!paused){
             paused = true;
             pauseTime = System.currentTimeMillis();
         }
+    }
+
+    public synchronized void handleStopCharging(){
+        stopSaveSession();
     }
 
     public synchronized void handleBatteryIntent(Intent intent){

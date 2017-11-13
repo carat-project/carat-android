@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.BatteryManager;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -19,15 +18,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import edu.berkeley.cs.amplab.carat.android.CaratActions;
-import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
-import edu.berkeley.cs.amplab.carat.android.models.ChargingSession;
-import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
-import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
-import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 import static android.app.PendingIntent.*;
