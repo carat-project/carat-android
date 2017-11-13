@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.BatteryManager;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -51,7 +52,7 @@ public class RapidSampler extends Service {
         Context context = getApplicationContext();
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = getActivity(this, 0,
+        PendingIntent pendingIntent = getActivity(this, Intent.FLAG_ACTIVITY_SINGLE_TOP,
                 notificationIntent, 0);
         int pluggedState = SamplingLibrary.getDevicePluggedState(context);
         StringBuilder chargingString = new StringBuilder("Device is charging");
