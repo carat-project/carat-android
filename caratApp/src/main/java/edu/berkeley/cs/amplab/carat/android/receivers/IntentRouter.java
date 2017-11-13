@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 
 import java.util.concurrent.TimeUnit;
 
+import edu.berkeley.cs.amplab.carat.android.CaratActions;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.sampling.RapidSampler;
@@ -74,9 +75,9 @@ public class IntentRouter extends IntentService {
         if(action != null){
             Logger.d(TAG, "Routing intent for " + action);
             switch(action){
-                case Constants.SCHEDULED_SAMPLE:
+                case CaratActions.SCHEDULED_SAMPLE:
                     if(elapsed >= SAMPLING_INTERVAL - 100){
-                        Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
+                        Sampler.sample(context, CaratActions.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
                     }
                     scheduleNextSample(SAMPLING_INTERVAL);
                     break;
@@ -102,7 +103,7 @@ public class IntentRouter extends IntentService {
                                 "the future or already passed, sampling now");
                         cancelScheduledSample();
                         if(elapsed >= SAMPLING_INTERVAL - 100){
-                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
+                            Sampler.sample(context, CaratActions.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
                         }
                         scheduleNextSample(SAMPLING_INTERVAL);
                     }
@@ -114,7 +115,7 @@ public class IntentRouter extends IntentService {
                     else if(!isAlreadyScheduled(getScheduleIntent())){
                         if(elapsed >= SAMPLING_INTERVAL - 100){
                             Logger.d(TAG, "Sampler has been dead for a long while, sampling now");
-                            Sampler.sample(context, Constants.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
+                            Sampler.sample(context, CaratActions.SCHEDULED_SAMPLE, () -> Util.safeReleaseWakelock(wl));
                         }
                         Logger.d(TAG, "Revived sampler");
                         scheduleNextSample(SAMPLING_INTERVAL);
@@ -152,7 +153,7 @@ public class IntentRouter extends IntentService {
 
     private Intent getScheduleIntent(){
         Intent scheduleIntent = new Intent(context, ActionReceiver.class);
-        scheduleIntent.setAction(Constants.SCHEDULED_SAMPLE);
+        scheduleIntent.setAction(CaratActions.SCHEDULED_SAMPLE);
         return scheduleIntent;
     }
 

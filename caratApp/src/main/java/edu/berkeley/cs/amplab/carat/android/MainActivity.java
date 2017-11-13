@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         Intent intent = new Intent(getApplicationContext(), ActionReceiver.class);
-        intent.setAction(Constants.CHECK_SCHEDULE);
+        intent.setAction(CaratActions.CHECK_SCHEDULE);
         sendBroadcast(intent);
         resumeTasksAndUpdate();
 

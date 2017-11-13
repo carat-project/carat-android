@@ -61,10 +61,6 @@ public class Constants {
     // Send up to 100 samples at a time
     public static final int COMMS_MAX_UPLOAD_BATCH = 100;
 
-    public static final String SCHEDULED_SAMPLE = "edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE";
-    public static final String CHECK_SCHEDULE = "edu.berkeley.cs.amplab.carat.android.CHECK_SCHEDULE";
-    public static final String RAPID_SAMPLING = "edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING";
-
     public static final int SAMPLES_MAX_BACKLOG = 500;
     // If true, install Sampling events to occur at boot. Currently not used.
 
