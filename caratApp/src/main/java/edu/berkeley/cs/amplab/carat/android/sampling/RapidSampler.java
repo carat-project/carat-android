@@ -18,10 +18,15 @@ import android.support.v4.app.NotificationCompat;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.models.ChargingSession;
+import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
+import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
+import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 import static android.app.PendingIntent.*;
@@ -30,9 +35,10 @@ import static android.app.PendingIntent.*;
  * Created by Jonatan Hamberg on 6/26/17.
  */
 public class RapidSampler extends Service {
-    private static final int ID = 48908227;
     private static final String TAG = RapidSampler.class.getSimpleName();
+    private static final int ID = 48908227;
     private SharedPreferences preferences;
+    private ChargingSessionManager chargingManager;
 
     private BroadcastReceiver batteryChangeReceiver = new BroadcastReceiver() {
         @Override
@@ -42,7 +48,9 @@ public class RapidSampler extends Service {
                 Sampler.sample(getApplicationContext(), action);
             }
             if(!SamplingLibrary.isDeviceCharging(context)){
-                stopSelf();
+                stopService();
+            } else {
+                chargingManager.handleBatteryIntent(intent);
             }
         }
     };
@@ -55,16 +63,22 @@ public class RapidSampler extends Service {
         PendingIntent pendingIntent = getActivity(this, Intent.FLAG_ACTIVITY_SINGLE_TOP,
                 notificationIntent, 0);
         int pluggedState = SamplingLibrary.getDevicePluggedState(context);
+        chargingManager = ChargingSessionManager.getInstance();
+        chargingManager.handleStartCharging();
+
         StringBuilder chargingString = new StringBuilder("Device is charging");
         switch(pluggedState){
             case BatteryManager.BATTERY_PLUGGED_AC:
                 chargingString.append(" via power outlet");
+                chargingManager.updatePlugState("ac");
                 break;
             case BatteryManager.BATTERY_PLUGGED_USB:
                 chargingString.append(" via USB port");
+                chargingManager.updatePlugState("usb");
                 break;
             case BatteryManager.BATTERY_PLUGGED_WIRELESS:
                 chargingString.append(" wirelessly");
+                chargingManager.updatePlugState("wireless");
                 break;
         }
 
@@ -93,8 +107,18 @@ public class RapidSampler extends Service {
         return START_STICKY;
     }
 
+    public void stopService(){
+        if(chargingManager != null){
+            chargingManager.handleStopCharging();
+        }
+        stopSelf();
+    }
+
     @Override
     public void onDestroy() {
+        if(chargingManager != null){
+            chargingManager.handleStopCharging(); // Make sure this gets called
+        }
         this.unregisterReceiver(batteryChangeReceiver);
         super.onDestroy();
     }
