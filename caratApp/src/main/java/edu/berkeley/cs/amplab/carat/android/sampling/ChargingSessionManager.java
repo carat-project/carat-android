@@ -23,11 +23,13 @@ public class ChargingSessionManager {
     private static final long MAX_PAUSE_BETWEEN_CHANGE = 600000; // 10 minutes
     private static final long MINIMUM_SESSION_DURATION = 300000; // 5 minutes
     private static final long MINIMUM_SESSION_POINTS = 5;
+    private static final long MINIMUM_PERSIST_POINTS = 5;
 
     private WeakReference<SortedMap<Long, ChargingSession>> sessions;
     private CaratDataStorage storage;
     private ChargingSession session;
     private boolean paused = false;
+    private long pointsThen = 0;
     private long pauseTime = -1L;
     private long lastTime = -1L;
     private int lastLevel = -1;
@@ -68,10 +70,13 @@ public class ChargingSessionManager {
     }
 
     private synchronized boolean validateSession() {
-        boolean valid = session != null
-                && session.getPointCount() >= MINIMUM_SESSION_POINTS
+        if(session == null){
+            Logger.d(TAG, "Session was null, cannot save");
+            return false;
+        }
+        boolean valid = session.getPointCount() >= MINIMUM_SESSION_POINTS
                 && session.getDurationInSeconds() >= MINIMUM_SESSION_DURATION;
-        Logger.d(TAG, "Session is valid: " + valid);
+        Logger.d(TAG, "Enough data in session to store: " + valid);
         return valid;
     }
 
@@ -101,6 +106,7 @@ public class ChargingSessionManager {
     }
 
     public synchronized void handlePauseCharging(){
+        // TODO: Use this after destroy grace period is implemented in RapidSampler
         if(!paused){
             paused = true;
             pauseTime = System.currentTimeMillis();
@@ -131,6 +137,7 @@ public class ChargingSessionManager {
             paused = false;
             lastLevel = level;
             checkAnomalies();
+            checkPersistence();
         } else {
             Logger.d(TAG, "Same level as last one, skipping");
         }
@@ -142,6 +149,16 @@ public class ChargingSessionManager {
             // TODO: Rework this? Static context and child processes seem bad together
             Intent intent = new Intent(CaratActions.CHARGING_ANOMALY);
             CaratApplication.getAppContext().sendBroadcast(intent);
+        }
+    }
+
+    private void checkPersistence(){
+        long pointsNow = session.getPointCount();
+        long sinceLastPersist = pointsNow - pointsThen;
+        if(sinceLastPersist >= MINIMUM_PERSIST_POINTS){
+            Logger.d(TAG, "Minimum points passed, persisting session");
+            saveSession();
+            pointsThen = pointsNow;
         }
     }
 
