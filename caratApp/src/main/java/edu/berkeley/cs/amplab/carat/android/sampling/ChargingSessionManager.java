@@ -13,103 +13,78 @@ import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 /**
- * Created by Jonatan on 13.11.2017.
+ * Created by Jonatan Hamberg on 13.11.2017.
  */
 public class ChargingSessionManager {
-    private static final String TAG = ChargingSessionManager.class.getSimpleName();
     private static ChargingSessionManager instance;
+    private static final String TAG = ChargingSessionManager.class.getSimpleName();
     private static final long MAX_PAUSE_BETWEEN_REPLUG = 10000; // 10 seconds
-    private WeakReference<SortedMap<Long, ChargingSession>> sessions;
+    private static final long MAX_PAUSE_BETWEEN_CHANGE = 600000; // 10 minutes
 
+    private WeakReference<SortedMap<Long, ChargingSession>> sessions;
     private CaratDataStorage storage;
     private ChargingSession session;
     private boolean paused = false;
     private long pauseTime = -1L;
     private long lastTime = -1L;
+    private int lastLevel = -1;
 
     // Create a singleton instance
-    public static ChargingSessionManager getInstance(){
-        synchronized (TAG){
-            if(instance == null){
-                instance = new ChargingSessionManager();
-            }
-            return instance;
+    public static synchronized ChargingSessionManager getInstance(){
+        if(instance == null){
+            instance = new ChargingSessionManager();
         }
+        return instance;
     }
 
     // Depend on storage rather than context which is leaky
     private ChargingSessionManager(){
-        this.storage = CaratApplication.getStorage();
-        this.paused = false;
-        this.pauseTime = -1L;
+        // Synchronized just in case, probably not needed
+        synchronized (this){
+            this.storage = CaratApplication.getStorage(); // This seems dangerous
+        }
     }
 
-    public void updatePlugState(String state){
+    public synchronized SortedMap<Long, ChargingSession> getChargingSessions(){
+        return storage.getChargingSessions();
+    }
+
+    public synchronized void updatePlugState(String state){
+        deleteIfExpired();
         if(session != null){
             if(session.getPlugState().equals("unknown")){
                 // Keep first valid charger type
+                Logger.d(TAG, "Session " + session.getTimestamp() + " plugState to " + state);
                 session.setPlugState(state);
             } else if(!session.getPlugState().equals(state)){
                 // Charger type changed, invalidate session
-                saveSession();
-                session = null;
+                Logger.d(TAG, "Charger type changed, stopping session");
+                stopSaveSession();
             }
         }
     }
 
-    private boolean validateSession(){
+    private synchronized boolean validateSession(){
         // TODO: Check length etc.
         return session != null;
     }
 
-    private boolean saveSession(){
+    private synchronized  boolean saveSession(){
         if(validateSession()){
             SortedMap<Long, ChargingSession> result = Util.getWeakOrFallback(sessions, () -> storage.getChargingSessions());
             if(result != null){
                 result.put(session.getTimestamp(), session);
                 storage.writeChargingSessions(result);
                 sessions = new WeakReference<>(result);
+
+                Logger.d(TAG, "Saved session " + session.getTimestamp() + " to storage");
                 return true;
             }
         }
         return false;
     }
 
-    public void createIfNull(){
-        if(session == null){
-            session = ChargingSession.create();
-        }
-    }
-
-    public void handleBatteryIntent(Intent intent){
-        deleteIfExpired();
-        createIfNull();
-        long time = System.currentTimeMillis();
-        int level = (int)BatteryUtils.getBatteryLevel(intent);
-        long now = System.currentTimeMillis();
-
-        if(session.isNew()){
-            session.addPoint(level, 0.0);
-            lastTime = now;
-        } else {
-            // TODO: Check if we're discharging / taking too long / etc.
-            session.addPoint(level, (double) now - lastTime);
-        }
-    }
-
-    public boolean deleteIfExpired(){
-        long now = System.currentTimeMillis();
-        if(now - pauseTime >= MAX_PAUSE_BETWEEN_REPLUG){
-            Logger.d(TAG, "Session has been paused for too long, stopping it");
-            saveSession();
-            session = null; // This might've been true anyways
-            paused = false;
-            return true;
-        }
-        return false;
-    }
-
-    public void handleStartCharging(){
+    public synchronized void handleStartCharging(){
         deleteIfExpired();
         if(session != null){
             // Previous session exists and didn't expire, resume it
@@ -119,10 +94,76 @@ public class ChargingSessionManager {
         }
     }
 
-    public void handleStopCharging(){
+    public synchronized void handleStopCharging(){
         if(!paused){
             paused = true;
             pauseTime = System.currentTimeMillis();
         }
+    }
+
+    public synchronized void handleBatteryIntent(Intent intent){
+        deleteIfExpired();
+        createIfNull();
+        int level = (int)BatteryUtils.getBatteryLevel(intent);
+        long now = System.currentTimeMillis();
+
+        if(!isValidChange(now, level)){
+            stopSaveSession();
+            return; // Exit early
+        }
+
+        if(level != lastLevel){
+            double elapsed = session.isNew() ? 0.0 : (now - lastTime);
+            session.addPoint(level, elapsed);
+            Logger.d(TAG, "New level " + level + " after " + elapsed + "s");
+
+            lastTime = now;
+            paused = false;
+            lastLevel = level;
+        } else {
+            Logger.d(TAG, "Same level as last one, skipping");
+        }
+    }
+
+    private synchronized  void createIfNull(){
+        if(session == null){
+            session = ChargingSession.create();
+            Logger.d(TAG, "New charging session " + session.getTimestamp());
+        }
+    }
+
+    private synchronized boolean isValidChange(long now, int level){
+        if(now - lastTime >= MAX_PAUSE_BETWEEN_CHANGE){
+            Logger.d(TAG, "Too much time passed since last level change");
+            return false;
+        }
+        if(level <= session.getLastLevel()){ // Should be a safe call, session can't be new
+            Logger.d(TAG, "New battery level was less than last one, discharging");
+            return false;
+        }
+        return true;
+    }
+
+    private synchronized void deleteIfExpired(){
+        if(paused){
+            long now = System.currentTimeMillis();
+            if(now - pauseTime >= MAX_PAUSE_BETWEEN_REPLUG){
+                Logger.d(TAG, "Session has been paused for too long, stopping it");
+                stopSaveSession();
+            }
+        }
+    }
+
+    private synchronized void stopSaveSession(){
+        saveSession();
+        session = null;
+        paused = false;
+
+        // Reset these just in case
+        lastLevel = -1;
+        lastTime = -1L;
+        pauseTime = -1L;
+
+        Logger.d(TAG, "Stopped session");
     }
 }
