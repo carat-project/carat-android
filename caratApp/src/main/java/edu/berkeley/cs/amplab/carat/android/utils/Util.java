@@ -4,6 +4,8 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.os.PowerManager;
 import android.net.Uri;
 import android.util.Pair;
@@ -37,11 +39,27 @@ public class Util {
         return result;
     }
 
-    public static <K,V> SortedMap<K, V> firstEntries(int limit, SortedMap<K,V> source){
+    public static <K, V> SortedMap<K, V> firstEntries(int limit, SortedMap<K, V> source){
         TreeMap<K, V> result = new TreeMap<>();
-        for(Map.Entry<K,V> entry : source.entrySet()){
+        for(Map.Entry<K, V> entry : source.entrySet()){
             if(result.size() >= limit){
                 break;
+            }
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
+    public static <K, V> SortedMap<K, V> skipEntries(long amount, SortedMap<K, V> source){
+        if(Util.isNullOrEmpty(source)){
+            return new TreeMap<>();
+        }
+        TreeMap<K, V> result = new TreeMap<>();
+        long counter = 0;
+        for(Map.Entry<K, V> entry : source.entrySet()){
+            if(counter < amount){
+                counter++;
+                continue;
             }
             result.put(entry.getKey(), entry.getValue());
         }
@@ -90,6 +108,14 @@ public class Util {
 
     public static boolean isNullOrEmpty(String string){
         return string == null || string.trim().isEmpty();
+    }
+
+    public static boolean isNullOrEmpty(Bundle bundle){
+        return bundle == null || bundle.size() == 0;
+    }
+
+    public static <T extends Map> boolean isNullOrEmpty(T t){
+        return t == null || t.size() == 0;
     }
 
     public static boolean isSystemApp(int flags){
