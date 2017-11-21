@@ -71,7 +71,7 @@ public class IntentRouter extends IntentService {
             }
         }
 
-        String action = intent.getStringExtra(Keys.intentReceiverAction);
+        String action = intent.getStringExtra(Keys.extraReceiverAction);
         if(action != null){
             Logger.d(TAG, "Routing intent for " + action);
             switch(action){
