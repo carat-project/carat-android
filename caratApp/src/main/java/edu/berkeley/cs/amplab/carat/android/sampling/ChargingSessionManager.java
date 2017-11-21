@@ -20,7 +20,7 @@ public class ChargingSessionManager {
     private static ChargingSessionManager instance;
     private static final String TAG = ChargingSessionManager.class.getSimpleName();
     private static final long MAX_PAUSE_BETWEEN_REPLUG = 10000; // 10 seconds
-    private static final long MAX_PAUSE_BETWEEN_CHANGE = 600000; // 10 minutes
+    private static final long MAX_PAUSE_BETWEEN_CHANGE = 12000000; // 20 minutes
     private static final long MINIMUM_SESSION_DURATION = 300000; // 5 minutes
     private static final long MINIMUM_SESSION_POINTS = 5;
     private static final long MINIMUM_PERSIST_POINTS = 5;
@@ -51,6 +51,10 @@ public class ChargingSessionManager {
     }
 
     public synchronized ChargingSession getCurrentSession(){
+        // This only works within process which is unfortunate, since at current this
+        // class is only executed by RapidSampler which lies in a separate :charging
+        // process, meaning the session won't be visible to any activity/fragment
+        // as they're located in the main process. Need to broadcast instead.
         return session;
     }
 
@@ -84,7 +88,7 @@ public class ChargingSessionManager {
         return valid;
     }
 
-    private synchronized  boolean saveSession(){
+    private synchronized boolean saveSession(){
         if(validateSession()){
             SortedMap<Long, ChargingSession> result = Util.getWeakOrFallback(sessions, () -> storage.getChargingSessions());
             if(result != null){
