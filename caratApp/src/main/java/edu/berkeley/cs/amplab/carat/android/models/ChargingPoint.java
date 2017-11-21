@@ -6,6 +6,7 @@ import java.io.Serializable;
  * Created by Jonatan Hamberg on 30.1.2017.
  */
 public class ChargingPoint implements Serializable{
+    private static final long serialVersionUID = -6540819260026777410L;
     private Double time;
     private Double squareSum;
     private Double average;
@@ -27,5 +28,10 @@ public class ChargingPoint implements Serializable{
 
     public Double getAverage() {
         return average;
+    }
+
+    @Override
+    public String toString() {
+        return time/1000+"s";
     }
 }

@@ -50,7 +50,11 @@ public class ChargingSessionManager {
         }
     }
 
-    public synchronized SortedMap<Long, ChargingSession> getChargingSessions(){
+    public synchronized ChargingSession getCurrentSession(){
+        return session;
+    }
+
+    public synchronized SortedMap<Long, ChargingSession> getSavedSessions(){
         return storage.getChargingSessions();
     }
 
