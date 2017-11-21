@@ -3,6 +3,7 @@ package edu.berkeley.cs.amplab.carat.android.fragments;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -42,6 +43,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     private LinearLayout actionsButton;
     private Button myDeviceButton;
     private ImageView shareButton;
+    private ImageView chargingButton;
     private ImageView facebookButton;
     private ImageView twitterButton;
     private ImageView emailButton;
@@ -108,6 +110,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         actionsButton = (LinearLayout) ll.findViewById(R.id.actions_layout);
         myDeviceButton = (Button) ll.findViewById(R.id.my_device_button);
         shareButton = (ImageView) ll.findViewById(R.id.share_button);
+        chargingButton = (ImageView) ll.findViewById(R.id.charging_button);
         batteryText = (TextView) ll.findViewById(R.id.battery_value);
         bugAmountText = (TextView) ll.findViewById(R.id.bugs_amount);
         hogAmountText = (TextView) ll.findViewById(R.id.hogs_amount);
@@ -127,6 +130,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         actionsButton.setOnClickListener(this);
         myDeviceButton.setOnClickListener(this);
         shareButton.setOnClickListener(this);
+        chargingButton.setOnClickListener(this);
         facebookButton.setOnClickListener(this);
         twitterButton.setOnClickListener(this);
         emailButton.setOnClickListener(this);
@@ -209,6 +213,9 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
                 DeviceFragment myDeviceFragment = new DeviceFragment();
                 mainActivity.replaceFragment(myDeviceFragment, Constants.FRAGMENT_MY_DEVICE_TAG);
                 break;
+            case R.id.charging_button:
+                ChargingFragment chargingFragment = new ChargingFragment();
+                mainActivity.replaceFragment(chargingFragment, Constants.FRAGMENT_CHARGING_TAG);
             case R.id.share_button:
                 shareButton.setVisibility(View.GONE);
                 shareBar.setVisibility(View.VISIBLE);
