@@ -112,6 +112,7 @@ public class Constants {
     public static final String FRAGMENT_GLOBAL_TAG = "fragment_global";
     public static final String FRAGMENT_ACTIONS_TAG = "fragment_actions";
     public static final String FRAGMENT_MY_DEVICE_TAG = "fragment_my_device";
+    public static final String FRAGMENT_CHARGING_TAG = "fragment_charging";
     public static final String FRAGMENT_ABOUT_TAG = "fragment_about";
     public static final String FRAGMENT_SETTINGS_TAG = "fragment_settings";
     public static final String FRAGMENT_CB_WEBVIEW_TAG = "fragment_callback_webview";
