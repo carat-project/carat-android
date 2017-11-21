@@ -296,13 +296,10 @@ public class CaratDataStorage {
         return s;
     }
 
-    public SortedMap<Long, ChargingSession> getChargingSessions(){
-        // TODO: This method can be used elsewhere in this class to debloat it
-        return Util.getWeakOrFallback(sessions, this::readChargingSessions);
-    }
 
+    // This method is called from two processes, cannot persist in WeakRef
     @SuppressWarnings("unchecked")
-    public SortedMap<Long, ChargingSession> readChargingSessions(){
+    public SortedMap<Long, ChargingSession> getChargingSessions(){
         Object o = readObject(CHARGING_FILE);
         Logger.d(TAG, "Read charging sessions: " + o);
         if(o != null){
