@@ -12,7 +12,7 @@ public class Constants {
     // Temporary tag for SamplingFix logging
     public static final String SF = "SamplingFix";
 
-    public static final long DUPLICATE_INTERVAL = 60;
+    public static final long DUPLICATE_INTERVAL = TimeUnit.MINUTES.toSeconds(5);
 
     public static final long FRESHNESS_TIMEOUT = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
     public static final long FRESHNESS_TIMEOUT_BLACKLIST = 24 * 3600 * 1000;

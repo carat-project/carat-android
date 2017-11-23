@@ -203,7 +203,7 @@ public class Sampler {
     }
 
     private static boolean essentiallyIdentical(Sample s1, Sample s2){
-        if(s2 != null && s2.getTriggeredBy().equals(s1.getTriggeredBy())){
+        if(s2 != null){
             if(s1.getTimestamp() - s2.getTimestamp() < Constants.DUPLICATE_INTERVAL){
 
                 Logger.d(TAG, "Sample was triggered within a minute " +
