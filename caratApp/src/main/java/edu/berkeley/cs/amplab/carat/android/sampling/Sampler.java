@@ -206,7 +206,7 @@ public class Sampler {
         if(s2 != null){
             if(s1.getTimestamp() - s2.getTimestamp() < Constants.DUPLICATE_INTERVAL){
 
-                Logger.d(TAG, "Sample was triggered within a minute " +
+                Logger.d(TAG, "Sample was triggered within five minutes " +
                         "(diff: " + (s1.getTimestamp() - s2.getTimestamp()) + "s) " +
                         "of the last one and by the same event. Checking if it's a duplicate..");
 
