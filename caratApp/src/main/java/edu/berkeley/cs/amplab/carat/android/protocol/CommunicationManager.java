@@ -24,6 +24,7 @@ import android.util.Log;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
@@ -54,6 +55,7 @@ public class CommunicationManager {
 	private boolean timeBasedUuid = false;
 	private boolean gettingReports = false;
 	private PrefsManager.MultiPrefs p = null;
+	private Sample previousSample;
 
 	private CaratService.Client rpcService;
 
@@ -132,17 +134,20 @@ public class CommunicationManager {
 			Logger.d(Constants.SF, "Attempting to use instantated ProtocolClient");
 		}
 		registerOnFirstRun(rpcService);
-		int batchSize = samples.size();
 		for(Sample sample : samples){
 			try {
-				if(rpcService.uploadSample(sample)){
+				boolean duplicate = Sampler.essentiallyIdentical(sample, previousSample);
+				boolean success = false;
+				if(!duplicate){ // We skip upload on duplicates
+					success = rpcService.uploadSample(sample);
+				}
+				if(success || duplicate){ // Counting duplicate as success is a hack to make sure it gets deleted
 					successCount++;
-					// This is only progress in batch
-					// int progress = (int)(successCount*100.0 / batchSize);
-                    long progress = Math.round((successCount+countSoFar)*100.0/sampleCount);
+					long progress = Math.round((successCount+countSoFar)*100.0/sampleCount);
 					String progressString = progress + "% " + CaratApplication.getAppContext().getString(R.string.samplesreported);
 					CaratApplication.setStatus(progressString);
 				}
+				previousSample = sample;
 			} catch (Throwable th) {
 				Logger.e(TAG, "Error uploading sample", th);
 			}

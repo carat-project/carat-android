@@ -202,7 +202,7 @@ public class Sampler {
         }
     }
 
-    private static boolean essentiallyIdentical(Sample s1, Sample s2){
+    public static boolean essentiallyIdentical(Sample s1, Sample s2){
         if(s2 != null){
             if(s1.getTimestamp() - s2.getTimestamp() < Constants.DUPLICATE_INTERVAL){
 
