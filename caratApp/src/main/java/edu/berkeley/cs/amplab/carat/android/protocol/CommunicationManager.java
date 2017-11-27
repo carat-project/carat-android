@@ -140,6 +140,8 @@ public class CommunicationManager {
 				boolean success = false;
 				if(!duplicate){ // We skip upload on duplicates
 					success = rpcService.uploadSample(sample);
+				} else {
+					Logger.d(TAG, "Sample " + sample.getTimestamp() + " was a duplicate, discarded");
 				}
 				if(success || duplicate){ // Counting duplicate as success is a hack to make sure it gets deleted
 					successCount++;
