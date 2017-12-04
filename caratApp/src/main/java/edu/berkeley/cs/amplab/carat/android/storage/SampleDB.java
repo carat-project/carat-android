@@ -181,7 +181,9 @@ public class SampleDB {
     public SortedMap<Long, Sample> queryOldestSamples(int howmany) {
         SortedMap<Long, Sample> results = new TreeMap<Long, Sample>();
         try {
+            Logger.d(TAG, "Awaiting for sampleDB lock at queryOldestSamples");
             synchronized (dbLock) {
+                Logger.d(TAG, "Got sampleDB lock at queryOldestSamples");
                 if (db == null || !db.isOpen()) {
                 	try{
                 		db = helper.getWritableDatabase();

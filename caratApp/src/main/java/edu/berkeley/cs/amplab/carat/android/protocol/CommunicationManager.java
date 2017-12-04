@@ -137,9 +137,11 @@ public class CommunicationManager {
 		for(Sample sample : samples){
 			try {
 				if(sample == null){
+					Logger.d(TAG, "Sample was null, discarding..");
 					successCount++; // Delete null samples
 					continue;
 				}
+				Logger.d(TAG, "Uploading sample " + sample.getTimestamp());
 				boolean duplicate = Sampler.essentiallyIdentical(sample, previousSample);
 				boolean success = false;
 				if(!duplicate){ // We skip upload on duplicates

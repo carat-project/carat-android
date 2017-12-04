@@ -49,10 +49,12 @@ public class SampleSender {
                 CaratApplication.setStatus(progressString);
                 int successSum = 0;
                 int failures = 0;
+                Logger.d(TAG, "Entering query phase for stored samples");
                 SortedMap<Long, Sample> batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
-                Logger.d(Constants.SF, "Queried a batch of samples of size: " + batch.size());
+                Logger.d(TAG, "Queried a batch of samples of size: " + batch.size());
                 sendingSamples = true;
                 while(batch.size() > 0 && failures <= 3){
+                    Logger.d(TAG, "Attempt " + failures + " at uploading samples");
                     int sent = commManager.uploadSamples(batch.values(), successSum, sampleCount);
                     if(sent > 0){
                         failures = 0; // Reset tries
@@ -64,8 +66,10 @@ public class SampleSender {
                         CaratApplication.setStatus(progressString);
                         */
                         // Delete samples that were sent successfully
+                        Logger.d(TAG, "Attempting to delete " + sent + " samples..");
                         Set<Long> sentRowIds = Util.firstEntries(sent, batch).keySet();
                         db.deleteSamples(sentRowIds);
+                        Logger.d(TAG, "Deleted sent and discarded samples");
                     } else {
                         Log.d(TAG, "Failed sending batch, increasing failures to " + failures);
                         failures++;
