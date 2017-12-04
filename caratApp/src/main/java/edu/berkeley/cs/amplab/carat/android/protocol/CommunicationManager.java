@@ -136,6 +136,10 @@ public class CommunicationManager {
 		registerOnFirstRun(rpcService);
 		for(Sample sample : samples){
 			try {
+				if(sample == null){
+					successCount++; // Delete null samples
+					continue;
+				}
 				boolean duplicate = Sampler.essentiallyIdentical(sample, previousSample);
 				boolean success = false;
 				if(!duplicate){ // We skip upload on duplicates
