@@ -38,7 +38,9 @@ public class SampleSender {
             boolean online = NetworkingUtil.isOnline(c);
             Logger.d(Constants.SF, "SampleSender online: " + online);
             if (online) {
+                Logger.d(TAG, "Awaiting SampleDB");
                 SampleDB db = SampleDB.getInstance(c);
+                Logger.d(TAG, "Got SampleDB");
                 CommunicationManager commManager = app.commManager;
                 if(commManager == null){
                     Logger.d(TAG, "Communication manager is not ready yet");

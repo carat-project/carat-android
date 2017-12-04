@@ -210,8 +210,9 @@ public class SampleDB {
                         if (s != null) {
                             results.put(cursor.getLong(cursor
                                     .getColumnIndex(BaseColumns._ID)), s);
-                            cursor.moveToNext();
                         }
+                        // TODO: Delete null samples
+                        cursor.moveToNext();
                     }
                     cursor.close();
 
