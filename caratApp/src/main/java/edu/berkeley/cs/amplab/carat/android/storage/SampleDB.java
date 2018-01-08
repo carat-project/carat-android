@@ -61,8 +61,6 @@ public class SampleDB {
 
     private static SampleDB instance = null;
 
-    private static Object dbLock = new Object();
-
     public static SampleDB getInstance(Context c) {
         if (instance == null) {
             instance = new SampleDB(c);
@@ -72,7 +70,7 @@ public class SampleDB {
     }
 
     private SampleDB(Context context) {
-        synchronized (dbLock) {
+        synchronized (this) {
             helper = new SampleDbOpenHelper(context);
         }
     }
@@ -84,7 +82,7 @@ public class SampleDB {
      */
     @Override
     protected void finalize() throws Throwable {
-        synchronized (dbLock) {
+        synchronized (this) {
             if (db != null)
                 db.close();
         }
@@ -146,7 +144,7 @@ public class SampleDB {
     
     public int countSamples() {
         try {
-            synchronized (dbLock) {
+            synchronized (this) {
                 if (db == null || !db.isOpen()) {
                     try{
                         db = helper.getWritableDatabase();
@@ -182,7 +180,7 @@ public class SampleDB {
         SortedMap<Long, Sample> results = new TreeMap<Long, Sample>();
         try {
             Logger.d(TAG, "Awaiting for sampleDB lock at queryOldestSamples");
-            synchronized (dbLock) {
+            synchronized (this) {
                 Logger.d(TAG, "Got sampleDB lock at queryOldestSamples");
                 if (db == null || !db.isOpen()) {
                 	try{
@@ -211,11 +209,9 @@ public class SampleDB {
                             results.put(cursor.getLong(cursor
                                     .getColumnIndex(BaseColumns._ID)), s);
                         }
-                        // TODO: Delete null samples
                         cursor.moveToNext();
                     }
                     cursor.close();
-
                 }
             }
         } catch (Throwable th) {
@@ -232,7 +228,7 @@ public class SampleDB {
     public int deleteSamples(Set<Long> rowids) {
         int ret = 0;
         try {
-            synchronized (dbLock) {
+            synchronized (this) {
                 if (db == null || !db.isOpen()) {
                     db = helper.getWritableDatabase();
                 }
@@ -307,7 +303,7 @@ public class SampleDB {
 
     public Sample getLastSample(Context c) {
         try {
-            synchronized (dbLock) {
+            synchronized (this) {
                 if (db == null || !db.isOpen()) {
                 	try{
                 		db = helper.getWritableDatabase();
@@ -333,7 +329,7 @@ public class SampleDB {
     public long putSample(Sample s) {
         long id = 0;
         try {
-            synchronized (dbLock) {
+            synchronized (this) {
                 if (db == null || !db.isOpen()) {
                     db = helper.getWritableDatabase();
                 }
