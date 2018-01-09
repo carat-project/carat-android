@@ -330,8 +330,7 @@ public class CaratApplication extends Application {
                 date = pm.getPackageInfo(packageName, 0).firstInstallTime;
             } catch(Throwable th){
                 if(Constants.DEBUG){
-                    Logger.d(TAG, "Failed getting application installation date from package");
-                    th.printStackTrace();
+                    Logger.d(TAG, "Failed getting application installation date from package",th);
                 }
             }
         }
@@ -599,8 +598,7 @@ public class CaratApplication extends Application {
                 success = commManager.refreshAllReports();
             } catch (Throwable th){
                 // Any sort of malformed response
-                Log.w(TAG, "Failed to refresh reports: " + th + Constants.MSG_TRY_AGAIN);
-                th.printStackTrace();
+                Log.w(TAG, "Failed to refresh reports: " + th + Constants.MSG_TRY_AGAIN, th);
             }
             main.runOnUiThread(new Runnable() {
                 @Override

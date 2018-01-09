@@ -11,6 +11,8 @@ import java.net.URL;
 
 
 public class JsonParser {
+
+    private static String TAG = "CaratJSP";
 	
 	public static String getJSONFromUrl(String url) {
 	    String result = null;
@@ -34,13 +36,13 @@ public class JsonParser {
             in.close();
             result = out.toString();
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            Util.printStackTrace(TAG, e);
         } catch (ProtocolException e) {
-            e.printStackTrace();
+            Util.printStackTrace(TAG, e);
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            Util.printStackTrace(TAG, e);
         } catch (IOException e) {
-            e.printStackTrace();
+            Util.printStackTrace(TAG, e);
         }
 
         return result;

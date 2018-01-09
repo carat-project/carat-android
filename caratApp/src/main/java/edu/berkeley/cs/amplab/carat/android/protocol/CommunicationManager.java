@@ -29,6 +29,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefsManager;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -233,8 +234,7 @@ public class CommunicationManager {
 				p.edit().putString(Constants.REGISTERED_OS, os).commit();
 				p.edit().putString(Constants.REGISTERED_MODEL, model).commit();
 			} catch (TException e) {
-				Logger.e("CommunicationManager", "Registration failed, will try again next time: " + e);
-				e.printStackTrace();
+				Logger.e("CommunicationManager", "Registration failed, will try again next time: " + e, e);
 			}
 		}
 	}
@@ -621,7 +621,7 @@ public class CommunicationManager {
 			return true;
 		} catch (Throwable th){
 			if(Constants.DEBUG){
-				th.printStackTrace();
+				Util.printStackTrace(TAG, th);
 			}
 			safeClose(instance);
 		}

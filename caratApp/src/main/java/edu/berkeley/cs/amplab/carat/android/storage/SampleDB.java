@@ -30,6 +30,7 @@ import org.apache.thrift.transport.TMemoryBuffer;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 /**
@@ -299,7 +300,7 @@ public class SampleDB {
                 deserializer.deserialize(s, sampleB);
                 return s;
             } catch (TException e) {
-                e.printStackTrace();
+                Util.printStackTrace(TAG, e);
             }
         }
         return null;
@@ -407,7 +408,7 @@ public class SampleDB {
             TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
             initialValues.put(COLUMN_SAMPLE, serializer.serialize(s));
         } catch (Exception e) {
-            e.printStackTrace();
+            Util.printStackTrace(TAG, e);
         }
 
         return db.insert(SAMPLES_VIRTUAL_TABLE, null, initialValues);

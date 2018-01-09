@@ -151,8 +151,7 @@ public class CaratDataStorage {
             dos.close();
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Could not write object:" + o
-                    + "!");
-            e.printStackTrace();
+                    + "!", e);
         } catch (Throwable th) {
             Logger.e(this.getClass().getName(), "Problem writing object", th);
         }
@@ -169,13 +168,11 @@ public class CaratDataStorage {
             return o;
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Could not read object from "
-                    + fname + "!");
-            e.printStackTrace();
+                    + fname + "!", e);
         } catch (ClassNotFoundException e) {
             Logger.e(this.getClass().getName(),
                     "Could not find class: " + e.getMessage()
-                            + " reading from " + fname + "!");
-            e.printStackTrace();
+                            + " reading from " + fname + "!", e);
         } catch (Throwable th) {
             Logger.e(this.getClass().getName(), "Problem reading object", th);
         }
@@ -192,8 +189,7 @@ public class CaratDataStorage {
             dos.close();
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Could not write text:" + thing
-                    + "!");
-            e.printStackTrace();
+                    + "!", e);
         } catch (Throwable th) {
             Logger.e(this.getClass().getName(), "Problem writing text in " + fname, th);
         }
@@ -210,8 +206,7 @@ public class CaratDataStorage {
             return s;
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Could not read text from "
-                    + fname + "!");
-            e.printStackTrace();
+                    + fname + "!", e);
         } catch (Throwable th) {
             Logger.e(this.getClass().getName(), "Problem reading text", th);
         }
@@ -224,7 +219,6 @@ public class CaratDataStorage {
         } catch (FileNotFoundException e) {
             Log.w(this.getClass().getName(), "File "
                     + fname + " does not exist yet. Wait for reports.");
-            // e.printStackTrace();
             return null;
         } catch (Throwable th) {
             Logger.e(this.getClass().getName(), "Problem opening file " + fname + " for input", th);
@@ -238,7 +232,6 @@ public class CaratDataStorage {
         } catch (FileNotFoundException e) {
             Log.w(this.getClass().getName(), "File "
                     + fname + " does not exist yet. Wait for reports.");
-            // e.printStackTrace();
             return null;
         } catch (Throwable th) {
             Logger.e(this.getClass().getName(), "Problem opening file " + fname + " for output", th);

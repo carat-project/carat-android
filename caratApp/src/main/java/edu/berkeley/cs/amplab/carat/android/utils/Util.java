@@ -116,4 +116,23 @@ public class Util {
             context.startActivity(playIntent);
         }
     }
+
+    public static void printStackTrace(String tag, Throwable th){
+        Logger.d(tag, getStackTrace(th));
+    }
+
+    public static String getStackTrace(Throwable th){
+        StringBuilder buf = new StringBuilder();
+        StackTraceElement[] trace = th.getStackTrace();
+        boolean first = true;
+        for (StackTraceElement elem: trace){
+            if (!first) {
+                buf.append("\t");
+
+            }else
+                first = false;
+             buf.append("in " + elem.getMethodName() + " in " + elem.getClassName() + "("+elem.getLineNumber()+")\n");
+        }
+        return buf.toString();
+    }
 }

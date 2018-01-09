@@ -68,8 +68,7 @@ public class VersionGater {
                     }
                 }
             } catch (JSONException e) {
-                Logger.e(TAG, "Error parsing version gating JSON");
-                e.printStackTrace();
+                Logger.e(TAG, "Error parsing version gating JSON", e);
             }
         });
     }

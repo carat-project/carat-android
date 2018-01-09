@@ -138,8 +138,7 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
                         } */
                     }
                 } catch (Throwable e) {
-                    e.printStackTrace();
-
+                    Util.printStackTrace(TAG, e);
                 }
             }
         }
@@ -173,7 +172,7 @@ public class PrefetchData extends AsyncTask<Void, Void, Void> {
         } catch (IllegalAccessException e) {
             Logger.e(TAG, "IllegalAccessException in setFieldsFromJson()");
         } catch (JSONException e) {
-            e.printStackTrace();
+            Util.printStackTrace(TAG, e);
         }
     }
 

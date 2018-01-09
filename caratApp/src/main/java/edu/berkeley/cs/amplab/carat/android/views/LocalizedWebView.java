@@ -9,6 +9,7 @@ import java.util.Locale;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -102,7 +103,7 @@ public class LocalizedWebView extends WebView {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Util.printStackTrace(TAG, e);
         }
         // If all else fails:
         super.loadUrl(url);

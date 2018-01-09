@@ -118,8 +118,7 @@ public class ProtocolClient {
             TRUSTSTORE_PASS = properties.getProperty("storePass");
             return TRUSTSTORE_NAME != null && TRUSTSTORE_PASS != null;
         } catch(Throwable th){
-            Logger.e(TAG, "Could not open truststore property file!");
-            th.printStackTrace();
+            Logger.e(TAG, "Could not open truststore property file!", th);
         }
         return false;
     }

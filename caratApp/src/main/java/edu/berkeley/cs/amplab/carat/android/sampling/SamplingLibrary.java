@@ -322,7 +322,7 @@ public final class SamplingLibrary {
 			String uuid = hexString.toString().substring(0, UUID_LENGTH);
 			return uuid;
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			Util.printStackTrace(TAG, e);
 			return aID;
 		}
 	}
@@ -445,7 +445,7 @@ public final class SamplingLibrary {
 			reader.close();
 			return new int[] { free, total, act, inact };
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			Util.printStackTrace(TAG, ex);
 		}
 
 		return new int[] { 0, 0, 0, 0 };
@@ -540,7 +540,7 @@ public final class SamplingLibrary {
 			reader.close();
 			return new long[] { idle1, cpu1 };
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			Util.printStackTrace(TAG, ex);
 		}
 
 		return null;
@@ -1391,14 +1391,14 @@ public final class SamplingLibrary {
 
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			Util.printStackTrace(TAG, e1);
 		}
 
 		try {
 			tmp = br.readLine();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Util.printStackTrace(TAG, e);
 		}
 
 		StringBuilder sMemory = new StringBuilder();
@@ -1409,7 +1409,7 @@ public final class SamplingLibrary {
 			br.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Util.printStackTrace(TAG, e);
 		}
 
 		sMemory.append("\n").append(tmp).append("\n");
@@ -1433,7 +1433,7 @@ public final class SamplingLibrary {
 
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			Util.printStackTrace(TAG, e1);
 		}
 
 		try {
@@ -1450,7 +1450,7 @@ public final class SamplingLibrary {
 			br.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Util.printStackTrace(TAG, e);
 		}
 		return tmp;
 	}
@@ -1626,7 +1626,7 @@ public final class SamplingLibrary {
 			}
 		} catch (SettingNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Util.printStackTrace(TAG, e);
 		}
 		// Log.v("BackgroundDataEnabled", "Background data enabled? " +
 		// bacDataEnabled);
@@ -1644,7 +1644,7 @@ public final class SamplingLibrary {
 			screenBrightnessValue = android.provider.Settings.System.getInt(context.getContentResolver(),
 					android.provider.Settings.System.SCREEN_BRIGHTNESS);
 		} catch (SettingNotFoundException e) {
-			e.printStackTrace();
+			Util.printStackTrace(TAG, e);
 		}
 		return screenBrightnessValue;
 	}
@@ -1655,7 +1655,7 @@ public final class SamplingLibrary {
 			autoBrightness = Settings.System.getInt(context.getContentResolver(),
 					Settings.System.SCREEN_BRIGHTNESS_MODE) == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 		} catch (SettingNotFoundException e) {
-			e.printStackTrace();
+			Util.printStackTrace(TAG, e);
 		}
 		return autoBrightness;
 	}
@@ -1717,8 +1717,7 @@ public final class SamplingLibrary {
 				return String.valueOf(latitude)+","+String.valueOf(longitude);
 			} catch (Throwable th){
 				if(Constants.DEBUG){
-					Logger.d("SamplingLibrary", "Failed getting coarse location!");
-					th.printStackTrace();
+					Logger.d("SamplingLibrary", "Failed getting coarse location!", th);
 				}
 			}
 		}
@@ -2109,7 +2108,7 @@ public final class SamplingLibrary {
 			getAveragePower.setAccessible(true);
 			return ((double) getAveragePower.invoke(mPowerProfile, "battery.capacity"));
 		} catch(Throwable th){
-			th.printStackTrace();
+			Util.printStackTrace(TAG, th);
 			return -1;
 		}
 	}
