@@ -362,7 +362,7 @@ e "Service", cioè autonomi nella loro funzionalità</string>
     <string name="services">Service</string>
     <string name="activity">View</string>
     <string name="activities">View</string>
-    <string name="disable_charging_mode">Disabilita le misure durante la ricarica</string>
+    <string name="disable_charging_mode">Disabilita misure in ricarica</string>
     <string name="charging_not_collected">Non saranno raccolti dati</string>
     <string name="title_activity_dashboard">   RIEPILOGO</string>
 </resources>
