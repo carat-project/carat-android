@@ -20,17 +20,20 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 /**
  * Created by Valto on 30.9.2015.
  * Refactored by Jonatan on 7.3.2015
  */
 public class GlobalFragment extends Fragment implements Runnable, View.OnClickListener {
+    private String TAG = GlobalFragment.class.getSimpleName();
 
     private MainActivity mainActivity;
     private RelativeLayout mainFrame;
@@ -144,36 +147,29 @@ public class GlobalFragment extends Fragment implements Runnable, View.OnClickLi
     }
 
     private void setValues() {
-        HashMap<String, Integer> androidMap = mainActivity.getAndroidDevices();
-        //HashMap<String, Integer> iosMap = mainActivity.getIosDevices();
-        String androids = "";
-        //String iOSs = "";
-        int androidDeviceSum = 0;
-        //int iosDeviceSum = 0;
 
-        if (androidMap != null) {
-            for (int i : androidMap.values()) {
-                androidDeviceSum += i;
-            }
-            int limit = 0;
-            for (String key : androidMap.keySet()) {
-                androids += key + ": " + String.format("%.1f", (float)androidMap.get(key) / androidDeviceSum * 100) + "%" + "\n";
-                limit++;
-                if (limit == 8) {
-                    break;
+        HashMap<String, Integer> androidMap = mainActivity.getAndroidDevices();
+        long userCount = Util.sumMapValues(androidMap);
+        int limit = 0;
+        String other = "";
+
+        StringBuilder sb = new StringBuilder();
+        if(!Util.isNullOrEmpty(androidMap)){
+            String format = "%s: %.1f%%\n";
+            for(String model : androidMap.keySet()){
+                float p = ((float)androidMap.get(model)/ userCount) * 100;
+                if(model.equalsIgnoreCase("Other")){
+                    other = String.format(Locale.getDefault(), format, getString(R.string.other), p);
+                } else {
+                    sb.append(String.format(Locale.getDefault(), format, model, p));
                 }
+                if(++limit == 8) break;
             }
         }
-        /*if (iosMap != null) {
-            for (int i : iosMap.values()) {
-                iosDeviceSum += i;
-            }
-            for (String key : iosMap.keySet()) {
-                iOSs += key + ": " + String.format("%.2f", (float)iosMap.get(key) / iosDeviceSum * 100) + "%" + "\n";
-            }
-        } */
-
-        deviceList.setText(androids);
+        if(!other.isEmpty()){
+            sb.append(other);
+        }
+        deviceList.setText(sb.toString());
 
         int sum = mainActivity.mWellbehaved + mainActivity.mBugs + mainActivity.mHogs;
         int appSum = mainActivity.appWellbehaved + mainActivity.appBugs + mainActivity.appHogs;
@@ -221,7 +217,7 @@ public class GlobalFragment extends Fragment implements Runnable, View.OnClickLi
                 "% " + getString(R.string.bug_intensity));
 
         userText.setText(getString(R.string.out_of) + userSum + " " + getString(R.string.users)
-                + " " + userBugPercent + "% " + getString(R.string.user_intensity));
+                + " " + userBugPercent + "%" + getString(R.string.user_intensity));
     }
 
     @Override

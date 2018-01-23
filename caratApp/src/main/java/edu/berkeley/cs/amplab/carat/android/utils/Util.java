@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 
@@ -31,7 +32,7 @@ public class Util {
         return result;
     }
 
-    public static <K,V> SortedMap<K, V> firstEntries(int limit, SortedMap<K,V> source){
+    public static <K,V> Map<K, V> firstEntries(int limit, Map<K,V> source){
         TreeMap<K, V> result = new TreeMap<>();
         for(Map.Entry<K,V> entry : source.entrySet()){
             if(result.size() >= limit){
@@ -74,6 +75,21 @@ public class Util {
 
     public static boolean isNullOrEmpty(String string){
         return string == null || string.trim().isEmpty();
+    }
+
+    public static <K, V> boolean isNullOrEmpty(Map<K, V> map){
+        return map == null || map.isEmpty();
+    }
+
+    public static <K> long sumMapValues(Map<K, Integer> map){
+        long result = 0;
+        if(isNullOrEmpty(map)){
+            return result;
+        }
+        for(int value : map.values()){
+            result += value;
+        }
+        return result;
     }
 
     public static boolean isSystemApp(int flags){

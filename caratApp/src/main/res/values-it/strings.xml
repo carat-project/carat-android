@@ -192,7 +192,7 @@ Può essere maggiore o minore delle vostre aspettative, ma riassume mediamente l
     <string name="android_installed">applicazioni Android installate,</string>
     <string name="ios_installed">applicazioni iOS installate,</string>
     <string name="users">utilizzatori,</string>
-    <string name="user_intensity">hanno almeno una anomalia di consumo.</string>
+    <string name="user_intensity"> hanno almeno una anomalia di consumo.</string>
 
     <!-- HOG STATISTICS -->
     <string name="packageName">Package:</string>
