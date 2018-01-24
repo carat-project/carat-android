@@ -7,8 +7,10 @@ import android.content.pm.ApplicationInfo;
 import android.os.PowerManager;
 import android.net.Uri;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -23,6 +25,9 @@ import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
  */
 public class Util {
     private final static String TAG = Util.class.getSimpleName();
+    public interface Fallback<T> {
+        T call();
+    }
 
     public static double[] toArray(List<Double> list){
         double[] result = new double[list.size()];
@@ -69,8 +74,22 @@ public class Util {
         return true;
     }
 
+    public static<T> T getWeakOrFallback(WeakReference<T> weakReference, Fallback<T> fallback){
+        if(weakReference != null && weakReference.get() != null){
+            T value = weakReference.get();
+            if(value != null){ // Might become null between instructions
+                return value;
+            }
+        }
+        return fallback.call();
+    }
+
     public static long timeAfterTime(long milliseconds){
         return System.currentTimeMillis() + milliseconds;
+    }
+
+    public static boolean isNullOrEmpty(File[] array){
+        return array == null || array.length == 0;
     }
 
     public static boolean isNullOrEmpty(String string){
