@@ -1,14 +1,11 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
-import android.os.Build;
-import android.os.StrictMode;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -23,21 +20,77 @@ public class FsUtils {
     private static final String cpuUtilization = "/sys/devices/system/cpu/cpu0/cpufreq/cpu_utilization";
     private static final String thermalZoneTemp = "/sys/devices/virtual/thermal/thermal_zone0/temp";
 
-    private static class CpuFilter implements FileFilter {
+    private static class Filter implements FileFilter {
+        private String prefix;
+
+        public Filter(String prefix){
+            this.prefix = prefix;
+        }
+
         @Override
         public boolean accept(File pathname) {
-            return Pattern.matches("cpu[0-9]+", pathname.getName());
+            String pattern = String.format(Locale.getDefault(), "%s[0-9]+", prefix);
+            return Pattern.matches(pattern, pathname.getName());
         }
     }
 
     public static class CPU {
+        private WeakReference<File[]> systemFiles; // No need to keep in memory
+        private WeakReference<File[]> thermalZones;
+
         public long getCount(){
-            File directory = new File("/sys/devices/system/cpu/");
-            if(directory.canRead()){
-                File[] files = directory.listFiles(new CpuFilter());
-                return files.length;
+            File[] listing = getSystemListing();
+            if(!Util.isNullOrEmpty(listing)){
+                return listing.length;
             }
             return INVALID_VALUE;
+        }
+
+        public ArrayList<Long> getCurrentFrequency(){
+            return readSubValues("/cpufreq/scaling_cur_freq");
+        }
+
+        public ArrayList<Long> getUtilization(){
+            return readSubValues("/cpufreq/cpu_utilization");
+        }
+
+        public ArrayList<Long> getThermalZones(){
+            return readSubValues("/temp");
+        }
+
+        private ArrayList<Long> readSubValues(String subPath){
+            ArrayList<Long> frequencies = new ArrayList<>();
+
+            File[] listing = getSystemListing();
+            for(File file : listing){
+                long frequency = readLong(file.getPath() + subPath);
+                frequencies.add(frequency);
+            }
+            return frequencies;
+        }
+
+        private File[] getSystemListing(){
+            File[] listing = Util.getWeakOrFallback(systemFiles, () -> {
+                File directory = new File("/sys/devices/system/cpu/");
+                if(directory.canRead()){
+                    return directory.listFiles(new Filter("cpu"));
+                }
+                return null;
+            });
+            systemFiles = new WeakReference<>(listing);
+            return listing;
+        }
+
+        private File[] getThermalListing(){
+            File[] listing = Util.getWeakOrFallback(thermalZones, () -> {
+                File directory = new File("/sys/devices/virtual/thermal/");
+                if(directory.canRead()){
+                    return directory.listFiles(new Filter("thermal_zone"));
+                }
+                return null;
+            });
+            thermalZones = new WeakReference<>(listing);
+            return listing;
         }
     }
 
