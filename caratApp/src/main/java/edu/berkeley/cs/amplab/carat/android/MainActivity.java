@@ -41,6 +41,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.SettingsFragment;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
+import edu.berkeley.cs.amplab.carat.android.receivers.NetworkChangeListener;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
@@ -98,12 +99,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public int userHasBug = Constants.VALUE_NOT_AVAILABLE,
             userHasNoBugs = Constants.VALUE_NOT_AVAILABLE;
 
-    public static abstract class DialogCallback<T>{
+    public static abstract class DialogCallback<T> {
         public abstract void run(T value);
+    }
+
+    private NetworkChangeListener networkChangeReceiver = new NetworkChangeListener() {
+        @Override
+        public void onNetworkingResume() {
+            Logger.d(TAG, "Network resume");
+        }
+
+        @Override
+        public void onNetworkingStop() {
+            Logger.d(TAG, "Network stop");
+        }
+
+        @Override
+        public void onNetworkingPause() {
+            Logger.d(TAG, "Network pause");
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        networkChangeReceiver.unregister();
+        super.onDestroy();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        networkChangeReceiver.register(this);
         onBackground = false;
         schedulerRunning = false;
         getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -138,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tracker.trackUser("caratstarted", getTitle());
 
         // TODO SHOW DIALOG, NOT FRAGMENT
-        boolean online = NetworkingUtil.isOnline(getApplicationContext());
+        boolean online = NetworkingUtil.canConnect(getApplicationContext());
         if (!online) {
             EnableInternetDialogFragment dialog = new EnableInternetDialogFragment();
             dialog.show(getSupportFragmentManager(), "dialog");
@@ -182,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // from Eula Activity without invoking super.onResume()
     public void resumeTasksAndUpdate(){
         this.onBackground = false;
-        boolean online = NetworkingUtil.isOnline(getApplicationContext());
+        boolean online = NetworkingUtil.canConnect(getApplicationContext());
         if ((!isStatsDataAvailable()) && online) {
             getStatsFromServer();
         }
@@ -251,25 +276,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(Constants.DEBUG){
             Logger.d(TAG, "** Started refreshing data **");
         }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CaratApplication application = (CaratApplication) getApplication();
-                if(application != null){
-                    Logger.d(Constants.SF, "Entering checkAndRefreshReports()");
-                    application.checkAndRefreshReports();
-                    Logger.d(Constants.SF, "Checked reports, sending samples");
-                    application.checkAndSendSamples();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            refreshCurrentFragment();
-                        }
-                    });
-                }
-                if(Constants.DEBUG){
-                    Logger.d(TAG, "** Stopped refreshing data **");
-                }
+        new Thread(() -> {
+            CaratApplication application = (CaratApplication) getApplication();
+            if(application != null){
+                Logger.d(Constants.SF, "Entering checkAndRefreshReports()");
+                application.checkAndRefreshReports();
+                Logger.d(Constants.SF, "Checked reports, sending samples");
+                application.checkAndSendSamples();
+                runOnUiThread(this::refreshCurrentFragment);
+            }
+            if(Constants.DEBUG){
+                Logger.d(TAG, "** Stopped refreshing data **");
             }
         }).start();
     }
@@ -552,7 +569,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressLint("NewApi")
     private void getStatsFromServer() {
-        boolean online = NetworkingUtil.isOnline(getApplicationContext());
+        boolean online = NetworkingUtil.canConnect(getApplicationContext());
         if(online){
             PrefetchData prefetchData = new PrefetchData(this);
             AsyncStats hogStats = new AsyncStats(this);
