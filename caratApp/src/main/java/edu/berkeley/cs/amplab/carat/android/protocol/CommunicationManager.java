@@ -17,8 +17,6 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
@@ -254,7 +252,7 @@ public class CommunicationManager {
 				", checking need for registerLocal()");
 		registerLocal();
 		// Do not refresh if not connected
-		if (!NetworkingUtil.isOnline(a.getApplicationContext())){
+		if (!NetworkingUtil.canConnect(a.getApplicationContext())){
 			Logger.d(Constants.SF, "Not online, not refreshing reports right now");
 			return false;
 		}

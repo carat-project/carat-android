@@ -28,13 +28,15 @@ import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 /**
  * Created by Jonatan Hamberg on 2.5.2016.
  */
-public class HogStatsFragment extends Fragment{
+public class HogStatsFragment extends Fragment {
+
     private MainActivity mainActivity;
     private LinearLayout mainFrame;
     private RelativeLayout loadingScreen;
     private SearchView search;
     private ExpandableListView expandableListView;
     private HogStatsExpandAdapter adapter;
+    private AsyncStats fetchHogStats;
 
     @Override
     public void onAttach(Activity activity) {
@@ -102,9 +104,9 @@ public class HogStatsFragment extends Fragment{
     }
 
     public void updateHogStatsAsynchronously(){
-        boolean online = NetworkingUtil.isOnline(getContext());
+        boolean online = NetworkingUtil.canConnect(getContext());
         if (online){
-            AsyncStats fetchHogStats = new AsyncStats(getMainActivity());
+            fetchHogStats = new AsyncStats(getMainActivity());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
                 fetchHogStats.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {

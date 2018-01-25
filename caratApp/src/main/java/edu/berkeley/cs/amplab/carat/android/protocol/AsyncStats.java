@@ -120,7 +120,7 @@ public class AsyncStats extends AsyncTask<Void, Void, Void> {
     }
 
     public JSONObject getPlatformData(String platformName){
-        String url = Constants.WEBSITE+"statistics-data/apps/data.json";
+        String url = Constants.WEBSITE + "statistics-data/apps/data.json";
         String jsonData = JsonParser.getJSONFromUrl(url);
         if(jsonData == null || jsonData.isEmpty()) return null;
         try{

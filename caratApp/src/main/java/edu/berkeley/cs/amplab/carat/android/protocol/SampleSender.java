@@ -35,7 +35,7 @@ public class SampleSender {
         Logger.d(Constants.SF, "Awaiting for sendLock...");
         synchronized(sendLock){
             Context c = app.getApplicationContext();
-            boolean online = NetworkingUtil.isOnline(c);
+            boolean online = NetworkingUtil.canConnect(c);
             Logger.d(Constants.SF, "SampleSender online: " + online);
             if (online) {
                 Logger.d(TAG, "Awaiting SampleDB");

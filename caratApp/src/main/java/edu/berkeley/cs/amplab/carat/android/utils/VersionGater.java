@@ -53,7 +53,7 @@ public class VersionGater {
     private void check(){
         AsyncTask.execute(() -> {
             try {
-                boolean online = NetworkingUtil.isOnline(context);
+                boolean online = NetworkingUtil.canConnect(context);
                 String json = getVersionGateJSON(online);
 
                 if(!Util.isNullOrEmpty(json)) {
