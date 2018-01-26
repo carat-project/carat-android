@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
@@ -242,6 +243,19 @@ public class CommunicationManager {
 		return gettingReports;
 	}
 
+	private boolean refreshReports(Callable<Boolean> action, String what){
+		CaratApplication.setStatus(a.getString(R.string.updating) + " " + what);
+
+		boolean success = false;
+		if(NetworkingUtil.canConnect(a.getApplicationContext())){
+			try {
+				success = action.call();
+			} catch (Exception ignored) {/* Ignored */}
+		}
+		Logger.d(TAG, (success ? "Successfully got " : "Failed getting ") + what);
+		return success;
+	}
+
 	/**
 	 * Used by UiRefreshThread which needs to know about exceptions.
 	 * 
@@ -280,123 +294,60 @@ public class CommunicationManager {
 			}
 		}
 
-		String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
-		String model = SamplingLibrary.getModel();
-		String OS = SamplingLibrary.getOsVersion();
-		String countryCode = SamplingLibrary.getCountryCode(a.getApplicationContext());
+		String initialModel = SamplingLibrary.getModel();
+		boolean simulator = initialModel.equals("sdk");
 
-		// NOTE: Fake data for simulator
-		if (model.equals("sdk")) {
-			uuId = "97c542cd8e99d948"; // My S3
-			model = "GT-I9300";
-			OS = "4.0.4";
-		}
-		if (Constants.DEBUG){
-			Logger.d(TAG, "Getting reports for " + uuId + " model=" + model + " os=" + OS);
-		}
+		// Use fake data if running on an emulator
+		final String uuId = simulator ? "97c542cd8e99d948" : p.getString(CaratApplication.getRegisteredUuid(), null);
+		final String model = simulator ? "GT-I9300" : initialModel;
+		final String OS = simulator ? "4.0.4" : SamplingLibrary.getOsVersion();
+		final String countryCode = SamplingLibrary.getCountryCode(a.getApplicationContext());
 
-		int progress = 0;
-		String[] titles = CaratApplication.getTitles();
-		if (titles != null){
-			String[] temp = Arrays.copyOfRange(titles, 2, 5);
-			titles = temp;
-		}
+		Logger.d(TAG, "Getting reports for " + uuId + " model=" + model + " os=" + OS);
+
+		// Get progress titles
+		String[] titles = a.getResources().getStringArray(R.array.drawer_items);
 
 		// This flag is used to make sure action progress
 		// is not changed while updating is happening
 		gettingReports = true;
 
-		//
-		// Main reports
-		//
-		CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[0]);
-		boolean mainSuccess = refreshMainReports(uuId, OS, model);
-		if (mainSuccess) {
-			progress += 20;
-			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[1]);
-			if (Constants.DEBUG)
-			    Logger.d(TAG, "Successfully got main report");
-		} else {
-			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[0]);
-			if (Constants.DEBUG)
-			    Logger.d(TAG, "Failed getting main report");
-		}
+		String main = titles[0];
+		String bugs = titles[1];
+		String hogs = titles[2];
+		String surveys = titles[3];
 
-		//
-		// Bug reports
-		//
-		boolean bugsSuccess = refreshBugReports(uuId, model);
-		
-		if (bugsSuccess) {
-			progress += 20;
-			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[2]);
-			if (Constants.DEBUG)
-			    Logger.d(TAG, "Successfully got bug report");
-		} else {
-			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[1]);
-			if (Constants.DEBUG)
-			    Logger.d(TAG, "Failed getting bug report");
-		}
+		boolean mainSuccess = refreshReports(() -> refreshMainReports(uuId, OS, model), main);
+		boolean bugsSuccess = refreshReports(() -> refreshBugReports(uuId, model), bugs);
+		boolean hogsSuccess = refreshReports(() -> refreshHogReports(uuId, model), hogs);
 
-		//
-		// Hog reports
-		//
-		boolean hogsSuccess = refreshHogReports(uuId, model);
-
-		boolean blacklistShouldBeRefreshed = true;
-		if (System.currentTimeMillis() - CaratApplication.getStorage().getBlacklistFreshness() < Constants.FRESHNESS_TIMEOUT_BLACKLIST)
-			blacklistShouldBeRefreshed = false;
-
-		if (hogsSuccess) {
-			progress += 40; // changed to 40
-			CaratApplication.setStatus(
-					blacklistShouldBeRefreshed ?
-							a.getString(R.string.updating) + " " + a.getString(R.string.blacklist)
-							: a.getString(R.string.finishing));
-			if (Constants.DEBUG)
-			    Logger.d(TAG, "Successfully got hog report");
-		} else {
-			CaratApplication.setStatus(a.getString(R.string.updating) + " " + titles[2]);
-			if (Constants.DEBUG)
-			    Logger.d(TAG, "Failed getting hog report");
-		}
-		
-		// NOTE: Check for having a J-Score, and in case there is none, send the
-		// new message. Also check if normal hogs exist.
-		Reports r = CaratApplication.getStorage().getReports();
-		boolean hogsEmpty = CaratApplication.getStorage().hogsIsEmpty();
-		boolean quickHogsSuccess = false;
-		if (r == null || r.jScoreWith == null || r.jScoreWith.expectedValue <= 0 || hogsEmpty) {
-            quickHogsSuccess = getQuickHogsAndMaybeRegister(uuId, OS, model, countryCode);
-            if (Constants.DEBUG) {
-                if (quickHogsSuccess)
-                    Logger.d(TAG, "Got quickHogs.");
-                else
-                    Logger.d(TAG, "Failed getting GuickHogs.");
-            }
-		}
-
-		// Upload all answers for different questionnaires, there should
-		// not be many (most of the time none) so doing this here is ok.
-		uploadAnswers();
-		boolean questionnairesDisabled = p.getBoolean("noQuestionnaires", false);
-		if(!questionnairesDisabled){
-			getQuestionnaires(uuId);
-		}
-
-		if (blacklistShouldBeRefreshed) {
+		if(System.currentTimeMillis() - CaratApplication.getStorage().getBlacklistFreshness() < Constants.FRESHNESS_TIMEOUT_BLACKLIST){
+			// These finish asynchronously, no need to update progress indicator
 			refreshBlacklist();
 			refreshQuestionnaireLink();
 		}
 
-		gettingReports = false;
+		// Update quick hogs if the user has not received any reports yet or hogs are empty
+		Reports r = CaratApplication.getStorage().getReports();
+		boolean hogsEmpty = CaratApplication.getStorage().hogsIsEmpty();
+		boolean quickHogsSuccess = false;
+		if (r == null || r.jScoreWith == null || r.jScoreWith.expectedValue <= 0 || hogsEmpty) {
+			quickHogsSuccess = refreshReports(() -> getQuickHogsAndMaybeRegister(uuId, OS, model, countryCode), hogs);
+		}
 
+		// Get questionnaires
+		boolean questionnairesDisabled = p.getBoolean("noQuestionnaires", false);
+		if(!questionnairesDisabled){
+			refreshReports(() -> getQuestionnaires(uuId), surveys);
+		}
+
+		gettingReports = false;
 		CaratApplication.refreshStaticActionCount();
 
 		// Only write freshness if we managed to get something
 		if(mainSuccess || hogsSuccess || bugsSuccess || quickHogsSuccess){
 			CaratApplication.getStorage().writeFreshness();
-			if (Constants.DEBUG) Logger.d(TAG, "Wrote freshness");
+			Logger.d(TAG, "Wrote freshness");
 			return true;
 		}
 		return false;
@@ -675,11 +626,11 @@ public class CommunicationManager {
 		return filtered;
 	}
 
-	private void uploadAnswers(){
+	private boolean uploadAnswers(){
 		// Failed submissions are collected in a map and saved back in storage
 		// for the next scheduled upload.
 		HashMap<Integer, Answers> answerList = CaratApplication.getStorage().getAllAnswers();
-		if(answerList == null || answerList.isEmpty()) return;
+		if(answerList == null || answerList.isEmpty()) return false;
 		List<Answers> failed = new ArrayList<>();
 		int successCount = 0;
 		for(Answers answers : answerList.values()){
@@ -708,6 +659,7 @@ public class CommunicationManager {
 
 		// Optimally an empty list gets written here
 		CaratApplication.getStorage().writeAllAnswers(failed);
+		return successCount == answerList.size();
 	}
 
 	private boolean uploadAnswers(Answers answers){

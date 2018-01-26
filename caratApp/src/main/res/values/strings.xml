@@ -301,18 +301,16 @@ delete these from your file.
 
     <!-- Navigation drawer items (tabs) -->
     <string-array name="drawer_items">
-        <item>Summary</item>
-        <item>Actions</item>
         <item>My Device</item>
         <item>Bugs</item>
         <item>Hogs</item>
-        <item>Carat Settings</item>
-        <item>About</item>
+        <item>Surveys</item>
     </string-array>
 
     <!-- Updating etc -->
     <string name="samplesreported">Samples reported</string>
     <string name="updating">Updating</string>
+    <string name="failedUpdating">Got no</string>
     <string name="updated">Updated </string>
     <string name="neverupdated">Never updated</string>
     <string name="updatedjustnow">Updated just now</string>

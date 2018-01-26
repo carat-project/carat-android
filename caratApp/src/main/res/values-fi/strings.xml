@@ -277,18 +277,16 @@
 
     <!-- Navigation drawer items (tabs) -->
     <string-array name="drawer_items">
-        <item>yhteenvetoa</item>
-        <item>ehdotuksia</item>
         <item>laitetietoja</item>
         <item>bugeja</item>
         <item>hogeja</item>
-        <item>asetuksia</item>
-        <item>tietoja</item>
+        <item>kyselyitä</item>
     </string-array>
 
     <!-- Updating etc -->
 
     <string name="updating">Päivitetään</string>
+    <string name="failedUpdating"></string>
     <string name="updated">Päivitetty </string>
     <string name="samplesreported">mittausta lähetetty</string>
     <string name="didntget">ei saatu</string>

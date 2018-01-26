@@ -287,13 +287,10 @@ e "Service", cioè autonomi nella loro funzionalità</string>
     <string name="findoutmore">Scopri di più: \nhttp://carat.cs.helsinki.fi/</string>
     <!-- Navigation drawer items (tabs) -->
     <string-array name="drawer_items">
-        <item>Sommario</item>
-        <item>Azioni</item>
         <item>dispositivo</item>
         <item>Bugs</item>
         <item>Hogs</item>
-        <item>Impostazioni</item>
-        <item>Descrizione</item>
+        <item>questionari</item>
     </string-array>
     <!-- Updating etc -->
     <string name="samplesreported">Invio campioni</string>
