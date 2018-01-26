@@ -288,7 +288,7 @@
     <string name="updating">Päivitetään</string>
     <string name="failedUpdating"></string>
     <string name="updated">Päivitetty </string>
-    <string name="samplesreported">mittausta lähetetty</string>
+    <string name="samplesreported">mittauksista lähetetty</string>
     <string name="didntget">ei saatu</string>
     <string name="blacklist">Poistolistaa</string>
     <string name="finishing">Viimeistellään</string>
