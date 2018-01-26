@@ -59,8 +59,11 @@ public class SampleSender {
                 sendingSamples = true;
                 while(batch.size() > 0 && failures <= 3){
                     Logger.d(TAG, "Attempt " + failures + " at uploading samples");
-                    // TODO: Should also check if networking has been disabled meanwhile
-                    int sent = commManager.uploadSamples(batch.values(), successSum, sampleCount);
+                    int sent = 0;
+                    // Try uploading only with a working connection, otherwise emit failure
+                    if(NetworkingUtil.canConnect(c)){
+                        sent = commManager.uploadSamples(batch.values(), successSum, sampleCount);
+                    }
                     if(sent > 0){
                         failures = 0; // Reset tries
                         successSum += sent;
