@@ -569,15 +569,6 @@ public class CaratApplication extends Application {
         long elapsed = System.currentTimeMillis() - freshness;
         if(elapsed < Constants.FRESHNESS_TIMEOUT) return;
 
-        // Wait for 5 seconds to see if network comes up
-        String status = SamplingLibrary.getNetworkStatus(getApplicationContext());
-        if(status.equals(SamplingLibrary.NETWORKSTATUS_CONNECTING)){
-            try {Thread.sleep(Constants.COMMS_WIFI_WAIT);}
-            catch (InterruptedException e1) {
-                // No operation
-            }
-        }
-
         // Check network status and data freshness, then update
         if(NetworkingUtil.canConnect(getApplicationContext())){
             boolean success = false;
