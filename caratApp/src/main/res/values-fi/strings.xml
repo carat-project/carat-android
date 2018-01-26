@@ -346,6 +346,8 @@
     <string name="dialog_text">Carat käyttää Internet-yhteyttä raporttiesi päivittämiseen.</string>
     <string name="dialog_enable">Kytkeydy verkkoon</string>
     <string name="dialog_cancel">Ei kiitos</string>
+    <string name="dialog_cancel2">Peruuta</string>
+    <string name="dialog_ok">OK</string>
 
     <!-- error messages -->
 
@@ -379,6 +381,7 @@
     <string name="activities">Näkymää</string>
     <string name="disable_charging_mode">Älä mittaa akun latausta</string>
     <string name="charging_not_collected">Poista ilmoitus käytöstä</string>
+    <string name="confirmDisableNotifications">Ilmoitusten poistaminen käytöstä estää myös latauksen mittaamiseen käytetyn taustapalvelun toiminnan.</string>
 </resources>
 
 

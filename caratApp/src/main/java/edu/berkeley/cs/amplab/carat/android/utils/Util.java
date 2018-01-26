@@ -1,11 +1,15 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
 import android.app.ActivityManager;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.graphics.Color;
 import android.os.PowerManager;
 import android.net.Uri;
+import android.support.v7.app.AlertDialog;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +21,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
 
+import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 
 /**
@@ -150,6 +155,21 @@ public class Util {
             Intent playIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
             context.startActivity(playIntent);
         }
+    }
+
+    public static void showConfirmationDialog(Context context, String text, Runnable ok, Runnable cancel){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(text);
+        builder.setCancelable(false);
+        builder.setPositiveButton(context.getString(R.string.dialog_ok), (dialog, id) -> ok.run());
+        builder.setNegativeButton(context.getString(R.string.dialog_cancel2), (dialog, id) -> cancel.run());
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface -> {
+            // TODO: Rather than doing this programmatically, change the theme.
+            dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(248, 176, 58));
+            dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(Color.rgb(248, 176, 58));
+        });
+        dialog.show();
     }
 
     public static void printStackTrace(String tag, Throwable th){

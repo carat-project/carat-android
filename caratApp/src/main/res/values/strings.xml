@@ -371,6 +371,8 @@ delete these from your file.
     <string name="dialog_text">Carat needs an Internet connection to update your personalized reports.</string>
     <string name="dialog_enable">Enable Wifi</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_cancel2">Cancel</string>
+    <string name="dialog_ok">OK</string>
 
     <!-- error messages -->
 
@@ -414,4 +416,5 @@ delete these from your file.
     <string name="activities">Views</string>
     <string name="disable_charging_mode">Disable charging measurements</string>
     <string name="charging_not_collected">No data will be collected</string>
+    <string name="confirmDisableNotifications">Turning off notifications will also disable charging measurements as the background service requires an ongoing notification.</string>
 </resources>

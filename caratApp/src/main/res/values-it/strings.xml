@@ -345,6 +345,7 @@ e "Service", cioè autonomi nella loro funzionalità</string>
     <string name="dialog_text">Carat ha bisogno della connessione Internet per ricevere i tuoi report personalizzati.</string>
     <string name="dialog_enable">Abilita il Wifi</string>
     <string name="dialog_cancel">Cancella</string>
+    <string name="dialog_ok">OK</string>
     <string name="battery_cost">Impatto:</string>
     <string name="stop">Arresta</string>
     <string name="manage">Cambia</string>
@@ -354,7 +355,7 @@ e "Service", cioè autonomi nella loro funzionalità</string>
     <string name="enable_later">Puoi abilitare il permesso nelle impostazioni.</string>
     <string name="return_with_back">Abilita il permesso e torna col tasto indietro.</string>
     <string name="allow_usagestats">Abilita Carat all\'accesso utilizzo per monitorare le app attive.</string>
-    <string name="permission_request">E' richiesto questo permesso</string>
+    <string name="permission_request">E\' richiesto questo permesso</string>
     <string name="service">Service</string>
     <string name="services">Service</string>
     <string name="activity">View</string>
