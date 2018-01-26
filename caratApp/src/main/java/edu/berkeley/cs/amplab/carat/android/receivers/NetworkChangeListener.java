@@ -20,12 +20,10 @@ import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
  */
 public abstract class NetworkChangeListener{
     private static final String TAG = NetworkChangeListener.class.getSimpleName();
+    private NetworkState state;
     private Context context;
-    private boolean wasConnected;
-    private boolean stopped;
-
     protected NetworkChangeListener(){
-        stopped = false;
+        state = NetworkState.RESUME;
     }
 
     private BroadcastReceiver networkReceiver = new BroadcastReceiver() {
@@ -37,23 +35,32 @@ public abstract class NetworkChangeListener{
 
     private void check(){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-
         boolean useWifiOnly = preferences.getBoolean(Keys.useWifiOnly, false);
         boolean canConnect = NetworkingUtil.canConnect(context);
 
+        // Check conditions for STOP
         if(useWifiOnly && !NetworkingUtil.isWifiEnabled(context)){
-            if(!stopped){
-                onNetworkChange(NetworkState.STOP);
+            if(state != NetworkState.STOP){
+                updateNetworkState(NetworkState.STOP);
             }
-            stopped = true;
-        } else if(!wasConnected && canConnect){
-            onNetworkChange(NetworkState.RESUME);
-            stopped = false;
-        } else if(wasConnected && !canConnect){
-            onNetworkChange(NetworkState.PAUSE);
-            stopped = false;
+            return; // This overrides other states
         }
-        wasConnected = canConnect;
+
+        // Check conditions for PAUSE
+        if(!canConnect && (state == NetworkState.STOP || state == NetworkState.RESUME)){
+            updateNetworkState(NetworkState.PAUSE);
+        }
+
+        // Check conditions for RESUME
+        if(canConnect && (state == NetworkState.PAUSE || state == NetworkState.STOP)){
+            updateNetworkState(NetworkState.RESUME);
+        }
+    }
+
+    private void updateNetworkState(NetworkState state){
+        this.state = state;
+        Logger.d(TAG, "Network state changed to " + state);
+        onNetworkChange(state);
     }
 
     private OnSharedPreferenceChangeListener preferenceListener = (sharedPreferences, key) -> {
@@ -64,13 +71,13 @@ public abstract class NetworkChangeListener{
 
     public void register(Context context){
         this.context = context;
-        wasConnected = NetworkingUtil.canConnect(context);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         context.registerReceiver(networkReceiver, filter);
         preferences.registerOnSharedPreferenceChangeListener(preferenceListener);
+        check(); // Let's check right away
     }
 
     public void unregister(){
