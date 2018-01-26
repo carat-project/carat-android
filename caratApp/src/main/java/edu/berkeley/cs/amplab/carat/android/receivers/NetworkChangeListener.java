@@ -12,12 +12,14 @@ import android.preference.PreferenceManager;
 
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.models.NetworkState;
+import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 
 /**
  * Created by Jonatan Hamberg on 25.1.2018.
  */
 public abstract class NetworkChangeListener{
+    private static final String TAG = NetworkChangeListener.class.getSimpleName();
     private Context context;
     private boolean wasConnected;
     private boolean stopped;

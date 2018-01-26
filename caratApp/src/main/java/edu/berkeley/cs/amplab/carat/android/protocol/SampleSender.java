@@ -8,6 +8,8 @@ import android.util.Log;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.models.NetworkState;
+import edu.berkeley.cs.amplab.carat.android.receivers.NetworkChangeListener;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;

@@ -23,6 +23,8 @@ import android.util.Log;
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.models.NetworkState;
+import edu.berkeley.cs.amplab.carat.android.receivers.NetworkChangeListener;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
@@ -54,10 +56,20 @@ public class CommunicationManager {
 	private boolean newuuid = false;
 	private boolean timeBasedUuid = false;
 	private boolean gettingReports = false;
+	private boolean stopUploading = false;
 	private PrefsManager.MultiPrefs p = null;
 	private Sample previousSample;
 
 	private CaratService.Client rpcService;
+	private NetworkChangeListener networkChangeListener = new NetworkChangeListener() {
+		@Override
+		public void onNetworkChange(NetworkState state) {
+			Logger.d(TAG, "State update " + state);
+			switch(state){
+				case STOP: stopUploading = true;
+			}
+		}
+	};
 
 	public CommunicationManager(CaratApplication a) {
 		this.a = a;
@@ -133,8 +145,17 @@ public class CommunicationManager {
 		} else {
 			Logger.d(Constants.SF, "Attempting to use instantated ProtocolClient");
 		}
-		registerOnFirstRun(rpcService);
+		if(NetworkingUtil.canConnect(a.getApplicationContext())){
+			registerOnFirstRun(rpcService);
+		}
+
+		networkChangeListener.register(a.getApplicationContext());
 		for(Sample sample : samples){
+			if(stopUploading){
+				// If network becomes unavailable, stop
+				Logger.d(TAG, "Network unavailable, stopping sample upload");
+				break;
+			}
 			try {
 				if(sample == null){
 					Logger.d(TAG, "Sample was null, discarding..");
@@ -160,6 +181,8 @@ public class CommunicationManager {
 				Logger.e(TAG, "Error uploading sample", th);
 			}
 		}
+		networkChangeListener.unregister();
+		stopUploading = false;
 		return successCount;
 	}
 
