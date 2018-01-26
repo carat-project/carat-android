@@ -39,6 +39,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.GlobalFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.SettingsFragment;
+import edu.berkeley.cs.amplab.carat.android.models.NetworkState;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
 import edu.berkeley.cs.amplab.carat.android.receivers.NetworkChangeListener;
@@ -105,26 +106,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private NetworkChangeListener networkChangeReceiver = new NetworkChangeListener() {
         @Override
-        public void onNetworkingResume() {
-            Logger.d(TAG, "Network resume");
-        }
-
-        @Override
-        public void onNetworkingStop() {
-            Logger.d(TAG, "Network stop");
-        }
-
-        @Override
-        public void onNetworkingPause() {
-            Logger.d(TAG, "Network pause");
+        public void onNetworkChange(NetworkState state) {
+            switch(state){
+                case RESUME: {
+                    Logger.d(TAG, "Network resumed, refreshing tasks and views");
+                    resumeTasksAndUpdate();
+                }
+            }
         }
     };
-
-    @Override
-    protected void onDestroy() {
-        networkChangeReceiver.unregister();
-        super.onDestroy();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,12 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dashboardFragment = new DashboardFragment();
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_holder, dashboardFragment).commit();
-        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                onFragmentPop();
-            }
-        });
+        getSupportFragmentManager().addOnBackStackChangedListener(this::onFragmentPop);
 
         // Load fragment when coming from notification intent
         int fragment = getIntent().getIntExtra("fragment", -1);
@@ -191,6 +176,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // TODO: Add this as an accessible flag
         staticActionsAmount = CaratApplication.getStaticActions().size();
+    }
+
+    @Override
+    protected void onDestroy() {
+        networkChangeReceiver.unregister();
+        super.onDestroy();
     }
 
     @Override
@@ -403,9 +394,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void setUpActionBar(int resId, boolean canGoBack) {
         this.setUpActionBar(getString(resId), canGoBack);
-    }
-
-    public void setUpActionBar(String title, boolean canGoBack, boolean showSettings){
     }
 
     public void setUpActionBar(String title, boolean canGoBack){
