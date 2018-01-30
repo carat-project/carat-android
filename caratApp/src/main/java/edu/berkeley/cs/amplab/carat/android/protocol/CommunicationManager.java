@@ -565,25 +565,20 @@ public class CommunicationManager {
 	private boolean getQuestionnaires(String uuid){
 		double freshness = CaratApplication.getStorage().getQuestionnaireFreshness();
 		if(System.currentTimeMillis() - freshness < Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE) {
-			if(Constants.DEBUG){
-				return true;
+			if(!Constants.DEBUG){
+				long waitFor = (long)(Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE - (System.currentTimeMillis() - freshness));
+				Logger.d(TAG, "Still need to wait "+ TimeUnit.MILLISECONDS.toSeconds(waitFor) +"s for next questionnaire check.");
+				return false;
 			}
-            long waitFor = (long)(Constants.FRESHNESS_TIMEOUT_QUESTIONNAIRE - (System.currentTimeMillis() - freshness));
-            Logger.d(TAG, "Still need to wait "+ TimeUnit.MILLISECONDS.toSeconds(waitFor) +"s for next questionnaire check.");
-			return false;
 		}
-		if(Constants.DEBUG){
-			Logger.d(TAG, "Enough time passed, checking for questionnaires.");
-		}
+		Logger.d(TAG, "Enough time passed, checking for questionnaires.");
 		CaratService.Client instance = null;
 		try {
 			// This needs to be EU, other servers will not provide meaningful data
 			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.EU);
 			List<Questionnaire> questionnaires = instance.getQuestionnaires(uuid);
 			if(questionnaires == null) return false;
-			if(Constants.DEBUG){
-				Logger.d(TAG, "Downloaded questionnaires " + questionnaires);
-			}
+			Logger.d(TAG, "Downloaded questionnaires " + questionnaires);
 			questionnaires = filterQuestionnaires(questionnaires);
 			checkAndNotify(questionnaires); // Post notification if new
 			CaratApplication.getStorage().writeQuestionnaires(questionnaires);
@@ -592,9 +587,7 @@ public class CommunicationManager {
 			safeClose(instance);
 			return true;
 		} catch (Throwable th){
-			if(Constants.DEBUG){
-				Util.printStackTrace(TAG, th);
-			}
+			Util.printStackTrace(TAG, th);
 			safeClose(instance);
 		}
 		return false;

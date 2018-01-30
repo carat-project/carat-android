@@ -1,21 +1,15 @@
 package edu.berkeley.cs.amplab.carat.android.protocol;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Security;
-import java.util.Properties;
-
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import android.content.Context;
-import android.util.Log;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.AssetUtils;
@@ -26,82 +20,21 @@ import edu.berkeley.cs.amplab.carat.thrift.CaratService;
  * Client for the Carat Protocol.
  * 
  * @author Eemil Lagerspetz
- * 
+ * @author Jonatan Hamberg
  */
 public class ProtocolClient {
-    public static final String TAG = "ProtocolClient";
-    public static final String SERVER_PROPERTIES = "caratserver.properties";
-    public static int SERVER_PORT_GLOBAL = 0;
-    public static String SERVER_ADDRESS_GLOBAL = null;
-    public static int SERVER_PORT_EU = 0;
-    public static String SERVER_ADDRESS_EU = null;
-
-    public static final String TRUSTSTORE_PROPERTIES = "truststore.properties";
-    public static String TRUSTSTORE_NAME = null;
-    public static String TRUSTSTORE_PASS = null;
-
-    public static boolean legacy = true; // HOTFIX for protocol issues. Remove when new protocol works again.
-    public static final int LEGACY_PORT = 8080;
-
+    public static final String TAG = ProtocolClient.class.getSimpleName();
+    public static boolean legacy = false; // HOTFIX for protocol issues. Remove when new protocol works again.
 
     public enum ServerLocation {GLOBAL, EU, USA}
+    
+    public static CaratService.Client open(Context c, ServerLocation location) throws TTransportException {
+        Logger.d(TAG, "trying to get an instance of CaratProtocol.");
 
-    /**
-     * FIXME: this needs to come from a factory, so that connections are not
-     * kept open unnecessarily, and that they do not become stale, and that we
-     * handle disconnections gracefully.
-     * 
-     * @param c
-     * @return
-     * @throws NumberFormatException 
-     * @throws TTransportException 
-     */
-    public static CaratService.Client getInstance(Context c, ServerLocation location) throws NumberFormatException, TTransportException {
-        if(SERVER_ADDRESS_GLOBAL == null || SERVER_ADDRESS_EU == null){
-            if(!loadServerProperties(c)){
-                return null; // Failed to load server properties
-            }
-        }
-
-        TTransport transport = null;
-        TProtocol protocol = null;
-        if(location == ServerLocation.GLOBAL){
-            if(SERVER_ADDRESS_GLOBAL == null || SERVER_PORT_GLOBAL == 0) return null;
-            // TODO: Remove to go live
-            if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null){
-                if(!loadSSLProperties(c)){
-                    return null; // Failed to load SSL properties
-                }
-            }
-
-            if (legacy){
-                transport = new TSocket(SERVER_ADDRESS_GLOBAL, LEGACY_PORT);
-                protocol = new TBinaryProtocol(transport, true, true);
-            }else {
-                TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
-                String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
-                params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
-                transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_GLOBAL, 8443, Constants.THRIFT_CONNECTION_TIMEOUT, params);
-                protocol = new TCompactProtocol(transport); // Do not set limits here.
-            }
-        }
-        else if(location == ServerLocation.EU){
-            if(TRUSTSTORE_NAME == null || TRUSTSTORE_PASS == null)
-            {
-                if(!loadSSLProperties(c)){
-                    Logger.e(TAG,"Failed loading SSL properties!");
-                    return null; // Failed to load SSL properties
-                }
-            }
-            if(SERVER_ADDRESS_EU == null || SERVER_PORT_EU == 0) return null;
-            TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
-            String truststorePath = AssetUtils.getAssetPath(c, TRUSTSTORE_NAME);
-            params.setTrustStore(truststorePath, TRUSTSTORE_PASS, null, "BKS"); // Important: Use BKS!
-            transport = TSSLTransportFactory.getClientSocket(SERVER_ADDRESS_EU, SERVER_PORT_EU, Constants.THRIFT_CONNECTION_TIMEOUT, params);
-            protocol = new TCompactProtocol(transport);
-        }
-
+        TProtocol protocol = getProtocol(location, c);
         CaratService.Client instance = new CaratService.Client(protocol);
+
+        TTransport transport = protocol.getTransport();
         if (transport != null && !transport.isOpen()){
             transport.open();
         }
@@ -109,49 +42,43 @@ public class ProtocolClient {
         return instance;
     }
 
-    private static boolean loadSSLProperties(Context c){
-        Properties properties = new Properties();
-        try {
-            InputStream raw = c.getAssets().open(TRUSTSTORE_PROPERTIES);
-            properties.load(raw);
-            TRUSTSTORE_NAME = properties.getProperty("storeName");
-            TRUSTSTORE_PASS = properties.getProperty("storePass");
-            return TRUSTSTORE_NAME != null && TRUSTSTORE_PASS != null;
-        } catch(Throwable th){
-            Logger.e(TAG, "Could not open truststore property file!", th);
-        }
-        return false;
-    }
+    private static TProtocol getProtocol(ServerLocation location, Context c) throws TTransportException {
+        TTransport transport = null;
+        TProtocolFactory factory;
 
-    private static boolean loadServerProperties(Context c){
-        Properties properties = new Properties();
-        try {
-            InputStream raw = c.getAssets().open(SERVER_PROPERTIES);
-            if(raw != null){
-                properties.load(raw);
+        String SERVER_GLOBAL = PropertyLoader.getGlobalServer(c);
+        String SERVER_EU = PropertyLoader.getEuServer(c);
+        int PORT_GLOBAL = PropertyLoader.getGlobalPort(c);
+        int PORT_EU = PropertyLoader.getEuPort(c);
 
-                SERVER_PORT_GLOBAL = Integer.parseInt(properties.getProperty("PORT_GLOBAL", "8080"));
-                SERVER_ADDRESS_GLOBAL = properties.getProperty("ADDRESS_GLOBAL", "server.caratproject.com");
-                SERVER_PORT_EU = Integer.parseInt(properties.getProperty("PORT_EU", "8080"));
-                SERVER_ADDRESS_EU = properties.getProperty("ADDRESS_EU", "caratserver-eu.cs.helsinki.fi");
+        if(legacy && location == ServerLocation.GLOBAL){
+            Logger.d(TAG, "Global server over insecure");
+            factory = new TBinaryProtocol.Factory(true, true);
+            transport = new TSocket(SERVER_GLOBAL, 8080);
+        } else {
+            factory = new TCompactProtocol.Factory();
+            TSSLTransportFactory.TSSLTransportParameters params = getParams(c);
+            int timeout = Constants.THRIFT_CONNECTION_TIMEOUT;
 
-                if(Constants.DEBUG){
-                    Logger.d(TAG, "Set global address=" + SERVER_ADDRESS_GLOBAL + " port=" + SERVER_PORT_GLOBAL);
-                    Logger.d(TAG, "Set eu address=" + SERVER_ADDRESS_EU + " port=" + SERVER_PORT_EU);
-                }
-                return true;
-            } else {
-                Logger.e(TAG, "Could not open server property file!");
+            switch(location){
+                case GLOBAL:
+                    Logger.d(TAG, "Global server over ssl");
+                    transport = TSSLTransportFactory.getClientSocket(SERVER_GLOBAL, PORT_GLOBAL, timeout, params);
+                    break;
+                case EU:
+                    Logger.d(TAG, "EU server over ssl");
+                    transport = TSSLTransportFactory.getClientSocket(SERVER_EU, PORT_EU, timeout, params);
+                    break;
             }
-        } catch (IOException e) {
-            Logger.e(TAG, "Could not open server property file: " + e.toString());
         }
-        return false;
+
+        return factory.getProtocol(transport);
     }
-    
-    public static CaratService.Client open(Context c, ServerLocation location) throws NumberFormatException, TTransportException {
-        if (Constants.DEBUG)
-            Logger.d("ProtocolClient", "trying to get an instance of CaratProtocol.");
-        return getInstance(c, location);
+
+    private static TSSLTransportFactory.TSSLTransportParameters getParams(Context c){
+        TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
+        String trustStorePath = AssetUtils.getAssetPath(c, PropertyLoader.getTrustStoreName(c));
+        params.setTrustStore(trustStorePath, PropertyLoader.getTrustStorePass(c), null, "BKS");
+        return params;
     }
 }

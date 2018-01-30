@@ -18,4 +18,12 @@ public class Keys {
     public static final String promptUsageStats = "promptUsageStats";
     public static final String useWifiOnly = "wifionly";
     public static final String noNotifications = "noNotifications";
+
+    public static final String serverAddressGlobal = "ADDRESS_GLOBAL";
+    public static final String serverPortGlobal = "PORT_GLOBAL";
+    public static final String serverAddressEu = "ADDRESS_EU";
+    public static final String serverPortEu = "PORT_EU";
+
+    public static final String trustStoreName = "storeName";
+    public static final String trustStorePass = "trustStorePass";
 }
