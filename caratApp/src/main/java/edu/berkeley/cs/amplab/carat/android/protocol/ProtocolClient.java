@@ -1,5 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.protocol;
 
+import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -29,8 +30,6 @@ public class ProtocolClient {
     public enum ServerLocation {GLOBAL, EU, USA}
     
     public static CaratService.Client open(Context c, ServerLocation location) throws TTransportException {
-        Logger.d(TAG, "trying to get an instance of CaratProtocol.");
-
         TProtocol protocol = getProtocol(location, c);
         CaratService.Client instance = new CaratService.Client(protocol);
 
@@ -40,6 +39,19 @@ public class ProtocolClient {
         }
 
         return instance;
+    }
+
+    public static <T> T run(Context context, ServerLocation location, ClientCallable<T> callable){
+        CaratService.Client client = null;
+        T result = null;
+        try {
+            client = open(context, location);
+            result = callable.task(client);
+        } catch (TTransportException e) {
+            Logger.e(TAG, "Thrift connection failed " + e);
+        }
+        close(client);
+        return result;
     }
 
     private static TProtocol getProtocol(ServerLocation location, Context c) throws TTransportException {
@@ -52,7 +64,6 @@ public class ProtocolClient {
         int PORT_EU = PropertyLoader.getEuPort(c);
 
         if(legacy && location == ServerLocation.GLOBAL){
-            Logger.d(TAG, "Global server over insecure");
             factory = new TBinaryProtocol.Factory(true, true);
             transport = new TSocket(SERVER_GLOBAL, 8080);
         } else {
@@ -62,11 +73,9 @@ public class ProtocolClient {
 
             switch(location){
                 case GLOBAL:
-                    Logger.d(TAG, "Global server over ssl");
                     transport = TSSLTransportFactory.getClientSocket(SERVER_GLOBAL, PORT_GLOBAL, timeout, params);
                     break;
                 case EU:
-                    Logger.d(TAG, "EU server over ssl");
                     transport = TSSLTransportFactory.getClientSocket(SERVER_EU, PORT_EU, timeout, params);
                     break;
             }
@@ -80,5 +89,23 @@ public class ProtocolClient {
         String trustStorePath = AssetUtils.getAssetPath(c, PropertyLoader.getTrustStoreName(c));
         params.setTrustStore(trustStorePath, PropertyLoader.getTrustStorePass(c), null, "BKS");
         return params;
+    }
+
+    private static void close(CaratService.Client client) {
+        if(client != null){
+            TProtocol input = client.getInputProtocol();
+            TProtocol output = client.getOutputProtocol();
+            close(input);
+            close(output);
+        }
+    }
+
+    private static void close(TProtocol protocol){
+        if(protocol != null){
+            TTransport transport = protocol.getTransport();
+            if(transport != null){
+                transport.close();
+            }
+        }
     }
 }

@@ -376,7 +376,35 @@ public class CommunicationManager {
 		return false;
 	}
 
-	private boolean refreshMainReports(String uuid, String os, String model) {
+	private boolean refreshMainReports(String uuid, String os, String model){
+		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT){
+			return false;
+		}
+		Reports reports = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Reports>() {
+			@Override
+			Reports task(CaratService.Client client) {
+				try {
+					return client.getReports(uuid, getFeatures("Model", model, "OS", os));
+				} catch (TException e) {
+					Logger.e(TAG, "Error refreshing main reports " + e);
+				}
+				return null;
+			}
+		});
+		if(reports != null){
+			Logger.d(TAG, "Got the main report"
+					+ ", model=" + reports.getModel()
+					+ ", jscore=" + reports.getJScore()
+					+ ", model.jscore=" + reports.model.getScore() + ". Storing in the database..");
+			CaratApplication.getStorage().writeReports(reports);
+			return true;
+		} else {
+			Logger.d(TAG, "Main report was null");
+			return false;
+		}
+	}
+
+	private boolean refreshMainReportsOld(String uuid, String os, String model) {
 		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT)
 			return false;
 		CaratService.Client instance = null;
