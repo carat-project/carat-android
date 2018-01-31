@@ -175,6 +175,19 @@ public class Util {
         dialog.show();
     }
 
+    public static Integer getDigits(String string){
+        Integer result = null;
+        if(!Util.isNullOrEmpty(string)){
+            try {
+                String digits = string.replaceAll("\\D+", "");
+                result = Integer.parseInt(digits);
+            } catch (Exception e){
+                Logger.d(TAG, "Failed getting digits out of string \"" + string + "\"");
+            }
+        }
+        return result;
+    }
+
     public static void printStackTrace(String tag, Throwable th){
         Logger.d(tag, getStackTrace(th));
     }
