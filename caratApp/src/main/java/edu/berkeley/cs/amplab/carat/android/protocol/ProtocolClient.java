@@ -28,18 +28,6 @@ public class ProtocolClient {
     public static boolean legacy = false; // HOTFIX for protocol issues. Remove when new protocol works again.
 
     public enum ServerLocation {GLOBAL, EU, USA}
-    
-    public static CaratService.Client open(Context c, ServerLocation location) throws TTransportException {
-        TProtocol protocol = getProtocol(location, c);
-        CaratService.Client instance = new CaratService.Client(protocol);
-
-        TTransport transport = protocol.getTransport();
-        if (transport != null && !transport.isOpen()){
-            transport.open();
-        }
-
-        return instance;
-    }
 
     public static <T> T run(Context context, ServerLocation location, ClientCallable<T> callable){
         CaratService.Client client = null;
@@ -52,6 +40,18 @@ public class ProtocolClient {
         }
         close(client);
         return result;
+    }
+    
+    private static CaratService.Client open(Context c, ServerLocation location) throws TTransportException {
+        TProtocol protocol = getProtocol(location, c);
+        CaratService.Client instance = new CaratService.Client(protocol);
+
+        TTransport transport = protocol.getTransport();
+        if (transport != null && !transport.isOpen()){
+            transport.open();
+        }
+
+        return instance;
     }
 
     private static TProtocol getProtocol(ServerLocation location, Context c) throws TTransportException {

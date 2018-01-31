@@ -108,7 +108,7 @@ public class CommunicationManager {
 		Logger.d(Constants.SF, "Register is " + register + " after creating comm. manager");
 	}
 
-	private void registerMe(CaratService.Client instance, String uuId, String os, String model, String countryCode) throws TException {
+	private void registerMe(String uuId, String os, String model) {
 		if (uuId == null || os == null || model == null) {
 			Logger.e("registerMe", "Null uuId, os, or model given to registerMe!");
 			System.exit(1);
@@ -120,7 +120,14 @@ public class CommunicationManager {
 		registration.setTimestamp(System.currentTimeMillis() / 1000.0);
 		registration.setKernelVersion(SamplingLibrary.getKernelVersion());
 		registration.setSystemDistribution(SamplingLibrary.getManufacturer() + ";" + SamplingLibrary.getBrand());
-		instance.registerMe(registration);
+
+		ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Void>(){
+			@Override
+			Void task(CaratService.Client client) throws TException {
+				client.registerMe(registration);
+				return null;
+			}
+		});
 	}
 
     /**
@@ -131,59 +138,50 @@ public class CommunicationManager {
      * @return Number of samples out out <code>samples</code> that were successfully sent.
      */
 	public int uploadSamples(Collection<Sample> samples, double countSoFar, double sampleCount) {
-		int successCount = 0;
 		registerLocal();
-		if(rpcService == null){
-			try{
-				Logger.d(Constants.SF, "Need a new ProtocolClient");
-				rpcService = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
-			} catch(TTransportException e){
-				Logger.e(TAG, "Failed getting an instance of CaratService", e);
-				safeClose(rpcService);
-				return successCount;
-			}
-		} else {
-			Logger.d(Constants.SF, "Attempting to use instantated ProtocolClient");
-		}
+
 		if(NetworkingUtil.canConnect(a.getApplicationContext())){
-			registerOnFirstRun(rpcService);
+			registerOnFirstRun();
 		}
 
 		networkChangeListener.register(a.getApplicationContext());
-		for(Sample sample : samples){
-			if(stopUploading){
-				// If network becomes unavailable, stop
-				Logger.d(TAG, "Network unavailable, stopping sample upload");
-				break;
+
+		Integer successCount = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Integer>() {
+			@Override
+			Integer task(CaratService.Client client) throws TException {
+				int successCount = 0;
+				for(Sample sample : samples){
+					if(stopUploading){
+						Logger.d(TAG, "Network unavailable, stopping sample upload");
+						break;
+					}
+					if(sample == null){
+						Logger.d(TAG, "Sample was null, discarding..");
+						successCount++; // Delete null samples
+						continue;
+					}
+					Logger.d(TAG, "Uploading sample " + sample.getTimestamp());
+					boolean duplicate = Sampler.essentiallyIdentical(sample, previousSample);
+					boolean success = false;
+					if(!duplicate){ // We skip upload on duplicates
+						success = client.uploadSample(sample);
+					} else {
+						Logger.d(TAG, "Sample " + sample.getTimestamp() + " was a duplicate, discarded");
+					}
+					if(success || duplicate){ // Counting duplicate as success is a hack to make sure it gets deleted
+						successCount++;
+						long progress = Math.round((successCount+countSoFar)*100.0/sampleCount);
+						String progressString = progress + "% " + CaratApplication.getAppContext().getString(R.string.samplesreported);
+						CaratApplication.setStatus(progressString);
+					}
+					previousSample = sample;
+				}
+				return successCount;
 			}
-			try {
-				if(sample == null){
-					Logger.d(TAG, "Sample was null, discarding..");
-					successCount++; // Delete null samples
-					continue;
-				}
-				Logger.d(TAG, "Uploading sample " + sample.getTimestamp());
-				boolean duplicate = Sampler.essentiallyIdentical(sample, previousSample);
-				boolean success = false;
-				if(!duplicate){ // We skip upload on duplicates
-					success = rpcService.uploadSample(sample);
-				} else {
-					Logger.d(TAG, "Sample " + sample.getTimestamp() + " was a duplicate, discarded");
-				}
-				if(success || duplicate){ // Counting duplicate as success is a hack to make sure it gets deleted
-					successCount++;
-					long progress = Math.round((successCount+countSoFar)*100.0/sampleCount);
-					String progressString = progress + "% " + CaratApplication.getAppContext().getString(R.string.samplesreported);
-					CaratApplication.setStatus(progressString);
-				}
-				previousSample = sample;
-			} catch (Throwable th) {
-				Logger.e(TAG, "Error uploading sample", th);
-			}
-		}
+		});
 		networkChangeListener.unregister();
 		stopUploading = false;
-		return successCount;
+		return successCount != null ? successCount : 0;
 	}
 
 	public void disposeRpcService(){
@@ -218,7 +216,7 @@ public class CommunicationManager {
 		}
 	}
 
-	private void registerOnFirstRun(CaratService.Client instance) {
+	private void registerOnFirstRun() {
 		if (register) {
 			String uuId = p.getString(CaratApplication.getRegisteredUuid(), null);
 			// Only use new uuid if reg'd after this version for the first time.
@@ -242,22 +240,18 @@ public class CommunicationManager {
 			}
 			String os = SamplingLibrary.getOsVersion();
 			String model = SamplingLibrary.getModel();
-			String countryCode = SamplingLibrary.getCountryCode(a.getApplicationContext());
-			if (Constants.DEBUG)
-			    Logger.d("CommunicationManager", "First run, registering this device: " + uuId + ", " + os + ", " + model);
-			try {
-				Logger.d(Constants.SF, "RegisterMe called at " + System.currentTimeMillis()/1000);
-				registerMe(instance, uuId, os, model, countryCode);
-				Logger.d(Constants.SF, "RegisterMe finished at " + System.currentTimeMillis()/1000);
-				p.edit().putBoolean(Constants.PREFERENCE_FIRST_RUN, false).commit();
-				register = false;
-				registered = true;
-				p.edit().putString(CaratApplication.getRegisteredUuid(), uuId).commit();
-				p.edit().putString(Constants.REGISTERED_OS, os).commit();
-				p.edit().putString(Constants.REGISTERED_MODEL, model).commit();
-			} catch (TException e) {
-				Logger.e("CommunicationManager", "Registration failed, will try again next time: " + e, e);
-			}
+
+			Logger.d("CommunicationManager", "First run, registering this device: " + uuId + ", " + os + ", " + model);
+			Logger.d(Constants.SF, "RegisterMe called at " + System.currentTimeMillis()/1000);
+			registerMe(uuId, os, model);
+			Logger.d(Constants.SF, "RegisterMe finished at " + System.currentTimeMillis()/1000);
+			p.edit().putBoolean(Constants.PREFERENCE_FIRST_RUN, false).commit();
+			register = false;
+			registered = true;
+			p.edit().putString(CaratApplication.getRegisteredUuid(), uuId).commit();
+			p.edit().putString(Constants.REGISTERED_OS, os).commit();
+			p.edit().putString(Constants.REGISTERED_MODEL, model).commit();
+
 		}
 	}
 
@@ -304,17 +298,9 @@ public class CommunicationManager {
 		if (register) {
 			Logger.d(Constants.SF, "Report refresh needs to register, trying to get ProtocolClient and call" +
 					" registerOnFirstRun() at " + System.currentTimeMillis()/1000);
-			CaratService.Client instance = null;
-			try {
-				instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
-				Logger.d(Constants.SF, "Got protocolClient instance at " + System.currentTimeMillis()/1000);
-				registerOnFirstRun(instance);
-				Logger.d(Constants.SF, "Finished registering at " + System.currentTimeMillis()/1000);
-				safeClose(instance);
-			} catch (Throwable th) {
-				Logger.e(TAG, "Error refreshing main reports.", th);
-				safeClose(instance);
-			}
+			Logger.d(Constants.SF, "Got protocolClient instance at " + System.currentTimeMillis()/1000);
+			registerOnFirstRun();
+			Logger.d(Constants.SF, "Finished registering at " + System.currentTimeMillis()/1000);
 		}
 
 		String initialModel = SamplingLibrary.getModel();
@@ -398,125 +384,45 @@ public class CommunicationManager {
 		}
 	}
 
-	private boolean refreshMainReportsOld(String uuid, String os, String model) {
-		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT)
-			return false;
-		CaratService.Client instance = null;
-		try {
-			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
-			Reports r = instance.getReports(uuid, getFeatures("Model", model, "OS", os));
-			// Assume multiple invocations, do not close
-			// ProtocolClient.close();
-			if (r != null) {
-			    if (Constants.DEBUG) Logger.d("CommunicationManager.refreshMainReports()",
-						"got the main report (action list)" + ", model=" + r.getModel()
-						+ ", jscore=" + r.getJScore() + ", model.jscore=" + r.model.getScore() + ". Storing the report in the databse");
-				CaratApplication.getStorage().writeReports(r);
-			} else {
-			    if (Constants.DEBUG)
-			        Logger.d("CommunicationManager.refreshMainReports()",
-						"the fetched MAIN report is null");
-			}
-			// Assume freshness written by caller.
-			// s.writeFreshness();
-			safeClose(instance);
-			return true;
-		} catch (Throwable th) {
-			Logger.e(TAG, "Error refreshing main reports.", th);
-			safeClose(instance);
-		}
-		return false;
-	}
-
 	private boolean refreshBugReports(String uuid, String model) {
-		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT)
+		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT){
 			return false;
-		CaratService.Client instance = null;
-		try {
-			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
-			HogBugReport r = instance.getHogOrBugReport(uuid, getFeatures("ReportType", "Bug", "Model", model));
-			// Assume multiple invocations, do not close
-			// ProtocolClient.close();
-
-			// Do not write empty bugs either
-			if (r != null && !r.getHbList().isEmpty()) {
-				CaratApplication.getStorage().writeBugReport(r);
-				if (Constants.DEBUG)
-				    Logger.d("CommunicationManager.refreshBugReports()",
-						"got the bug list: " + r.getHbList().toString());
-			} else {
-			    if (Constants.DEBUG)
-			        Logger.d("CommunicationManager.refreshBugReports()",
-						"the fetched bug report is null");
-			}
-			safeClose(instance);
-			return true;
-		} catch (Throwable th) {
-			Logger.e(TAG, "Error refreshing bug reports.", th);
-			safeClose(instance);
 		}
-		return false;
+		HogBugReport r = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<HogBugReport>() {
+			@Override
+			HogBugReport task(CaratService.Client client) throws TException {
+				return client.getHogOrBugReport(uuid, getFeatures("ReportType", "Bug", "Model", model));
+			}
+		});
+		if (r != null && !r.getHbList().isEmpty()) {
+			CaratApplication.getStorage().writeBugReport(r);
+			Logger.d(TAG, "Got the bug list: " + r.getHbList().toString());
+			return true;
+		} else {
+			Logger.d(TAG, "Bug report was null");
+			return false;
+		}
 	}
 
 	private boolean refreshHogReports(String uuid, String model) {
-		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT)
+		if (System.currentTimeMillis() - CaratApplication.getStorage().getFreshness() < Constants.FRESHNESS_TIMEOUT){
 			return false;
-		CaratService.Client instance = null;
-		try {
-			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
-			HogBugReport r = instance.getHogOrBugReport(uuid, getFeatures("ReportType", "Hog", "Model", model));
-
-			// Assume multiple invocations, do not close
-			// ProtocolClient.close();
-
-			// Do not write empty hogs, it clears the quick hogs!
-			if (r != null && !r.getHbList().isEmpty()) {
-				CaratApplication.getStorage().writeHogReport(r);
-				if (Constants.DEBUG)
-				    Logger.d("CommunicationManager.refreshHogReports()",
-						"got the hog list: " + r.getHbList().toString());
-			} else {
-			    if (Constants.DEBUG)
-			        Logger.d("CommunicationManager.refreshHogReports()",
-						"the fetched hog report is null");
-			}
-			// Assume freshness written by caller.
-			// s.writeFreshness();
-			safeClose(instance);
-			return true;
-		} catch (Throwable th) {
-			Logger.e(TAG, "Error refreshing hog reports.", th);
-			safeClose(instance);
 		}
-		return false;
+		HogBugReport r = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<HogBugReport>() {
+			@Override
+			HogBugReport task(CaratService.Client client) throws TException {
+				return client.getHogOrBugReport(uuid, getFeatures("ReportType", "Hog", "Model", model));
+			}
+		});
+		if (r != null && !r.getHbList().isEmpty()) {
+			CaratApplication.getStorage().writeHogReport(r);
+			Logger.d(TAG, "Got the hog list: " + r.getHbList().toString());
+			return true;
+		} else {
+			Logger.d(TAG, "Hog report was null");
+			return false;
+		}
 	}
-
-//	private boolean refreshSettingsReports(String uuid, String model) {
-//		if (System.currentTimeMillis() - CaratApplication.storage.getFreshness() < Constants.FRESHNESS_TIMEOUT)
-//			return false;
-//		CaratService.Client instance = null;
-//		try {
-//			instance = ProtocolClient.open(a.getApplicationContext());
-//			HogBugReport r = instance.getHogOrBugReport(uuid, getFeatures("ReportType", "Settings", "Model", model));
-//
-//			if (r != null) {
-//				CaratApplication.storage.writeSettingsReport(r);
-//				Logger.d("CommunicationManager.refreshSettingsReports()",
-//						"got the settings list: " + r.getHbList().toString());
-//			} else {
-//				Logger.d("CommunicationManager.refreshSettingsReports()",
-//						"the fetched settings report is null");
-//			}
-//			// Assume freshness written by caller.
-//			// s.writeFreshness();
-//			safeClose(instance);
-//			return true;
-//		} catch (Throwable th) {
-//			Logger.e(TAG, "Error refreshing settings reports.", th);
-//			safeClose(instance);
-//		}
-//		return false;
-//	}
 	
 	private void refreshBlacklist() {
 		// I/O, let's do it on the background.
@@ -594,25 +500,23 @@ public class CommunicationManager {
 			}
 		}
 		Logger.d(TAG, "Enough time passed, checking for questionnaires.");
-		CaratService.Client instance = null;
-		try {
-			// This needs to be EU, other servers will not provide meaningful data
-			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.EU);
-			List<Questionnaire> questionnaires = instance.getQuestionnaires(uuid);
-			if(questionnaires == null) return false;
-			Logger.d(TAG, "Downloaded questionnaires " + questionnaires);
-			questionnaires = filterQuestionnaires(questionnaires);
-			checkAndNotify(questionnaires); // Post notification if new
-			CaratApplication.getStorage().writeQuestionnaires(questionnaires);
-			long timestamp = System.currentTimeMillis();
-			CaratApplication.getStorage().writeQuestionnaireFreshness(timestamp);
-			safeClose(instance);
-			return true;
-		} catch (Throwable th){
-			Util.printStackTrace(TAG, th);
-			safeClose(instance);
+		List<Questionnaire> questionnaires = ProtocolClient.run(a.getApplicationContext(), ServerLocation.EU,
+				new ClientCallable<List<Questionnaire>>() {
+					@Override
+					List<Questionnaire> task(CaratService.Client client) throws TException {
+						return client.getQuestionnaires(uuid);
+				}
+		});
+		if(questionnaires == null){
+			return false;
 		}
-		return false;
+		Logger.d(TAG, "Downloaded questionnaires " + questionnaires);
+		questionnaires = filterQuestionnaires(questionnaires);
+		checkAndNotify(questionnaires); // Post notification if new
+		CaratApplication.getStorage().writeQuestionnaires(questionnaires);
+		long timestamp = System.currentTimeMillis();
+		CaratApplication.getStorage().writeQuestionnaireFreshness(timestamp);
+		return true;
 	}
 
 	/**
@@ -704,50 +608,41 @@ public class CommunicationManager {
 		if(Constants.DEBUG){
 			Logger.d(TAG, "Uploading anwers: " + answers);
 		}
-		CaratService.Client instance = null;
-		try {
-			// This needs to be EU, other servers will not provide meaningful data
-			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.EU);
-			boolean success = instance.uploadAnswers(answers);
-			safeClose(instance);
-			return success;
-		} catch (Throwable th){
-			safeClose(instance);
-		}
-		return false;
+		return ProtocolClient.run(a.getApplicationContext(), ServerLocation.EU, new ClientCallable<Boolean>() {
+			@Override
+			Boolean task(CaratService.Client client) throws TException {
+				return client.uploadAnswers(answers);
+			}
+		});
 	}
 
 	private boolean getQuickHogsAndMaybeRegister(String uuid, String os, String model, String countryCode) {
-		if (System.currentTimeMillis() - CaratApplication.getStorage().getQuickHogsFreshness() < Constants.FRESHNESS_TIMEOUT_QUICKHOGS)
+		if (System.currentTimeMillis() - CaratApplication.getStorage().getQuickHogsFreshness() < Constants.FRESHNESS_TIMEOUT_QUICKHOGS){
 			return false;
-		CaratService.Client instance = null;
-		try {
-			instance = ProtocolClient.open(a.getApplicationContext(), ServerLocation.GLOBAL);
-			Registration registration = new Registration(uuid);
-			registration.setPlatformId(model);
-			registration.setSystemVersion(os);
-			registration.setTimestamp(System.currentTimeMillis() / 1000.0);
+		}
+		Registration registration = new Registration(uuid);
+		registration.setPlatformId(model);
+		registration.setSystemVersion(os);
+		registration.setTimestamp(System.currentTimeMillis() / 1000.0);
 
-			long monthAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
-			List<ProcessInfo> pi = SamplingLibrary.getRunningProcessInfoForSample(a.getApplicationContext(), monthAgo);
-			List<String> processList = new ArrayList<String>();
-			for (ProcessInfo p : pi)
-				processList.add(p.pName);
+		long monthAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
+		List<ProcessInfo> pi = SamplingLibrary.getRunningProcessInfoForSample(a.getApplicationContext(), monthAgo);
+		List<String> processList = new ArrayList<String>();
+		for (ProcessInfo p : pi){
+			processList.add(p.pName);
+		}
 
-			HogBugReport r = instance.getQuickHogsAndMaybeRegister(registration, processList);
-			// Assume multiple invocations, do not close
-			// ProtocolClient.close();
-			if (r != null && !r.getHbList().isEmpty()) {
-				CaratApplication.getStorage().writeHogReport(r);
-				CaratApplication.getStorage().writeQuickHogsFreshness();
+		HogBugReport r = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<HogBugReport>() {
+			@Override
+			HogBugReport task(CaratService.Client client) throws TException {
+				return client.getQuickHogsAndMaybeRegister(registration, processList);
 			}
-			// Assume freshness written by caller.
-			// s.writeFreshness();
-			safeClose(instance);
+		});
+
+		if (r != null && !r.getHbList().isEmpty()) {
+			CaratApplication.getStorage().writeHogReport(r);
+			CaratApplication.getStorage().writeQuickHogsFreshness();
 			return true;
-		} catch (Throwable th) {
-			Logger.e(TAG, "Error refreshing main reports.", th);
-			safeClose(instance);
 		}
 		return false;
 	}
