@@ -124,6 +124,7 @@ public class CommunicationManager {
 		ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Void>(){
 			@Override
 			Void task(CaratService.Client client) throws TException {
+				Logger.d(TAG, "Registering " + uuId + " with model " + model);
 				client.registerMe(registration);
 				return null;
 			}
@@ -150,6 +151,7 @@ public class CommunicationManager {
 			@Override
 			Integer task(CaratService.Client client) throws TException {
 				int successCount = 0;
+				Logger.d(TAG, "Uploading a batch of samples");
 				for(Sample sample : samples){
 					if(stopUploading){
 						Logger.d(TAG, "Network unavailable, stopping sample upload");
@@ -262,14 +264,12 @@ public class CommunicationManager {
 
 	private boolean refreshReports(Callable<Boolean> action, String what){
 		CaratApplication.setStatus(a.getString(R.string.updating) + " " + what);
-
 		boolean success = false;
 		if(NetworkingUtil.canConnect(a.getApplicationContext())){
 			try {
 				success = action.call();
 			} catch (Exception ignored) {/* Ignored */}
 		}
-		Logger.d(TAG, (success ? "Successfully got " : "Failed getting ") + what);
 		return success;
 	}
 
@@ -369,11 +369,12 @@ public class CommunicationManager {
 		Reports reports = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Reports>() {
 			@Override
 			Reports task(CaratService.Client client) throws TException {
+				Logger.d(TAG, "Refreshing main reports");
 				return client.getReports(uuid, getFeatures("Model", model, "OS", os));
 			}
 		});
 		if(reports != null){
-			Logger.d(TAG, "Got the main report , model=" + reports.getModel()
+			Logger.d(TAG, "Got the main report, model=" + reports.getModel()
 					+ ", jscore=" + reports.getJScore() + ", model.jscore=" + reports.model.getScore()
 					+ ". Storing in the database..");
 			CaratApplication.getStorage().writeReports(reports);
@@ -391,6 +392,7 @@ public class CommunicationManager {
 		HogBugReport r = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<HogBugReport>() {
 			@Override
 			HogBugReport task(CaratService.Client client) throws TException {
+				Logger.d(TAG, "Refreshing bug reports");
 				return client.getHogOrBugReport(uuid, getFeatures("ReportType", "Bug", "Model", model));
 			}
 		});
@@ -399,7 +401,7 @@ public class CommunicationManager {
 			Logger.d(TAG, "Got the bug list: " + r.getHbList().toString());
 			return true;
 		} else {
-			Logger.d(TAG, "Bug report was null");
+			Logger.d(TAG, "Bug report was " + ((r == null) ? "null" : "empty"));
 			return false;
 		}
 	}
@@ -411,6 +413,7 @@ public class CommunicationManager {
 		HogBugReport r = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<HogBugReport>() {
 			@Override
 			HogBugReport task(CaratService.Client client) throws TException {
+				Logger.d(TAG, "Refreshing hog reports");
 				return client.getHogOrBugReport(uuid, getFeatures("ReportType", "Hog", "Model", model));
 			}
 		});
@@ -419,7 +422,7 @@ public class CommunicationManager {
 			Logger.d(TAG, "Got the hog list: " + r.getHbList().toString());
 			return true;
 		} else {
-			Logger.d(TAG, "Hog report was null");
+			Logger.d(TAG, "Hog report was " + ((r == null) ? "null" : "empty"));
 			return false;
 		}
 	}
@@ -504,6 +507,7 @@ public class CommunicationManager {
 				new ClientCallable<List<Questionnaire>>() {
 					@Override
 					List<Questionnaire> task(CaratService.Client client) throws TException {
+						Logger.d(TAG, "Refreshing questionnaires");
 						return client.getQuestionnaires(uuid);
 				}
 		});
@@ -605,12 +609,10 @@ public class CommunicationManager {
 	}
 
 	private boolean uploadAnswers(Answers answers){
-		if(Constants.DEBUG){
-			Logger.d(TAG, "Uploading anwers: " + answers);
-		}
 		return ProtocolClient.run(a.getApplicationContext(), ServerLocation.EU, new ClientCallable<Boolean>() {
 			@Override
 			Boolean task(CaratService.Client client) throws TException {
+				Logger.d(TAG, "Uploading questionnaire answers");
 				return client.uploadAnswers(answers);
 			}
 		});
@@ -635,6 +637,7 @@ public class CommunicationManager {
 		HogBugReport r = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<HogBugReport>() {
 			@Override
 			HogBugReport task(CaratService.Client client) throws TException {
+				Logger.d(TAG, "Refreshing quick hogs and possibly registering");
 				return client.getQuickHogsAndMaybeRegister(registration, processList);
 			}
 		});
@@ -644,6 +647,7 @@ public class CommunicationManager {
 			CaratApplication.getStorage().writeQuickHogsFreshness();
 			return true;
 		}
+		Logger.d(TAG, "Failed getting quick hogs");
 		return false;
 	}
 
