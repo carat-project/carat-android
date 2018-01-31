@@ -1,14 +1,13 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 /**
@@ -23,7 +22,13 @@ public class FsUtils {
 
         public static ArrayList<Long> getThermalZones(){
             File[] files = getFiles();
-            Map<Integer, Long> result = readValues(files, "/temp");
+            Map<Integer, Long> result = readValues(files, "/temp", Long.class);
+            return new ArrayList<>(result.values());
+        }
+
+        public static ArrayList<String> getThermalZoneNames(){
+            File[] files = getFiles();
+            Map<Integer, String> result = readValues(files, "/type", String.class);
             return new ArrayList<>(result.values());
         }
 
@@ -59,25 +64,25 @@ public class FsUtils {
 
         public static ArrayList<Long> getCurrentFrequencies(){
             String subPath = "/cpufreq/scaling_cur_freq";
-            Map<Integer, Long> frequencies = readValues(getFiles(), subPath);
+            Map<Integer, Long> frequencies = readValues(getFiles(), subPath, Long.class);
             return new ArrayList<>(frequencies.values());
         }
 
         public static ArrayList<Long> getMinimumFrequencies(){
             String subPath = "/cpufreq/cpuinfo_min_freq";
-            Map<Integer, Long> frequencies = readValues(getFiles(), subPath);
+            Map<Integer, Long> frequencies = readValues(getFiles(), subPath, Long.class);
             return new ArrayList<>(frequencies.values());
         }
 
         public static ArrayList<Long> getMaximumFrequencies(){
             String subPath = "/cpufreq/cpuinfo_max_freq";
-            Map<Integer, Long> frequencies = readValues(getFiles(), subPath);
+            Map<Integer, Long> frequencies = readValues(getFiles(), subPath, Long.class);
             return new ArrayList<>(frequencies.values());
         }
 
         public static ArrayList<Long> getUtilization(){
             String subPath = "/cpufreq/cpu_utilization";
-            Map<Integer, Long> utilization = readValues(getFiles(), subPath);
+            Map<Integer, Long> utilization = readValues(getFiles(), subPath, Long.class);
             return new ArrayList<>(utilization.values());
         }
 
@@ -92,18 +97,27 @@ public class FsUtils {
         }
     }
 
-    private static Map<Integer, Long> readValues(File[] files, String subPath){
+    @SuppressWarnings("unchecked") // The casts are actually checked
+    private static <V> Map<Integer, V> readValues(File[] files, String subPath, Class<V> valueClass){
         Logger.d(TAG, "Trying files " + files.length + " and subPath " + subPath);
-        TreeMap<Integer, Long> values = new TreeMap<>();
+        TreeMap<Integer, V> values = new TreeMap<>();
         if(!Util.isNullOrEmpty(files)){
             for(File file : files){
                 try {
                     Logger.d(TAG, "Using path" + file.getPath());
                     Integer id = Util.getDigits(file.getName());
                     if(id != null){
-                        Logger.d(TAG, "Reading file " + file.getPath() + subPath);
-                        long frequency = readLong(file.getPath() + subPath);
-                        values.put(id, frequency);
+                        String path = file.getPath() + subPath;
+                        Logger.d(TAG, "Reading file " + path);
+                        V value = null;
+                        if(valueClass == Long.class){
+                            value = (V) readLong(path);
+                        } else if(valueClass == String.class){
+                            value = (V) readString(path);
+                        } else {
+                            Logger.e(TAG, "Unsupported type: " + valueClass.getSimpleName());
+                        }
+                        values.put(id, value);
                     }
                 } catch (Exception e){
                     Logger.d(TAG, "Failed reading " + file.getPath());
@@ -121,8 +135,8 @@ public class FsUtils {
         return null;
     }
 
-    private static long readLong(String path){
-        String content = read(path);
+    private static Long readLong(String path){
+        String content = readString(path);
         if(!Util.isNullOrEmpty(content)){
             try {
                 return Long.parseLong(content);
@@ -133,7 +147,7 @@ public class FsUtils {
         return INVALID_VALUE;
     }
 
-    private static String read(String path){
+    private static String readString(String path){
         byte[] buffer = new byte[4096];
         FileInputStream inputStream = null;
         try {
