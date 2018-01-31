@@ -9,5 +9,5 @@ import edu.berkeley.cs.amplab.carat.thrift.CaratService;
  */
 
 public abstract class ClientCallable<T> {
-    abstract T task(CaratService.Client client);
+    abstract T task(CaratService.Client client) throws TException;
 }

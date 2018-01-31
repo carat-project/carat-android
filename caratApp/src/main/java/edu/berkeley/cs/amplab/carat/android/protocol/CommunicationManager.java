@@ -382,20 +382,14 @@ public class CommunicationManager {
 		}
 		Reports reports = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Reports>() {
 			@Override
-			Reports task(CaratService.Client client) {
-				try {
-					return client.getReports(uuid, getFeatures("Model", model, "OS", os));
-				} catch (TException e) {
-					Logger.e(TAG, "Error refreshing main reports " + e);
-				}
-				return null;
+			Reports task(CaratService.Client client) throws TException {
+				return client.getReports(uuid, getFeatures("Model", model, "OS", os));
 			}
 		});
 		if(reports != null){
-			Logger.d(TAG, "Got the main report"
-					+ ", model=" + reports.getModel()
-					+ ", jscore=" + reports.getJScore()
-					+ ", model.jscore=" + reports.model.getScore() + ". Storing in the database..");
+			Logger.d(TAG, "Got the main report , model=" + reports.getModel()
+					+ ", jscore=" + reports.getJScore() + ", model.jscore=" + reports.model.getScore()
+					+ ". Storing in the database..");
 			CaratApplication.getStorage().writeReports(reports);
 			return true;
 		} else {

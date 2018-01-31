@@ -47,7 +47,7 @@ public class ProtocolClient {
         try {
             client = open(context, location);
             result = callable.task(client);
-        } catch (TTransportException e) {
+        } catch (TException e) {
             Logger.e(TAG, "Thrift connection failed " + e);
         }
         close(client);
