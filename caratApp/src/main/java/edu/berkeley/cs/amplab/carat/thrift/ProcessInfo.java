@@ -48,6 +48,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
   private static final org.apache.thrift.protocol.TField APP_SIGNATURES_FIELD_DESC = new org.apache.thrift.protocol.TField("appSignatures", org.apache.thrift.protocol.TType.LIST, (short)8);
   private static final org.apache.thrift.protocol.TField INSTALLATION_PKG_FIELD_DESC = new org.apache.thrift.protocol.TField("installationPkg", org.apache.thrift.protocol.TType.STRING, (short)9);
   private static final org.apache.thrift.protocol.TField PROCESSES_FIELD_DESC = new org.apache.thrift.protocol.TField("processes", org.apache.thrift.protocol.TType.LIST, (short)10);
+  private static final org.apache.thrift.protocol.TField IGNORING_BATTERY_OPTIMIZATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("ignoringBatteryOptimizations", org.apache.thrift.protocol.TType.BOOL, (short)11);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -65,6 +66,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
   public List<String> appSignatures; // optional
   public String installationPkg; // optional
   public List<PackageProcess> processes; // optional
+  public boolean ignoringBatteryOptimizations; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -77,7 +79,8 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     VERSION_CODE((short)7, "versionCode"),
     APP_SIGNATURES((short)8, "appSignatures"),
     INSTALLATION_PKG((short)9, "installationPkg"),
-    PROCESSES((short)10, "processes");
+    PROCESSES((short)10, "processes"),
+    IGNORING_BATTERY_OPTIMIZATIONS((short)11, "ignoringBatteryOptimizations");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -112,6 +115,8 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
           return INSTALLATION_PKG;
         case 10: // PROCESSES
           return PROCESSES;
+        case 11: // IGNORING_BATTERY_OPTIMIZATIONS
+          return IGNORING_BATTERY_OPTIMIZATIONS;
         default:
           return null;
       }
@@ -155,8 +160,9 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
   private static final int __PID_ISSET_ID = 0;
   private static final int __ISSYSTEMAPP_ISSET_ID = 1;
   private static final int __VERSIONCODE_ISSET_ID = 2;
+  private static final int __IGNORINGBATTERYOPTIMIZATIONS_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.P_ID,_Fields.P_NAME,_Fields.APPLICATION_LABEL,_Fields.IS_SYSTEM_APP,_Fields.IMPORTANCE,_Fields.VERSION_NAME,_Fields.VERSION_CODE,_Fields.APP_SIGNATURES,_Fields.INSTALLATION_PKG,_Fields.PROCESSES};
+  private static final _Fields optionals[] = {_Fields.P_ID,_Fields.P_NAME,_Fields.APPLICATION_LABEL,_Fields.IS_SYSTEM_APP,_Fields.IMPORTANCE,_Fields.VERSION_NAME,_Fields.VERSION_CODE,_Fields.APP_SIGNATURES,_Fields.INSTALLATION_PKG,_Fields.PROCESSES,_Fields.IGNORING_BATTERY_OPTIMIZATIONS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -182,6 +188,8 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     tmpMap.put(_Fields.PROCESSES, new org.apache.thrift.meta_data.FieldMetaData("processes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "PackageProcess"))));
+    tmpMap.put(_Fields.IGNORING_BATTERY_OPTIMIZATIONS, new org.apache.thrift.meta_data.FieldMetaData("ignoringBatteryOptimizations", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ProcessInfo.class, metaDataMap);
   }
@@ -223,6 +231,7 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       }
       this.processes = __this__processes;
     }
+    this.ignoringBatteryOptimizations = other.ignoringBatteryOptimizations;
   }
 
   public ProcessInfo deepCopy() {
@@ -244,6 +253,8 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     this.appSignatures = null;
     this.installationPkg = null;
     this.processes = null;
+    setIgnoringBatteryOptimizationsIsSet(false);
+    this.ignoringBatteryOptimizations = false;
   }
 
   public int getPId() {
@@ -513,6 +524,29 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     }
   }
 
+  public boolean isIgnoringBatteryOptimizations() {
+    return this.ignoringBatteryOptimizations;
+  }
+
+  public ProcessInfo setIgnoringBatteryOptimizations(boolean ignoringBatteryOptimizations) {
+    this.ignoringBatteryOptimizations = ignoringBatteryOptimizations;
+    setIgnoringBatteryOptimizationsIsSet(true);
+    return this;
+  }
+
+  public void unsetIgnoringBatteryOptimizations() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __IGNORINGBATTERYOPTIMIZATIONS_ISSET_ID);
+  }
+
+  /** Returns true if field ignoringBatteryOptimizations is set (has been assigned a value) and false otherwise */
+  public boolean isSetIgnoringBatteryOptimizations() {
+    return EncodingUtils.testBit(__isset_bitfield, __IGNORINGBATTERYOPTIMIZATIONS_ISSET_ID);
+  }
+
+  public void setIgnoringBatteryOptimizationsIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __IGNORINGBATTERYOPTIMIZATIONS_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case P_ID:
@@ -595,6 +629,14 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       }
       break;
 
+    case IGNORING_BATTERY_OPTIMIZATIONS:
+      if (value == null) {
+        unsetIgnoringBatteryOptimizations();
+      } else {
+        setIgnoringBatteryOptimizations((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -630,6 +672,9 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     case PROCESSES:
       return getProcesses();
 
+    case IGNORING_BATTERY_OPTIMIZATIONS:
+      return Boolean.valueOf(isIgnoringBatteryOptimizations());
+
     }
     throw new IllegalStateException();
   }
@@ -661,6 +706,8 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       return isSetInstallationPkg();
     case PROCESSES:
       return isSetProcesses();
+    case IGNORING_BATTERY_OPTIMIZATIONS:
+      return isSetIgnoringBatteryOptimizations();
     }
     throw new IllegalStateException();
   }
@@ -768,6 +815,15 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
         return false;
     }
 
+    boolean this_present_ignoringBatteryOptimizations = true && this.isSetIgnoringBatteryOptimizations();
+    boolean that_present_ignoringBatteryOptimizations = true && that.isSetIgnoringBatteryOptimizations();
+    if (this_present_ignoringBatteryOptimizations || that_present_ignoringBatteryOptimizations) {
+      if (!(this_present_ignoringBatteryOptimizations && that_present_ignoringBatteryOptimizations))
+        return false;
+      if (this.ignoringBatteryOptimizations != that.ignoringBatteryOptimizations)
+        return false;
+    }
+
     return true;
   }
 
@@ -824,6 +880,11 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
     list.add(present_processes);
     if (present_processes)
       list.add(processes);
+
+    boolean present_ignoringBatteryOptimizations = true && (isSetIgnoringBatteryOptimizations());
+    list.add(present_ignoringBatteryOptimizations);
+    if (present_ignoringBatteryOptimizations)
+      list.add(ignoringBatteryOptimizations);
 
     return list.hashCode();
   }
@@ -936,6 +997,16 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetIgnoringBatteryOptimizations()).compareTo(other.isSetIgnoringBatteryOptimizations());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIgnoringBatteryOptimizations()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ignoringBatteryOptimizations, other.ignoringBatteryOptimizations);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1041,6 +1112,12 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       } else {
         sb.append(this.processes);
       }
+      first = false;
+    }
+    if (isSetIgnoringBatteryOptimizations()) {
+      if (!first) sb.append(", ");
+      sb.append("ignoringBatteryOptimizations:");
+      sb.append(this.ignoringBatteryOptimizations);
       first = false;
     }
     sb.append(")");
@@ -1189,6 +1266,14 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 11: // IGNORING_BATTERY_OPTIMIZATIONS
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.ignoringBatteryOptimizations = iprot.readBool();
+              struct.setIgnoringBatteryOptimizationsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1282,6 +1367,11 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetIgnoringBatteryOptimizations()) {
+        oprot.writeFieldBegin(IGNORING_BATTERY_OPTIMIZATIONS_FIELD_DESC);
+        oprot.writeBool(struct.ignoringBatteryOptimizations);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1330,7 +1420,10 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
       if (struct.isSetProcesses()) {
         optionals.set(9);
       }
-      oprot.writeBitSet(optionals, 10);
+      if (struct.isSetIgnoringBatteryOptimizations()) {
+        optionals.set(10);
+      }
+      oprot.writeBitSet(optionals, 11);
       if (struct.isSetPId()) {
         oprot.writeI32(struct.pId);
       }
@@ -1373,12 +1466,15 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
           }
         }
       }
+      if (struct.isSetIgnoringBatteryOptimizations()) {
+        oprot.writeBool(struct.ignoringBatteryOptimizations);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ProcessInfo struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(10);
+      BitSet incoming = iprot.readBitSet(11);
       if (incoming.get(0)) {
         struct.pId = iprot.readI32();
         struct.setPIdIsSet(true);
@@ -1437,6 +1533,10 @@ public class ProcessInfo implements org.apache.thrift.TBase<ProcessInfo, Process
           }
         }
         struct.setProcessesIsSet(true);
+      }
+      if (incoming.get(10)) {
+        struct.ignoringBatteryOptimizations = iprot.readBool();
+        struct.setIgnoringBatteryOptimizationsIsSet(true);
       }
     }
   }

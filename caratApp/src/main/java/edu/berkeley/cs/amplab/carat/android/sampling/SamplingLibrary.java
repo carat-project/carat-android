@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -87,6 +88,7 @@ import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.PowerUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
@@ -600,7 +602,7 @@ public final class SamplingLibrary {
 					String processName = pi.processName;
 					String packageName = ProcessUtil.trimProcessName(processName)[0];
 					HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
-							processes.get(packageName) : new HashMap<String, PackageProcess>();
+							processes.get(packageName) : new HashMap<>();
 					PackageProcess process;
 					if(p.containsKey(processName)){
 						process = p.get(processName);
@@ -1162,6 +1164,7 @@ public final class SamplingLibrary {
 			processInfo.setPName(packageName);
 			processInfo.setPId(-1); // Default values are expected to change during method
 			processInfo.setImportance(CaratApplication.importanceString(-1));
+			processInfo.setIgnoringBatteryOptimizations(PowerUtils.isIgnoringBatteryOptimizations(context, pkgName));
 			List<PackageProcess> applications = new ArrayList<>();
 			boolean accurateCurrentlyRunning = false;
 
@@ -1198,7 +1201,7 @@ public final class SamplingLibrary {
 			// foreground. However, UsageStats only provides aggregated activity data for the
 			// whole package, whereas you can find a RunningAppProcessInfo for each specifically
 			// named process. This to my knowledge requires the field android:process to be set
-			// so most of the time we will not catch anything. Worth fishing anyways.
+			// so most of the time we will not catch anything. Worth trying anyways.
 			if(runningApps.containsKey(packageName)){
 				List<PackageProcess> processes = runningApps.get(packageName);
 
@@ -2554,11 +2557,21 @@ public final class SamplingLibrary {
 	 * Checks if bluetooth is enabled on the device
 	 * @return True if bluetooth is enabled
      */
-	public static boolean getBluetoothEnabled(){
+	public static boolean getBluetoothEnabled() {
 		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-		if(adapter == null) return false;
-		return (adapter.isEnabled());
+		return adapter != null && adapter.isEnabled();
 	}
+
+	public static boolean getRotationEnabled(Context context){
+        try {
+            ContentResolver cr = context.getContentResolver();
+            String setting = Settings.System.ACCELEROMETER_ROTATION;
+            return android.provider.Settings.System.getInt(cr, setting, 0) == 1;
+        } catch (Throwable th){
+            Logger.d(TAG, "Error while checking auto-rotation " + th);
+        }
+        return false;
+    }
 
 	/**
 	 * Helper method to collect all the extra information we wish to add to the sample into the Extra Feature list.

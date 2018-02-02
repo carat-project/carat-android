@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.BatteryManager;
 import android.preference.PreferenceManager;
 
+import org.apache.commons.math3.analysis.function.Power;
+
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
@@ -14,7 +16,9 @@ import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
+import edu.berkeley.cs.amplab.carat.android.utils.FsUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.PowerUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefsManager;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
@@ -88,7 +92,7 @@ public class Sampler {
         sample.setNetworkDetails(constructNetworkDetails(context));
 
         sample.setStorageDetails(SamplingLibrary.getStorageDetails());
-        sample.setSettings(constructSettings());
+        sample.setSettings(constructSettings(context));
         sample.setDeveloperMode(SamplingLibrary.isDeveloperModeOn(context));
         sample.setUnknownSources(SamplingLibrary.allowUnknownSources(context));
         sample.setScreenOn(SamplingLibrary.isScreenOn(context));
@@ -96,7 +100,10 @@ public class Sampler {
         sample.setCountryCode(SamplingLibrary.getCountryCode(context));
         sample.setExtra(SamplingLibrary.getExtras(context));
         sample.setUsageStatsEnabled(SamplingLibrary.isUsageAccessGranted(context));
-
+        sample.setLightIdleEnabled(PowerUtils.isLightDoze(context));
+        sample.setDeepIdleEnabled(PowerUtils.isDeepDoze(context));
+        sample.setThermalZones(FsUtils.THERMAL.getThermalZones());
+        sample.setThermalZoneNames(FsUtils.THERMAL.getThermalZoneNames());
 
         int[] memoryInfo = SamplingLibrary.readMeminfo();
         if(memoryInfo.length == 4){
@@ -170,12 +177,18 @@ public class Sampler {
         }
         cpuStatus.setUptime(SamplingLibrary.getUptime());
         cpuStatus.setSleeptime(SamplingLibrary.getSleepTime());
+
+        cpuStatus.setCurrentFrequencies(FsUtils.CPU.getCurrentFrequencies());
+        cpuStatus.setMinFrequencies(FsUtils.CPU.getMinimumFrequencies());
+        cpuStatus.setMaxFrequencies(FsUtils.CPU.getMaximumFrequencies());
         return cpuStatus;
     }
 
-    private static Settings constructSettings(){
+    private static Settings constructSettings(Context context){
         Settings settings = new Settings();
         settings.setBluetoothEnabled(SamplingLibrary.getBluetoothEnabled());
+        settings.setPowersaverEnabled(PowerUtils.isPowerSaving(context));
+        settings.setRotationEnabled(SamplingLibrary.getRotationEnabled(context));
         return settings;
     }
 
