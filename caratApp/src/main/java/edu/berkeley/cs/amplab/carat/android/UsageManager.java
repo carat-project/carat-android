@@ -36,6 +36,7 @@ import java.util.TreeMap;
 
 import edu.berkeley.cs.amplab.carat.android.receivers.AsyncSuccess;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 /**
  * Created by Jonatan Hamberg on 5/30/17.
@@ -75,19 +76,20 @@ public class UsageManager {
     }
 
     public static HashMap<String, TreeMap<Long, Integer>> getEventLogs(Context context, long beginTime){
-        List<Event> events = getEvents(context, beginTime);
         HashMap<String, TreeMap<Long, Integer>> eventLog = new HashMap<>();
-        for(Event event : events){
-            String pkg = event.getPackageName();
-            TreeMap<Long, Integer> log =  eventLog.containsKey(pkg) ?
-                    eventLog.get(pkg) : new TreeMap<>();
-            log.put(event.getTimeStamp(), event.getEventType());
-            eventLog.put(pkg, log);
+        try {
+            List<Event> events = getEvents(context, beginTime);
+            for(Event event : events){
+                String pkg = event.getPackageName();
+                TreeMap<Long, Integer> log =  eventLog.containsKey(pkg) ? eventLog.get(pkg) : new TreeMap<>();
+                log.put(event.getTimeStamp(), event.getEventType());
+                eventLog.put(pkg, log);
+            }
+        } catch (Throwable th){
+            Logger.e(TAG, "Unexpected exception when getting event logs: " + th);
         }
         return eventLog;
     }
-
-
 
     public static Map<String, UsageStats> getUsageAggregate(Context context, long beginTime){
         UsageStatsManager usm = getUsageStatsManager(context);
@@ -102,20 +104,22 @@ public class UsageManager {
     }
 
     public static boolean isPermissionGranted(Context context){
+        boolean granted = false;
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow("android:get_usage_stats", android.os.Process.myUid(), context.getPackageName());
-        boolean granted;
+        if(appOps != null){
+            int mode = appOps.checkOpNoThrow("android:get_usage_stats", android.os.Process.myUid(), context.getPackageName());
 
-        // This extra check is needed on Android 6.0+
-        if (mode == AppOpsManager.MODE_DEFAULT && Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            granted = (context.checkCallingOrSelfPermission(Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED);
-        } else {
-            granted = (mode == AppOpsManager.MODE_ALLOWED);
+            // This extra check is needed on Android 6.0+
+            if (mode == AppOpsManager.MODE_DEFAULT && Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                granted = (context.checkCallingOrSelfPermission(Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED);
+            } else {
+                granted = (mode == AppOpsManager.MODE_ALLOWED);
+            }
         }
         return granted;
     }
 
-    public static boolean isMenuAvailable(Context context) {
+    private static boolean isMenuAvailable(Context context) {
         PackageManager pm = context.getPackageManager();
         return pm != null && menuIntent.resolveActivity(pm) != null;
     }
@@ -203,20 +207,13 @@ public class UsageManager {
     }
 
     private static HashMap<String, TreeMap<Long, Integer>> getOrFetchEvents(Context context, long beginTime){
-        HashMap<String, TreeMap<Long, Integer>> e;
-        if(events == null || events.get() == null){
-            Logger.i(TAG, "Events not in memory, fetching");
-            e = getEventLogs(context, beginTime);
-            events = new WeakReference<>(e);
-        } else {
-            e = events.get();
-            if(e == null){
-                Logger.i(TAG, "Events not in memory, fetching");
-                e = getEventLogs(context, beginTime);
-                events = new WeakReference<>(e);
+        return Util.getWeakOrFallback(events, () -> {
+            HashMap<String, TreeMap<Long, Integer>> logs = getEventLogs(context, beginTime);
+            if(!Util.isNullOrEmpty(logs)){
+                events = new WeakReference<>(logs);
             }
-        }
-        return e;
+            return logs;
+        });
     }
 
     public static int getAppLaunchCount(Context context, UsageStats stats, long beginTime){
