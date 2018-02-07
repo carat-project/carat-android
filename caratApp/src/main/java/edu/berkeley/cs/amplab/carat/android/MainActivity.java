@@ -199,11 +199,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             long then = SampleDB.getInstance(this).recentSampleTimestamp(this);
 
             // Check if last sample was over a day ago
-            if (now - then > Constants.TOO_LONG_WITHOUT_SAMPLES) {
+            if (now - then > Constants.TOO_LONG_WITHOUT_SAMPLES || Constants.DEBUG) {
                 Logger.d(TAG, ((now-then)/1000) + " seconds passed since recent sample");
                 Logger.d(TAG, "Prompting user to ignore battery optimizations");
                 Context context = this;
-                CaratDialogs.permissionRequest(this, R.string.permission_request, new CaratDialogs.Callback() {
+                CaratDialogs.permissionRequest(this, R.string.allow_ignore_optimizations, new CaratDialogs.Callback() {
                     @Override
                     protected void run(boolean success, boolean remember) {
                         if (success) {

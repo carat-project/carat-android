@@ -417,4 +417,9 @@ delete these from your file.
     <string name="disable_charging_mode">Disable charging measurements</string>
     <string name="charging_not_collected">No data will be collected</string>
     <string name="confirmDisableNotifications">Turning off notifications will also disable charging measurements as the background service requires an ongoing notification.</string>
+    <string name="allow_ignore_optimizations">
+        Carat was unable to collect samples while you were away. Disable battery optimizations in the
+        next screen to allow Carat to work in the background. Power-saving modes like Doze will not
+        be affected.
+    </string>
 </resources>
