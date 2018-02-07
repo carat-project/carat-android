@@ -64,7 +64,7 @@
     <!-- ACTIVITIES -->
 
     <!-- DASHBOARD -->
-    <string name="dashboard_text_loading">tietoja</string>
+    <string name="dashboard_text_loading">Päivitetään tietoja</string>
 
     <string name="bugs_amount">7</string>
     <string name="hogs_amount">4</string>
