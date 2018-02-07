@@ -20,6 +20,7 @@
         READ_SYNC_SETTINGS: TODO: What is this needed for?
         BROADCAST_STICKY: Needed to retrieve data without waiting for broadcasts.
         KILL_BACKGROUND_PROCESSES: Needed to kill applications in actions.
+        REQUEST_IGNORE_BATTERY_OPTIMIZATIONS: Needed for partial wakelocks in doze
     -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -33,6 +34,7 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <!-- This needs to be manually toggled by the user -->
     <uses-permission
