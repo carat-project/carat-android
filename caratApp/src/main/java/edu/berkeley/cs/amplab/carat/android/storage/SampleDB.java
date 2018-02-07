@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -179,7 +180,7 @@ public class SampleDB {
         return -1;
     }
 
-    public SortedMap<Long, Sample> queryOldestSamples(int howmany) {
+    public SortedMap<Long, Sample> querySamples(int howmany, boolean ascending) {
         SortedMap<Long, Sample> results = new TreeMap<Long, Sample>();
         try {
             Logger.d(TAG, "Awaiting for sampleDB lock at queryOldestSamples");
@@ -196,8 +197,9 @@ public class SampleDB {
                 String[] columns = mColumnMap.keySet().toArray(
                         new String[mColumnMap.size()]);
 
+                String order = ascending ? "ASC" : "DESC";
                 Cursor cursor = query(null, null, columns, null, null,
-                        COLUMN_TIMESTAMP + " ASC LIMIT " + howmany);
+                        COLUMN_TIMESTAMP + " " + order + " LIMIT " + howmany);
 
                 if (cursor == null) {
                 	// Logger.d("SampleDB", "query returned null");
@@ -284,6 +286,33 @@ public class SampleDB {
             cursor.close();
             return null;
         }
+    }
+
+    public long recentSampleTimestamp(Context context) {
+        SampleDB sampleDB = SampleDB.getInstance(context);
+        long lastTimestamp = Long.MAX_VALUE;
+        if (sampleDB != null) {
+            // Traverse last 10 samples and try to find the most recent one
+            Logger.d(TAG, "Querying last 10 samples");
+            SortedMap<Long, Sample> sampleMap = sampleDB.querySamples(10, false);
+            if (!Util.isNullOrEmpty(sampleMap)) {
+                // Go back 5 minutes in case a new sample was taken after Carat was launched
+                long now = System.currentTimeMillis();
+                long momentAgo = now - TimeUnit.MINUTES.toMillis(5);
+                Logger.d(TAG, "Now: " + now + " Moment ago: " + momentAgo);
+
+                for (Sample sample : sampleMap.values()) {
+                    long timestamp = (long) sample.timestamp * 1000; // Database uses seconds
+                    Logger.d(TAG, "Sample has timestamp " + timestamp);
+                    if (timestamp < momentAgo) {
+                        Logger.d(TAG, "Smaller than " + momentAgo + " returning!");
+                        lastTimestamp = timestamp;
+                        break;
+                    }
+                }
+            }
+        }
+        return lastTimestamp;
     }
 
     /*

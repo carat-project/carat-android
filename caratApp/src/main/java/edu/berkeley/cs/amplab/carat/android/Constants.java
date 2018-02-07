@@ -24,6 +24,7 @@ public class Constants {
 
     public static final long DASHBOARD_REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1);
     public static final long RAPID_SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(5);
+    public static final long TOO_LONG_WITHOUT_SAMPLES = TimeUnit.DAYS.toMillis(1);
 
     public static final int THRIFT_CONNECTION_TIMEOUT = (int)TimeUnit.MINUTES.toMillis(1);
 
@@ -97,14 +98,6 @@ public class Constants {
     static final String MSG_TRY_AGAIN = " will try again in " + (FRESHNESS_TIMEOUT / 1000) + "s.";
 
     public static int VALUE_NOT_AVAILABLE = -1;
-
-    public static final int[] CARAT_COLORS = {
-            Color.rgb(90, 198, 108), /* green 3 - Normal green*/
-            Color.rgb(240, 71, 31) /*Beautiful Orange*/,
-            Color.rgb(250, 150, 38) /*Yellow*/,
-            Color.rgb(193, 216, 216) /*Gray*/,
-            Color.rgb(207, 218, 227) /*Mild Gray*/
-    };
 
     public static final int REQUESTCODE_ACCEPT_EULA = 16401;
 

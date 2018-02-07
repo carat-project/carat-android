@@ -1,6 +1,7 @@
 package edu.berkeley.cs.amplab.carat.android;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -33,8 +34,10 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
+import edu.berkeley.cs.amplab.carat.android.components.CaratDialogs;
 import edu.berkeley.cs.amplab.carat.android.fragments.ActionsFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.GlobalFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.HogStatsFragment;
@@ -43,9 +46,11 @@ import edu.berkeley.cs.amplab.carat.android.models.NetworkState;
 import edu.berkeley.cs.amplab.carat.android.protocol.AsyncStats;
 import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
 import edu.berkeley.cs.amplab.carat.android.receivers.NetworkChangeListener;
+import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
+import edu.berkeley.cs.amplab.carat.android.utils.PowerUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefetchData;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
@@ -53,8 +58,10 @@ import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragme
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.android.utils.VersionGater;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
+import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -129,16 +136,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             VersionGater.checkVersion(this);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.statusbar_color));
-            if(!UsageManager.isPermissionGranted(this)) {
-                UsageManager.promptPermission(this);
-            }
-        }
-
         p = PreferenceManager.getDefaultSharedPreferences(this);
+        checkUsageAccess();
+        checkBatteryOptimizations();
+
         //PreferenceManager.setDefaultValues(this, R.xml.settings, false);
         acceptedEula = p.getBoolean(getResources().getString(R.string.save_accept_eula), false);
         if (!acceptedEula) {
@@ -176,6 +177,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // TODO: Add this as an accessible flag
         staticActionsAmount = CaratApplication.getStaticActions().size();
+    }
+
+    public void checkUsageAccess(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            getWindow().setStatusBarColor(getResources().getColor(R.color.statusbar_color));
+            if(!UsageManager.isPermissionGranted(this)) {
+                UsageManager.promptPermission(this);
+            }
+        }
+    }
+
+    public void checkBatteryOptimizations(){
+        boolean allowedToCheck = p.getBoolean(Keys.promptIgnoreOptimizations, true);
+        Logger.d(TAG, "User has allowed to prompt battery optimizations: " + allowedToCheck);
+        if(allowedToCheck && !PowerUtils.isIgnoringBatteryOptimizations(this, getPackageName())) {
+            Logger.d(TAG, "Battery optimizations are not disabled for Carat, checking conditions");
+            long now = System.currentTimeMillis();
+            long then = SampleDB.getInstance(this).recentSampleTimestamp(this);
+
+            // Check if last sample was over a day ago
+            if (now - then > Constants.TOO_LONG_WITHOUT_SAMPLES) {
+                Logger.d(TAG, ((now-then)/1000) + " seconds passed since recent sample");
+                Logger.d(TAG, "Prompting user to ignore battery optimizations");
+                Context context = this;
+                CaratDialogs.permissionRequest(this, R.string.permission_request, new CaratDialogs.Callback() {
+                    @Override
+                    protected void run(boolean success, boolean remember) {
+                        if (success) {
+                            Logger.d(TAG, "Opening optimization ignore activity");
+                            PowerUtils.requestIgnoreBatteryOptimizations(context);
+                        } else {
+                            Logger.d(TAG, "User did not want to disable battery optimization");
+                            Toast.makeText(context, R.string.enable_later, Toast.LENGTH_SHORT).show();
+                            if(remember){
+                                Logger.d(TAG, "Not prompting battery optimizations again");
+                                p.edit().putBoolean(Keys.promptIgnoreOptimizations, false).apply();
+                            }
+                        }
+                    }
+                });
+            }
+        }
     }
 
     @Override
@@ -286,7 +331,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_carat, menu);
-        final SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
 
         //setProgressCircle(false);
         return super.onCreateOptionsMenu(menu);
@@ -300,7 +344,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
         switch (id) {
             case R.id.action_feedback:
                 final String[] choices = new String[]{

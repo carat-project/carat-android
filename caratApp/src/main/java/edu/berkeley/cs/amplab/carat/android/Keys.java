@@ -18,6 +18,7 @@ public class Keys {
     public static final String promptUsageStats = "promptUsageStats";
     public static final String useWifiOnly = "wifionly";
     public static final String noNotifications = "noNotifications";
+    public static final String promptIgnoreOptimizations = "promptIgnoreOptimizations";
 
     public static final String serverAddressGlobal = "ADDRESS_GLOBAL";
     public static final String serverPortGlobal = "PORT_GLOBAL";

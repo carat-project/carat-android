@@ -54,7 +54,7 @@ public class SampleSender {
                 int successSum = 0;
                 int failures = 0;
                 Logger.d(TAG, "Entering query phase for stored samples");
-                SortedMap<Long, Sample> batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
+                SortedMap<Long, Sample> batch = db.querySamples(Constants.COMMS_MAX_UPLOAD_BATCH, true);
                 Logger.d(TAG, "Queried a batch of samples of size: " + batch.size());
                 sendingSamples = true;
                 while(batch.size() > 0 && failures <= 3){
@@ -82,7 +82,7 @@ public class SampleSender {
                         Log.d(TAG, "Failed sending batch, increasing failures to " + failures);
                         failures++;
                     }
-                    batch = db.queryOldestSamples(Constants.COMMS_MAX_UPLOAD_BATCH);
+                    batch = db.querySamples(Constants.COMMS_MAX_UPLOAD_BATCH, true);
                 }
                 commManager.disposeRpcService(); //
                 sendingSamples = false;
