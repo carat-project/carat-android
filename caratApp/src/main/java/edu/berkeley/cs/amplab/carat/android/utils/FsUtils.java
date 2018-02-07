@@ -99,16 +99,13 @@ public class FsUtils {
 
     @SuppressWarnings("unchecked") // The casts are actually checked
     private static <V> Map<Integer, V> readValues(File[] files, String subPath, Class<V> valueClass){
-        Logger.d(TAG, "Trying files " + files.length + " and subPath " + subPath);
         TreeMap<Integer, V> values = new TreeMap<>();
         if(!Util.isNullOrEmpty(files)){
             for(File file : files){
                 try {
-                    Logger.d(TAG, "Using path" + file.getPath());
                     Integer id = Util.getDigits(file.getName());
                     if(id != null){
                         String path = file.getPath() + subPath;
-                        Logger.d(TAG, "Reading file " + path);
                         V value = null;
                         if(valueClass == Long.class){
                             value = (V) readLong(path);
