@@ -418,8 +418,7 @@ delete these from your file.
     <string name="charging_not_collected">No data will be collected</string>
     <string name="confirmDisableNotifications">Turning off notifications will also disable charging measurements as the background service requires an ongoing notification.</string>
     <string name="allow_ignore_optimizations">
-        Carat was unable to collect samples while you were away. Disable battery optimizations in the
-        next screen to allow Carat to work in the background. Power-saving modes like Doze will not
-        be affected.
+        Carat was unable to collect samples in the background. Please disable battery optimization
+        in the settings by selecting Carat and choosing the option <i>Don\'t optimize</i>.
     </string>
 </resources>

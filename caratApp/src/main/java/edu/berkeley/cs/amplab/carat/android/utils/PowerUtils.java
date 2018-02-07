@@ -64,8 +64,8 @@ public class PowerUtils {
 
     public static void requestIgnoreBatteryOptimizations(Context context){
         if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setData(Uri.parse("package:" + context.getPackageName()));
+            Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            // intent.setData(Uri.parse("package:" + context.getPackageName()));
             context.startActivity(intent);
         }
     }

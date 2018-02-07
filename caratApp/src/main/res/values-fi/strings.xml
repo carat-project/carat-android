@@ -383,8 +383,8 @@
     <string name="charging_not_collected">Poista ilmoitus käytöstä</string>
     <string name="confirmDisableNotifications">Ilmoitusten poistaminen käytöstä estää myös latauksen mittaamiseen käytetyn taustapalvelun toiminnan.</string>
     <string name="allow_ignore_optimizations">
-        Carat ei onnistunut keräämään mittauksia ollessasi poissa. Ohittamalla akun optimoinnin
-        mahdollistat mittausten keräämisen taustalla. Asetus ei vaikuta virransäästötilojen toimintaan.
+        Carat ei onnistunut keräämään mittauksia taustalla. Ota akun optimointi pois käytöstä
+        asetuksista etsimällä Carat ja valitsemalla vaihtoehto <i>Älä optimoi</i>.
     </string>
 </resources>
 
