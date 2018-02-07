@@ -229,7 +229,7 @@ public class Sampler {
                         s1.getBatteryLevel() == s2.getBatteryLevel()
                                 && 	s1.getBatteryState().equals(s2.getBatteryState())
                                 && 	s1.getTimeZone().equals(s2.getTimeZone())
-                                && 	bd1.getBatteryTemperature() == bd2.getBatteryTemperature()
+                                // && 	bd1.getBatteryTemperature()  - bd2.getBatteryTemperature()
                                 && 	bd1.getBatteryCapacity() == bd2.getBatteryCapacity()
                                 // This seems to change too often
                                 // && 	bd1.getBatteryVoltage() == bd2.getBatteryVoltage()
