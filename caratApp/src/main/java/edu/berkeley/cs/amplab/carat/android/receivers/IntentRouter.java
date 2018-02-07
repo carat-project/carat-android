@@ -26,8 +26,8 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
  */
 public class IntentRouter extends IntentService {
     private final static String TAG = IntentRouter.class.getSimpleName();
-    private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(15);
-    private final static long LOCATION_MIN_WAIT = TimeUnit.MINUTES.toMillis(5);
+    private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(30);
+    private final static long LOCATION_MIN_WAIT = TimeUnit.MINUTES.toMillis(30);
     private final static int REQUEST_CODE = 67294580;
 
     private Context context;
