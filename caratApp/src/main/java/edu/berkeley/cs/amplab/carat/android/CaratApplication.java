@@ -1,10 +1,12 @@
 package edu.berkeley.cs.amplab.carat.android;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
@@ -30,6 +32,7 @@ import android.util.Log;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
+import org.bouncycastle.crypto.util.Pack;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import edu.berkeley.cs.amplab.carat.android.models.MyDeviceData;
@@ -40,6 +43,7 @@ import edu.berkeley.cs.amplab.carat.android.receivers.ActionReceiver;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.CaratDataStorage;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.android.utils.FsUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
@@ -153,8 +157,6 @@ public class CaratApplication extends Application {
         setStorage(new CaratDataStorage(this));
         setReportData(); // Show initial data asap
 
-        startService(new Intent(this, LocationListener.class));
-
         //SamplingStarter.from(getApplicationContext()).run();
 
         Logger.d(Constants.SF, "Starting a new thread to spawn CommunicationManager");
@@ -166,8 +168,13 @@ public class CaratApplication extends Application {
         }.start();
 
         // Make sure battery changes are registered
-        this.registerReceiver(new ActionReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-
+        String currentProcessName = ProcessUtil.getCurrentProcessName(getApplicationContext());
+        Logger.d(TAG, "Created an Application instance in process " + currentProcessName);
+        if(currentProcessName.equalsIgnoreCase(getPackageName())){
+            Logger.d(TAG, "Listening to battery changes in " + currentProcessName);
+            // Only register this in the process hosting the actual application, not services
+            this.registerReceiver(new ActionReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        }
         super.onCreate();
         // SamplingLibrary.getRunningProcessesFromEventLog(getApplicationContext(), System.currentTimeMillis()-600000);
     }
@@ -258,7 +265,7 @@ public class CaratApplication extends Application {
         long since = System.currentTimeMillis() - p.getLong(Keys.lastSampleNotify, 0);
         if(since < Constants.FRESHNESS_TIMEOUT_SAMPLE_REMINDER){
             Logger.i(TAG, "Not enough time ("
-                    + since + ") passed since sample last reminder.");
+                    + since + ") passed since last sample reminder.");
             return;
         }
         if(!p.getBoolean(context.getString(R.string.disable_notifications), false)){
