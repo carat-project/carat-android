@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -82,7 +83,7 @@ public class Util {
         return true;
     }
 
-    public static<T> T getWeakOrFallback(WeakReference<T> weakReference, Fallback<T> fallback){
+    public static <T> T getWeakOrFallback(WeakReference<T> weakReference, Fallback<T> fallback){
         if(weakReference != null && weakReference.get() != null){
             T value = weakReference.get();
             if(value != null){ // Might become null between instructions
@@ -98,6 +99,10 @@ public class Util {
 
     public static boolean isNullOrEmpty(File[] array){
         return array == null || array.length == 0;
+    }
+
+    public static boolean isNullOrEmpty(List<?> list){
+        return list == null || list.isEmpty();
     }
 
     public static boolean isNullOrEmpty(String string){
