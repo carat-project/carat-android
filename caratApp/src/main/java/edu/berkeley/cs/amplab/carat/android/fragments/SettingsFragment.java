@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.SwitchPreferenceCompat;
@@ -23,6 +24,7 @@ import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.sampling.RapidSampler;
 import edu.berkeley.cs.amplab.carat.android.utils.PreferenceUtil;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 //
@@ -110,13 +112,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             boolean enabled = sharedPreferences.getBoolean(Keys.rapidSamplingDisabled, false);
             if(enabled){
                 Context context = getContext();
-                context.stopService(new Intent(context, RapidSampler.class));
+                if(ProcessUtil.isServiceRunning(context, RapidSampler.class)){
+                    context.stopService(new Intent(context, RapidSampler.class));
+                }
             }
         }
         if(key.equals(Keys.noNotifications)){
             boolean noNotifications = sharedPreferences.getBoolean(Keys.noNotifications, false);
             boolean rapidSamplingDisabled = sharedPreferences.getBoolean(Keys.rapidSamplingDisabled, false);
-            if(noNotifications && !rapidSamplingDisabled){
+            if(noNotifications && !rapidSamplingDisabled && Constants.RAPID_SAMPLING_ENABLED){
                 String text = "Turning off notifications will also disable charging measurements as the background service requires an ongoing notification";
                 Util.showConfirmationDialog(getContext(), getString(R.string.confirmDisableNotifications), () -> {
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
