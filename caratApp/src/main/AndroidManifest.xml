@@ -101,8 +101,6 @@
             android:name=".receivers.ActionReceiver"
             android:label="Carat sampler" >
             <intent-filter>
-                <!-- These are also dynamically registered in SamplingStarter -->
-
                 <!-- System actions used in sampling -->
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
@@ -114,18 +112,34 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
                 <action android:name="android.net.wifi.STATE_CHANGE" />
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <action android:name="android.intent.action.PACKAGE_REMOVED" />
-                <action android:name="android.intent.action.PACKAGE_REPLACED" />
                 <action android:name="android.intent.action.INPUT_METHOD_CHANGED"/>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.CONFIGURATION_CHANGED"/>
                 <action android:name="android.intent.action.DOCK_EVENT"/>
+                <action android:name="android.intent.action.AIRPLANE_MODE"/>
+                <action android:name="android.intent.action.APPLICATION_RESTRICTIONS_CHANGED" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
 
                 <!-- Custom actions -->
                 <action android:name="edu.berkeley.cs.amplab.carat.android.SCHEDULED_SAMPLE" />
                 <action android:name="edu.berkeley.cs.amplab.carat.android.RAPID_SAMPLING" />
                 <action android:name="edu.berkeley.cs.amplab.carat.android.CHECK_SCHEDULE" />
+            </intent-filter>
+
+            <intent-filter>
+                <!-- More throwaway intents for scheduling -->
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_RESTARTED" />
+                <action android:name="android.intent.action.PACKAGE_CHANGED" />
+                <action android:name="android.intent.action.PACKAGE_FIRST_LAUNCH" />
+                <action android:name="android.intent.action.PACKAGE_INSTALL" />
+                <action android:name="android.intent.action.PACKAGE_VERIFIED" />
+                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
+                <action android:name="android.intent.action.PACKAGES_SUSPENDED" />
+                <action android:name="android.intent.action.PACKAGES_UNSUSPENDED" />
+                <data android:scheme="package" />
             </intent-filter>
         </receiver>
 
