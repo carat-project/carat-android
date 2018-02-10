@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 public class Constants {
     // Whether to output debug messages.
     public static final boolean DEBUG = false;
+    public static final boolean RAPID_SAMPLING_ENABLED = false;
 
     // Temporary tag for SamplingFix logging
     public static final String SF = "SamplingFix";

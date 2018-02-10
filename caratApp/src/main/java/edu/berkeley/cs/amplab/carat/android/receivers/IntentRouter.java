@@ -26,7 +26,7 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
  */
 public class IntentRouter extends IntentService {
     private final static String TAG = IntentRouter.class.getSimpleName();
-    private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(30);
+    private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(15);
     private final static long LOCATION_MIN_WAIT = TimeUnit.MINUTES.toMillis(5);
     private final static int REQUEST_CODE = 67294580;
 
@@ -92,7 +92,7 @@ public class IntentRouter extends IntentService {
                     break;
                 default:
                     long future = preferences.getLong(Keys.nextSamplingTime, 0);
-                    Logger.i(TAG, "Waken up by " + action + " to check schedule," +
+                    Logger.i(TAG, "Waken up by " + action + " to check schedule, " +
                             "next scheduled sample in " + (future-now)/1000.0 +"s");
 
                     // First condition takes care of the scenario where we have woken up to check
@@ -129,7 +129,9 @@ public class IntentRouter extends IntentService {
                         Logger.d(TAG, "Everything was fine with scheduling");
                     }
             }
-            checkRapidSampler(context);
+            if(Constants.RAPID_SAMPLING_ENABLED){
+                checkRapidSampler(context);
+            }
         }
         Util.safeReleaseWakelock(wl);
         ActionReceiver.completeWakefulIntent(intent);

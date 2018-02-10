@@ -21,11 +21,13 @@
         android:title="@string/menu_disable_questionnaires"
         android:summary="@string/menu_questionnaires_desc"
         android:defaultValue="false" />
+    <!--
     <android.support.v7.preference.SwitchPreferenceCompat
         android:key="rapidSamplingDisabled"
         android:title="@string/disable_charging_mode"
         android:summary="@string/charging_not_collected"
         android:defaultValue="false" />
+    -->
     <android.support.v7.preference.ListPreference
         android:key="@string/hog_hide_threshold"
         android:title="@string/menu_hide_apps"
