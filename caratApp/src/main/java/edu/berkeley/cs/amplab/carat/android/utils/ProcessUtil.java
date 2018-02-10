@@ -100,7 +100,7 @@ public class ProcessUtil {
         }
         if(processes == null){
             long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
-            processes = SamplingLibrary.getRunningProcessInfoForSample(context, recent);
+            processes = SamplingLibrary.getRunningProcesses(context, recent, false);
             if(processes != null){
                 inMemoryProcesses = processes;
             }

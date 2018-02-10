@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 
 import android.util.Log;
 
@@ -30,7 +28,6 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefsManager;
-import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -163,7 +160,7 @@ public class CommunicationManager {
 						continue;
 					}
 					Logger.d(TAG, "Uploading sample " + sample.getTimestamp());
-					boolean duplicate = Sampler.essentiallyIdentical(sample, previousSample);
+					boolean duplicate = Sampler.isEssentiallyIdentical(sample, previousSample);
 					boolean success = false;
 					if(!duplicate){ // We skip upload on duplicates
 						success = client.uploadSample(sample);
@@ -628,7 +625,7 @@ public class CommunicationManager {
 		registration.setTimestamp(System.currentTimeMillis() / 1000.0);
 
 		long monthAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
-		List<ProcessInfo> pi = SamplingLibrary.getRunningProcessInfoForSample(a.getApplicationContext(), monthAgo);
+		List<ProcessInfo> pi = SamplingLibrary.getRunningProcesses(a.getApplicationContext(), monthAgo, false);
 		List<String> processList = new ArrayList<String>();
 		for (ProcessInfo p : pi){
 			processList.add(p.pName);
