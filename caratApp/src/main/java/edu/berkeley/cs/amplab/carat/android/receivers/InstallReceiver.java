@@ -9,8 +9,10 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.PrefsManager;
 
 public class InstallReceiver extends BroadcastReceiver {
 
@@ -33,6 +35,7 @@ public class InstallReceiver extends BroadcastReceiver {
         String data = intent.getDataString();
         if (a == null && data == null)
             return;
+        Logger.d(TAG, "Package " + data);
         String pkg = data.substring(8);
         Editor e = p.edit().remove(SamplingLibrary.SIG_SENT_256 + pkg).remove(SamplingLibrary.SIG_SENT + pkg);
 
@@ -42,6 +45,7 @@ public class InstallReceiver extends BroadcastReceiver {
             if (!replacing) {
                 Logger.i(TAG, "INSTALLED: " + pkg);
                 e.putBoolean(SamplingLibrary.INSTALLED + pkg, true).commit();
+                e.putBoolean(Keys.installationChanges, true).commit();
             }
         } else if (a != null && a.equals(Intent.ACTION_PACKAGE_REMOVED)) {
             boolean replacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false);
@@ -51,10 +55,12 @@ public class InstallReceiver extends BroadcastReceiver {
             if (!replacing) {
                 Logger.i(TAG, "UNINSTALLED: " + pkg);
                 e.putBoolean(SamplingLibrary.UNINSTALLED + pkg, true).commit();
+                e.putBoolean(Keys.installationChanges, true).commit();
             }
         } else if (a!= null && a.equals(Intent.ACTION_PACKAGE_REPLACED)) {
             Logger.i(TAG, "REPLACED: " + pkg);
             e.putBoolean(SamplingLibrary.REPLACED + pkg, true).commit();
+            e.putBoolean(Keys.installationChanges, true).commit();
         }
     }
 }

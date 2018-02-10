@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -41,7 +40,6 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.usage.UsageEvents;
-import android.app.usage.UsageStats;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -86,18 +84,13 @@ import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
-import edu.berkeley.cs.amplab.carat.android.utils.BatteryUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.PowerUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
-import edu.berkeley.cs.amplab.carat.thrift.BatteryDetails;
-import edu.berkeley.cs.amplab.carat.thrift.CpuStatus;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
-import edu.berkeley.cs.amplab.carat.thrift.NetworkDetails;
 import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
-import edu.berkeley.cs.amplab.carat.thrift.Sample;
 import edu.berkeley.cs.amplab.carat.thrift.StorageDetails;
 
 /**
@@ -542,9 +535,9 @@ public final class SamplingLibrary {
 			reader.close();
 			return new long[] { idle1, cpu1 };
 		} catch (IOException ex) {
-			Util.printStackTrace(TAG, ex);
+			// This bloats the log
+			// Util.printStackTrace(TAG, ex);
 		}
-
 		return null;
 	}
 
@@ -802,7 +795,7 @@ public final class SamplingLibrary {
 	 */
 	public static boolean isRunning(Context context, String appName) {
 		long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
-		List<ProcessInfo> runningProcesses = getRunningProcessInfoForSample(context, recent);
+		List<ProcessInfo> runningProcesses = getRunningProcesses(context, recent, false);
 		for(ProcessInfo p : runningProcesses){
 			String importance = p.getImportance();
 			String packageName = ProcessUtil.trimProcessName(p.pName)[0];
@@ -1081,7 +1074,6 @@ public final class SamplingLibrary {
 	 * the PACKAGE_ADDED or PACKAGE_REPLACED intent.
 	 * 
 	 * @param context
-	 * @param filterSystem
 	 *            if true, exclude system packages.
 	 * @return a list of installed packages on the device.
 	 */
@@ -1135,7 +1127,7 @@ public final class SamplingLibrary {
 	 * @param lastSample last sample timestamp in milliseconds
 	 * @return list of process information for all running processes.
 	 */
-	public static List<ProcessInfo> getRunningProcessInfoForSample(Context context, long lastSample) {
+	public static List<ProcessInfo> getRunningProcesses(Context context, long lastSample, boolean forSample) {
 		Logger.d(TAG, "Fetching running processes");
 		List<ProcessInfo> result = new ArrayList<>();
 		PackageManager pm = context.getPackageManager();
@@ -1281,58 +1273,63 @@ public final class SamplingLibrary {
 			preferences.edit().putBoolean(Keys.sendInstalledPackages, false).apply();
 		}
 
-		// Go through the preferences and look for UNINSTALL, INSTALL and
-		// REPLACE keys set by InstallReceiver.
-		Set<String> ap = preferences.getAll().keySet();
-		SharedPreferences.Editor e = preferences.edit();
-		boolean edited = false;
-		for (String pref : ap) {
-			if (pref.startsWith(INSTALLED)) {
-				String pname = pref.substring(INSTALLED.length());
-				boolean installed = preferences.getBoolean(pref, false);
-				if (installed) {
-					Logger.i(STAG, "Installed:" + pname);
-					ProcessInfo i = getInstalledPackage(context, pname);
-					if (i != null) {
-						i.setImportance(Constants.IMPORTANCE_INSTALLED);
-						result.add(i);
-						e.remove(pref);
+		// Go through the preferences and look for UNINSTALL, INSTALL and REPLACE keys set by
+		// InstallReceiver. Only do this if fetching running processes for a sample! Otherwise we
+		// disregards installs..
+		if(forSample && preferences.getBoolean(Keys.installationChanges, false)){
+			Set<String> ap = preferences.getAll().keySet();
+			SharedPreferences.Editor e = preferences.edit();
+			boolean edited = false;
+			for (String pref : ap) {
+				if (pref.startsWith(INSTALLED)) {
+					String pname = pref.substring(INSTALLED.length());
+					boolean installed = preferences.getBoolean(pref, false);
+					if (installed) {
+						Logger.i(STAG, "Installed:" + pname);
+						ProcessInfo i = getInstalledPackage(context, pname);
+						if (i != null) {
+							i.setImportance(Constants.IMPORTANCE_INSTALLED);
+							result.add(i);
+							e.remove(pref);
+							edited = true;
+						}
+					}
+				} else if (pref.startsWith(REPLACED)) {
+					String pname = pref.substring(REPLACED.length());
+					boolean replaced = preferences.getBoolean(pref, false);
+					if (replaced) {
+						Logger.i(STAG, "Replaced:" + pname);
+						ProcessInfo i = getInstalledPackage(context, pname);
+						if (i != null) {
+							i.setImportance(Constants.IMPORTANCE_REPLACED);
+							result.add(i);
+							e.remove(pref);
+							edited = true;
+						}
+					}
+				} else if (pref.startsWith(UNINSTALLED)) {
+					String pname = pref.substring(UNINSTALLED.length());
+					boolean uninstalled = preferences.getBoolean(pref, false);
+					if (uninstalled) {
+						Logger.i(STAG, "Uninstalled:" + pname);
+						result.add(uninstalledItem(pname, pref, e));
+						edited = true;
+					}
+				} else if (pref.startsWith(DISABLED)) {
+					String pname = pref.substring(DISABLED.length());
+					boolean disabled = preferences.getBoolean(pref, false);
+					if (disabled) {
+						Logger.i(STAG, "Disabled app:" + pname);
+						result.add(disabledItem(pname, pref, e));
 						edited = true;
 					}
 				}
-			} else if (pref.startsWith(REPLACED)) {
-				String pname = pref.substring(REPLACED.length());
-				boolean replaced = preferences.getBoolean(pref, false);
-				if (replaced) {
-					Logger.i(STAG, "Replaced:" + pname);
-					ProcessInfo i = getInstalledPackage(context, pname);
-					if (i != null) {
-						i.setImportance(Constants.IMPORTANCE_REPLACED);
-						result.add(i);
-						e.remove(pref);
-						edited = true;
-					}
-				}
-			} else if (pref.startsWith(UNINSTALLED)) {
-				String pname = pref.substring(UNINSTALLED.length());
-				boolean uninstalled = preferences.getBoolean(pref, false);
-				if (uninstalled) {
-					Logger.i(STAG, "Uninstalled:" + pname);
-					result.add(uninstalledItem(pname, pref, e));
-					edited = true;
-				}
-			} else if (pref.startsWith(DISABLED)) {
-                String pname = pref.substring(DISABLED.length());
-                boolean disabled = preferences.getBoolean(pref, false);
-                if (disabled) {
-                    Logger.i(STAG, "Disabled app:" + pname);
-                    result.add(disabledItem(pname, pref, e));
-                    edited = true;
-                }
-            }
-		}
-		if (edited){
-			e.apply();
+			}
+			// If there were any installation changes, they are now covered
+			e.putBoolean(Keys.installationChanges, false);
+			if (edited){
+				e.apply();
+			}
 		}
 
 		Logger.d(TAG, "Finished fetching processes");
@@ -1536,7 +1533,6 @@ public final class SamplingLibrary {
 
 	/**
 	 * Returns true if the Internet is reachable.
-	 * @param c the Context
 	 * @return true if the Internet is reachable.
 	 */
 	public static boolean networkAvailable(Context context) {
@@ -2607,17 +2603,8 @@ public final class SamplingLibrary {
 		return f;
 	}
 
-	//TODO: disabled for debugging
-//	private static TrafficRecord getAppTraffic(Integer uid) {
-//		TrafficRecord trafficRecord = new TrafficRecord();
-//		trafficRecord.setTx(TrafficStats.getUidTxBytes(uid));
-//		trafficRecord.setRx(TrafficStats.getUidRxBytes(uid));
-//		return trafficRecord;
-//	}
-
 	/**
 	 * Get the java.vm.version system property as a Feature("vm", version).
-	 * @param context the Context.
 	 * @return a Feature instance with the key "vm" and value of the "java.vm.version" system property. 
 	 */
 	private static Feature getVmVersion() {
