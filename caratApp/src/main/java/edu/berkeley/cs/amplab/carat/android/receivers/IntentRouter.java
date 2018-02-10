@@ -27,7 +27,7 @@ import edu.berkeley.cs.amplab.carat.android.utils.Util;
 public class IntentRouter extends IntentService {
     private final static String TAG = IntentRouter.class.getSimpleName();
     private final static long SAMPLING_INTERVAL = TimeUnit.MINUTES.toMillis(30);
-    private final static long LOCATION_MIN_WAIT = TimeUnit.MINUTES.toMillis(30);
+    private final static long LOCATION_MIN_WAIT = TimeUnit.MINUTES.toMillis(5);
     private final static int REQUEST_CODE = 67294580;
 
     private Context context;
@@ -65,8 +65,11 @@ public class IntentRouter extends IntentService {
         // to get at least one update, which is enough for the coarse location sampling
         // we do for distance traveled.
         if(!ProcessUtil.isServiceRunning(context, LocationReceiver.class)){
-            if(elapsed >= LOCATION_MIN_WAIT) {
+            long lastRequest = preferences.getLong(Keys.lastLocationRequest, 0);
+            if(now - lastRequest >= LOCATION_MIN_WAIT || Constants.DEBUG){
+                Logger.d(TAG, "Enough time passed, requesting location updates");
                 startService(new Intent(this, LocationReceiver.class));
+                preferences.edit().putLong(Keys.lastLocationRequest, now).apply();
             }
         }
 
@@ -108,7 +111,7 @@ public class IntentRouter extends IntentService {
                     }
 
                     // Second condition means that the scheduler is dead for some reason. In this
-                    // case we always want to reschedule, but if over 15 minutes have elapsed since
+                    // case we always want to reschedule, but if over 30 minutes have elapsed since
                     // the last sample, we've been dead for a good while and want to sample right
                     // away before rescheduling.
                     else if(!isAlreadyScheduled(getScheduleIntent())){
