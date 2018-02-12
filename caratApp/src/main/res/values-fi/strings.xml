@@ -373,6 +373,7 @@
     <string name="monitor_apps">Muuta asetuksia</string>
     <string name="enable_later">Voit myöntää luvan myöhemmin asetuksissa.</string>
     <string name="return_with_back">Myönnä käyttöoikeus ja palaa takaisin-painikkeella.</string>
+    <string name="whitelist_carat">Etsi Carat listasta, valitse \"Älä optimoi\" ja palaa takaisin-painikkeella.</string>
     <string name="allow_usagestats">Salli Caratin tarkkailla käynnissä olevia sovelluksia myöntämällä käyttöoikeus.</string>
     <string name="permission_request">Lupapyyntö</string>
     <string name="service">Taustapalvelu</string>
@@ -383,8 +384,8 @@
     <string name="charging_not_collected">Poista ilmoitus käytöstä</string>
     <string name="confirmDisableNotifications">Ilmoitusten poistaminen käytöstä estää myös latauksen mittaamiseen käytetyn taustapalvelun toiminnan.</string>
     <string name="allow_ignore_optimizations">
-        Carat ei onnistunut keräämään mittauksia taustalla. Ota akun optimointi pois käytöstä
-        asetuksista etsimällä Carat ja valitsemalla vaihtoehto <i>Älä optimoi</i>.
+        Carat ei onnistunut keräämään mittauksia taustalla. Poista akun optimointi käytöstä
+        valitsemalla Carat ja vaihtoehto <i>Älä optimoi</i> laitteesi asetuksissa.
     </string>
 </resources>
 

@@ -209,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (success) {
                             Logger.d(TAG, "Opening optimization ignore activity");
                             PowerUtils.requestIgnoreBatteryOptimizations(context);
+                            Toast.makeText(context, R.string.whitelist_carat, Toast.LENGTH_LONG).show();
                         } else {
                             Logger.d(TAG, "User did not want to disable battery optimization");
                             Toast.makeText(context, R.string.enable_later, Toast.LENGTH_SHORT).show();

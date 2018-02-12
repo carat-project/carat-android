@@ -408,6 +408,7 @@ delete these from your file.
     <string name="monitor_apps">Open settings</string>
     <string name="enable_later">You can enable this option in the settings.</string>
     <string name="return_with_back">Enable the permission and return with the back button</string>
+    <string name="whitelist_carat">Scroll down to find Carat, choose \"Don\'t optimise\" and return with the back button</string>
     <string name="allow_usagestats">Allow Carat to monitor running applications by enabling usage access in settings.</string>
     <string name="permission_request">Permission request</string>
     <string name="service">Service</string>
