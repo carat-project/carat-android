@@ -9,7 +9,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0-beta1'
+        classpath 'com.android.tools.build:gradle:3.2.0-alpha02'
     }
 }
 
@@ -20,3 +20,4 @@ allprojects {
         maven { url 'https://maven.google.com' }
     }
 }
+
