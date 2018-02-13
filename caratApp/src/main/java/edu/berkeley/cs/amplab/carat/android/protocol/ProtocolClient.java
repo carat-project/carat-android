@@ -9,6 +9,7 @@ import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.thrift.transport.TZlibTransport;
 
 import android.content.Context;
 
@@ -43,7 +44,7 @@ public class ProtocolClient {
     }
     
     private static CaratService.Client open(Context c, ServerLocation location) throws TTransportException {
-        TProtocol protocol = getProtocol(location, c);
+        TProtocol protocol = getTransport(location, c);
         CaratService.Client instance = new CaratService.Client(protocol);
 
         TTransport transport = protocol.getTransport();
@@ -53,6 +54,22 @@ public class ProtocolClient {
 
         return instance;
     }
+
+    private static TProtocol getTransport(ServerLocation location, Context c) throws TTransportException {
+        TProtocolFactory factory = new TCompactProtocol.Factory();
+
+        int timeout = Constants.THRIFT_CONNECTION_TIMEOUT;
+        boolean global = location == ServerLocation.GLOBAL;
+        TSSLTransportFactory.TSSLTransportParameters params = getParams(c);
+
+        String server = global ? PropertyLoader.getGlobalServer(c) : PropertyLoader.getEuServer(c);
+        int port = global ? PropertyLoader.getGlobalPort(c) : PropertyLoader.getEuPort(c);
+
+        TTransport sslSocket = TSSLTransportFactory.getClientSocket(server, port, timeout, params);
+        TTransport transport = new TZlibTransport(sslSocket, 9);
+        return factory.getProtocol(transport);
+    }
+
 
     private static TProtocol getProtocol(ServerLocation location, Context c) throws TTransportException {
         TTransport transport = null;
