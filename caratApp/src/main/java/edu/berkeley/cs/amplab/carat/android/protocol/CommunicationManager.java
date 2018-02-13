@@ -16,10 +16,13 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.models.NetworkState;
 import edu.berkeley.cs.amplab.carat.android.receivers.NetworkChangeListener;
@@ -28,6 +31,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefsManager;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Answers;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 import edu.berkeley.cs.amplab.carat.thrift.Feature;
@@ -143,8 +147,27 @@ public class CommunicationManager {
 		}
 
 		networkChangeListener.register(a.getApplicationContext());
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(a.getApplicationContext());
+		String uuid = preferences.getString(Keys.registeredUUID, null);
+		if(uuid == null){
+			Logger.e(TAG, "User UUID is null, aborting sample upload");
+			return 0;
+		}
 
-		Integer successCount = ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Integer>() {
+		long now = System.currentTimeMillis();
+		ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Long>() {
+			@Override
+			Long task(CaratService.Client client) throws TException {
+				if(!Util.isNullOrEmpty(samples)){
+					return client.uploadSamples(new ArrayList<>(samples), uuid);
+				}
+				return 0L;
+			}
+		});
+		Logger.d(TAG, "Batch upload took: " + (System.currentTimeMillis()-now)/1000.0 + " seconds");
+
+		now = System.currentTimeMillis();
+		ProtocolClient.run(a.getApplicationContext(), ServerLocation.GLOBAL, new ClientCallable<Integer>() {
 			@Override
 			Integer task(CaratService.Client client) throws TException {
 				int successCount = 0;
@@ -178,9 +201,11 @@ public class CommunicationManager {
 				return successCount;
 			}
 		});
+		Logger.d(TAG, "Legacy upload took: " + (System.currentTimeMillis()-now)/1000.0 + " seconds");
+
 		networkChangeListener.unregister();
 		stopUploading = false;
-		return successCount != null ? successCount : 0;
+		return 0; // FIXME: Change back to successCount != null ? successCount : 0
 	}
 
 	public void disposeRpcService(){
