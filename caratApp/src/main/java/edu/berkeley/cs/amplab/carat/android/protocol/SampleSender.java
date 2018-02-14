@@ -57,9 +57,10 @@ public class SampleSender {
                 SortedMap<Long, Sample> batch = db.querySamples(Constants.COMMS_MAX_UPLOAD_BATCH, true);
                 Logger.d(TAG, "Queried a batch of samples of size: " + batch.size());
                 sendingSamples = true;
+                long now = System.currentTimeMillis();
                 while(batch.size() > 0 && failures <= 3){
                     Logger.d(TAG, "Attempt " + failures + " at uploading samples");
-                    int sent = 0;
+                    long sent = 0;
                     // Try uploading only with a working connection, otherwise emit failure
                     if(NetworkingUtil.canConnect(c)){
                         sent = commManager.uploadSamples(batch.values(), successSum, sampleCount);
@@ -84,6 +85,7 @@ public class SampleSender {
                     }
                     batch = db.querySamples(Constants.COMMS_MAX_UPLOAD_BATCH, true);
                 }
+                Logger.d(TAG, "Upload completed in " + (System.currentTimeMillis()-now)/1000.0 + " seconds");
                 commManager.disposeRpcService(); //
                 sendingSamples = false;
                 return db.countSamples() == 0 || successSum == sampleCount;
