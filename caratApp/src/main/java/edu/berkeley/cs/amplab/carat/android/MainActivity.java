@@ -315,9 +315,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(application != null){
                 Logger.d(Constants.SF, "Entering checkAndRefreshReports()");
                 application.checkAndRefreshReports();
+                runOnUiThread(this::refreshCurrentFragment);
                 Logger.d(Constants.SF, "Checked reports, sending samples");
                 application.checkAndSendSamples();
-                runOnUiThread(this::refreshCurrentFragment);
             }
             if(Constants.DEBUG){
                 Logger.d(TAG, "** Stopped refreshing data **");
