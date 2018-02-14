@@ -15,7 +15,7 @@ public class Constants {
 
     public static final long DUPLICATE_INTERVAL = TimeUnit.MINUTES.toSeconds(5);
 
-    public static final long FRESHNESS_TIMEOUT = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+    public static final long FRESHNESS_TIMEOUT = TimeUnit.MINUTES.toMillis(15);
     public static final long FRESHNESS_TIMEOUT_BLACKLIST = 24 * 3600 * 1000;
     public static final long FRESHNESS_TIMEOUT_QUICKHOGS = TimeUnit.DAYS.toMillis(2);
     public static final long FRESHNESS_TIMEOUT_SAMPLE_REMINDER = TimeUnit.DAYS.toMillis(2);
