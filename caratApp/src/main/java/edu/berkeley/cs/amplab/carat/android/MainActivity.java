@@ -34,7 +34,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.components.CaratDialogs;
@@ -58,10 +57,8 @@ import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragme
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
-import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.android.utils.VersionGater;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
-import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 

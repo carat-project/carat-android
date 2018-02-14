@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class Util {
         return result;
     }
 
-    public static <K,V> Map<K, V> firstEntries(int limit, Map<K,V> source){
+    public static <K,V> Map<K, V> firstEntries(long limit, Map<K,V> source){
         TreeMap<K, V> result = new TreeMap<>();
         for(Map.Entry<K,V> entry : source.entrySet()){
             if(result.size() >= limit){
@@ -99,6 +100,10 @@ public class Util {
 
     public static boolean isNullOrEmpty(File[] array){
         return array == null || array.length == 0;
+    }
+
+    public static boolean isNullOrEmpty(Collection<?> collection){
+        return collection == null || collection.size() == 0;
     }
 
     public static boolean isNullOrEmpty(List<?> list){
