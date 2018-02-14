@@ -16,6 +16,7 @@ import android.content.Context;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.AssetUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.CaratService;
 
 /**
@@ -26,10 +27,18 @@ import edu.berkeley.cs.amplab.carat.thrift.CaratService;
  */
 public class ProtocolClient {
     public static final String TAG = ProtocolClient.class.getSimpleName();
-    public static boolean legacy = false; // HOTFIX for protocol issues. Remove when new protocol works again.
+    private static final int timeout = Constants.THRIFT_CONNECTION_TIMEOUT;
 
-    public enum ServerLocation {GLOBAL, EU, USA}
+    public enum ServerLocation {GLOBAL, EU}
 
+    /**
+     * Generic wrapper for any task that needs temporary access to CaratClient.
+     * @param context application context
+     * @param location server location
+     * @param callable task to be executed with CaratClient in its scope
+     * @param <T> return value type
+     * @return value from callable task
+     */
     public static <T> T run(Context context, ServerLocation location, ClientCallable<T> callable){
         CaratService.Client client = null;
         T result = null;
@@ -37,70 +46,81 @@ public class ProtocolClient {
             client = open(context, location);
             result = callable.task(client);
         } catch (TException e) {
-            Logger.e(TAG, "Thrift connection failed " + e);
+            Logger.e(TAG, "Thrift connection failed: " + e);
+            Util.printStackTrace(TAG, e);
         }
         close(client);
         return result;
     }
-    
-    private static CaratService.Client open(Context c, ServerLocation location) throws TTransportException {
-        TProtocol protocol = getTransport(location, c);
+
+    /**
+     * Opens an instance of CaratClient, responsible for communicating with remote servers
+     * @param context application context
+     * @param location server location
+     * @return instance of CaratClient
+     * @throws TTransportException when transport needed by the client fails
+     */
+    private static CaratService.Client open(Context context, ServerLocation location) throws TTransportException {
+        TProtocol protocol = getProtocol(context, location);
         CaratService.Client instance = new CaratService.Client(protocol);
 
         TTransport transport = protocol.getTransport();
         if (transport != null && !transport.isOpen()){
-            transport.open();
+            transport.open(); // Open whichever transport we got
         }
-
         return instance;
     }
 
-    private static TProtocol getTransport(ServerLocation location, Context c) throws TTransportException {
+    /**
+     * Creates a protocol based on server location
+     * @param context application context
+     * @param location server location
+     * @return Thrift protocol
+     * @throws TTransportException when transport cannot be created
+     */
+    private static TProtocol getProtocol(Context context, ServerLocation location) throws TTransportException {
         TProtocolFactory factory = new TCompactProtocol.Factory();
+        switch(location){
+            case GLOBAL: return factory.getProtocol(getGlobalTransport(context));
+            case EU: return factory.getProtocol(getEuTransport(context));
+            default: throw new TTransportException("Unknown transport location: " + location);
+        }
+    }
 
-        int timeout = Constants.THRIFT_CONNECTION_TIMEOUT;
-        boolean global = location == ServerLocation.GLOBAL;
-        TSSLTransportFactory.TSSLTransportParameters params = getParams(c);
-
-        String server = global ? PropertyLoader.getGlobalServer(c) : PropertyLoader.getEuServer(c);
-        int port = global ? PropertyLoader.getGlobalPort(c) : PropertyLoader.getEuPort(c);
+    /**
+     * Creates a zlib and ssl-enabled transport used with the global servers
+     * @param context application context
+     * @return Thrift transport with zlib on top of an ssl socket
+     * @throws TTransportException when transport cannot be created
+     */
+    private static TTransport getGlobalTransport(Context context) throws TTransportException {
+        TSSLTransportFactory.TSSLTransportParameters params = getParams(context);
+        String server = PropertyLoader.getGlobalServer(context);
+        int port = PropertyLoader.getGlobalPort(context);
 
         TTransport sslSocket = TSSLTransportFactory.getClientSocket(server, port, timeout, params);
-        TTransport transport = new TZlibTransport(sslSocket, 9);
-        return factory.getProtocol(transport);
+        return new TZlibTransport(sslSocket, 9);
     }
 
+    /**
+     * Creates an ssl-enabled transport used with survey servers
+     * @param context application context
+     * @return Thrift transport with ssl on top of a socket
+     * @throws TTransportException when transport cannot be created
+     */
+    private static TTransport getEuTransport(Context context) throws TTransportException {
+        TSSLTransportFactory.TSSLTransportParameters params = getParams(context);
+        String server = PropertyLoader.getEuServer(context);
+        int port = PropertyLoader.getEuPort(context);
 
-    private static TProtocol getProtocol(ServerLocation location, Context c) throws TTransportException {
-        TTransport transport = null;
-        TProtocolFactory factory;
-
-        String SERVER_GLOBAL = PropertyLoader.getGlobalServer(c);
-        String SERVER_EU = PropertyLoader.getEuServer(c);
-        int PORT_GLOBAL = PropertyLoader.getGlobalPort(c);
-        int PORT_EU = PropertyLoader.getEuPort(c);
-
-        if(legacy && location == ServerLocation.GLOBAL){
-            factory = new TBinaryProtocol.Factory(true, true);
-            transport = new TSocket(SERVER_GLOBAL, 8080);
-        } else {
-            factory = new TCompactProtocol.Factory();
-            TSSLTransportFactory.TSSLTransportParameters params = getParams(c);
-            int timeout = Constants.THRIFT_CONNECTION_TIMEOUT;
-
-            switch(location){
-                case GLOBAL:
-                    transport = TSSLTransportFactory.getClientSocket(SERVER_GLOBAL, PORT_GLOBAL, timeout, params);
-                    break;
-                case EU:
-                    transport = TSSLTransportFactory.getClientSocket(SERVER_EU, PORT_EU, timeout, params);
-                    break;
-            }
-        }
-
-        return factory.getProtocol(transport);
+        return TSSLTransportFactory.getClientSocket(server, port, timeout, params);
     }
 
+    /**
+     * Loads trust store information needed for ssl transports
+     * @param c application context
+     * @return Thrift ssl parameters
+     */
     private static TSSLTransportFactory.TSSLTransportParameters getParams(Context c){
         TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
         String trustStorePath = AssetUtils.getAssetPath(c, PropertyLoader.getTrustStoreName(c));
@@ -108,6 +128,7 @@ public class ProtocolClient {
         return params;
     }
 
+    // Close client safely
     private static void close(CaratService.Client client) {
         if(client != null){
             TProtocol input = client.getInputProtocol();
@@ -117,6 +138,7 @@ public class ProtocolClient {
         }
     }
 
+    // Close protocol safely
     private static void close(TProtocol protocol){
         if(protocol != null){
             TTransport transport = protocol.getTransport();
