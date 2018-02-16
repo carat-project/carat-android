@@ -31,6 +31,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.codec.binary.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +59,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragme
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.android.utils.VersionGater;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 
@@ -315,7 +318,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(application != null){
                 Logger.d(Constants.SF, "Entering checkAndRefreshReports()");
                 application.checkAndRefreshReports();
-                runOnUiThread(this::refreshCurrentFragment);
                 Logger.d(Constants.SF, "Checked reports, sending samples");
                 application.checkAndSendSamples();
                 runOnUiThread(this::refreshCurrentFragment);
@@ -345,13 +347,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = item.getItemId();
         switch (id) {
             case R.id.action_feedback:
-                final String[] choices = new String[]{
-                        "Rate us on Play Store",
-                        "Problem with app, please specify",
-                        "No J-Score after 7 days of use",
-                        "Other, please specify"
-                };
-                showOptionDialog("Give feedback", new DialogCallback<Integer>() {
+                final String[] choices = getResources().getStringArray(R.array.feedback);
+                showOptionDialog(getString(R.string.giveFeedback), new DialogCallback<Integer>() {
                     @Override
                     public void run(Integer choice) {
                         if(choice == 0) showStorePage();
@@ -703,16 +700,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String chargeCounter = "Battery charge counter: " + SamplingLibrary.getBatteryChargeCounter(this);
         String batteryCapacity = "Battery capacity: " + SamplingLibrary.getBatteryCapacity(this) + " mAh";
         String batteryVoltage = "Battery voltage: " + SamplingLibrary.getBatteryVoltage(this) + "V";
+        String sampleCount = "Samples stored: " + SampleDB.getInstance(getApplicationContext()).countSamples();
         String pleaseSpecify = "";
         if(which == 1 || which == 3) {
-            pleaseSpecify = "\n\nPlease write your feedback here";
+            pleaseSpecify = getString(R.string.writeFeedbackHere)
+                    + "\n\n"
+                    + Util.repeat("-", 15)
+                    + "\n";
         }
 
         Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "carat@cs.helsinki.fi", null));
         intent.putExtra(Intent.EXTRA_SUBJECT, title);
-        intent.putExtra(Intent.EXTRA_TEXT, caratVersion + "\n" + feedback + "\n" + caratId + "\n" + jScore +
+        intent.putExtra(Intent.EXTRA_TEXT, pleaseSpecify +
+                caratVersion + "\n" + feedback + "\n" + caratId + "\n" + jScore +
                 "\n" + osVersion + "\n" + deviceModel + "\n" + memoryUsed + "\n" + memoryActive +
-                "\n" + chargeCounter + "\n" + batteryCapacity + "\n" + batteryVoltage + pleaseSpecify);
+                "\n" + chargeCounter + "\n" + batteryCapacity + "\n" + batteryVoltage + "\n" + sampleCount);
 
         startActivity(Intent.createChooser(intent, "Send email"));
     }

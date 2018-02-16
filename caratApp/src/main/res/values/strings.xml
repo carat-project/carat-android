@@ -422,4 +422,14 @@ delete these from your file.
         Carat was unable to collect samples in the background. Please disable battery optimization
         in the settings by selecting Carat and choosing the option <i>Don\'t optimize</i>.
     </string>
+    <string name="giveFeedback">Give feedback</string>
+    <string name="writeFeedbackHere">Please write your feedback here</string>
+    <string name="sendMail">Send mail</string>
+    <string-array name="feedback">
+        <item>Rate us on Play Store</item>
+        <item>Problem with app, please specify</item>
+        <item>No J-Score after 7 days of use</item>
+        <item>Other, please specify</item>
+    </string-array>
+
 </resources>

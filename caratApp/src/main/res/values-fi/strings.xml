@@ -387,6 +387,16 @@
         Carat ei onnistunut keräämään mittauksia taustalla. Poista akun optimointi käytöstä
         valitsemalla Carat ja vaihtoehto <i>Älä optimoi</i> laitteesi asetuksissa.
     </string>
+    <string name="giveFeedback">Anna palautetta</string>
+    <string name="writeFeedbackHere">Kirjoita palautteesi tähän</string>
+    <string name="sendEmail">Lähetä sähköpostia</string>
+    <string-array name="feedback">
+        <item>Arvostele sovellus Play-kaupassa</item>
+        <item>Kerro ongelmasta sovelluksessa</item>
+        <item>Ei J-Scorea 7 päivän käytön jälkeen</item>
+        <item>Jotain muuta</item>
+    </string-array>
+
 </resources>
 
 
