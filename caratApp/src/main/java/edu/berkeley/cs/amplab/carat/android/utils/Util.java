@@ -198,6 +198,14 @@ public class Util {
         return result;
     }
 
+    public static String repeat(String string, long times){
+        StringBuilder builder = new StringBuilder();
+        for(long i=0; i<times; i++){
+            builder.append(string);
+        }
+        return builder.toString();
+    }
+
     public static void printStackTrace(String tag, Throwable th){
         Logger.d(tag, getStackTrace(th));
     }
