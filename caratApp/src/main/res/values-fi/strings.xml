@@ -317,12 +317,13 @@
     <string name="priority">Prioriteetti:</string>
     <string name="priorityDefault">Ei käynnissä</string>
     <string name="prioritynotrunning">Ei käynnissä</string>
-    <string name="priorityforeground">Nykyinen sovellus</string>
-    <string name="prioritybackground">Käynnissä</string>
+    <string name="priorityforeground">Aktiivinen sovellus</string>
+    <string name="prioritybackground">Inaktiivinen sovellus</string>
     <string name="priorityservice">Taustapalvelu</string>
-    <string name="priorityperceptible">Käynnissä</string>
-    <string name="priorityvisible">Näkyvä</string>
+    <string name="priorityperceptible">Havaittavissa</string>
+    <string name="priorityvisible">Näkyvissä</string>
     <string name="prioritysuggestion">Ehdotus</string>
+    <string name="priorityforegroundservice">Näkyvä palvelu</string>
 
     <!-- Settings screen related -->
 
@@ -396,7 +397,7 @@
         <item>Ei J-Scorea 7 päivän käytön jälkeen</item>
         <item>Jotain muuta</item>
     </string-array>
-
+    <string name="unknown">Tuntematon</string>
 </resources>
 
 

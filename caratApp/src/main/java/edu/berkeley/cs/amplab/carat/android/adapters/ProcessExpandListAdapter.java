@@ -246,7 +246,7 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
             SimpleProcessInfo spi = new SimpleProcessInfo()
                     .setPackageName(pName)
                     .setLocalizedName(localizedName)
-                    .setImportance(importance)
+                    .setImportance(CaratApplication.translatedPriority(importance))
                     .setVersionName(versionName)
                     .setIcon(icon)
                     .setActivityCount(activityCount)
@@ -255,5 +255,4 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
         }
         return result.toArray(new SimpleProcessInfo[result.size()]);
     }
-
 }

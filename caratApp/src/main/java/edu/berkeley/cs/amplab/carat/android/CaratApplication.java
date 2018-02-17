@@ -83,6 +83,8 @@ public class CaratApplication extends Application {
         importanceToString.put(Constants.IMPORTANCE_PERCEPTIBLE, "Perceptible task");
         importanceToString.put(Constants.IMPORTANCE_SUGGESTION, "Suggestion");
 
+
+
         mInstance = this;
     }
 
@@ -384,7 +386,7 @@ public class CaratApplication extends Application {
     public static String translatedPriority(String importanceString) {
         if (main != null) {
             if (importanceString == null)
-                return main.getString(R.string.priorityDefault);
+                return main.getString(R.string.unknown);
             if (importanceString.equals("Not running")) {
                 return main.getString(R.string.prioritynotrunning);
             } else if (importanceString.equals("Background process")) {
@@ -399,13 +401,14 @@ public class CaratApplication extends Application {
                 return main.getString(R.string.priorityperceptible);
             } else if (importanceString.equals("Suggestion")) {
                 return main.getString(R.string.prioritysuggestion);
-            } else
+            } else if(importanceString.equals("Foreground service")) {
+                return main.getString(R.string.priorityforegroundservice);
+            } else {
                 return main.getString(R.string.priorityDefault);
-        } else if(importanceString == null) {
-            return "Not running";
+            }
+        } else {
+            return main.getString(R.string.unknown);
         }
-
-        return importanceString;
     }
 
     /**

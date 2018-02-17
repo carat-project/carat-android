@@ -342,12 +342,13 @@ delete these from your file.
     <string name="priority">Priority:</string>
     <string name="priorityDefault">Not running</string>
     <string name="prioritynotrunning">Not running</string>
-    <string name="priorityforeground">Current app</string>
-    <string name="prioritybackground">Running</string>
-    <string name="priorityservice">Background Service</string>
-    <string name="priorityperceptible">Running</string>
+    <string name="priorityforeground">Foreground application</string>
+    <string name="prioritybackground">Background application</string>
+    <string name="priorityservice">Background service</string>
+    <string name="priorityperceptible">Perceptible</string>
     <string name="priorityvisible">Visible</string>
     <string name="prioritysuggestion">Suggestion</string>
+    <string name="priorityforegroundservice">Foreground service</string>
 
     <!-- Settings screen related -->
 
@@ -431,5 +432,5 @@ delete these from your file.
         <item>No J-Score after 7 days of use</item>
         <item>Other, please specify</item>
     </string-array>
-
+    <string name="unknown">Unknown</string>
 </resources>
