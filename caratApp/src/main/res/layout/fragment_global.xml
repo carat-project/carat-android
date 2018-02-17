@@ -85,6 +85,7 @@
                     <TextView
                         android:id="@+id/well_behaved_title"
                         style="@style/LargeBlackText"
+                        android:paddingTop="5dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
