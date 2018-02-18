@@ -1676,7 +1676,10 @@ public final class SamplingLibrary {
 	 */
 	public static List<String> getEnabledLocationProviders(Context context) {
 		LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-		return lm.getProviders(true);
+		if(lm != null){
+			return lm.getProviders(true);
+		}
+		return new ArrayList<>();
 	}
 
 	public static String getBestProvider(Context context) {

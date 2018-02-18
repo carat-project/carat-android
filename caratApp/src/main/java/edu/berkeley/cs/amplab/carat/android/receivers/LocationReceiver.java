@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
@@ -19,10 +20,12 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 
 /**
  * Created by Jonatan Hamberg on 26.4.2017.
@@ -41,6 +44,7 @@ public class LocationReceiver extends Service implements LocationListener{
     public int onStartCommand(Intent intent, int flags, int startId) {
         context = getApplicationContext();
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        getLastKnownLocation();
         requestLocationUpdates();
         super.onStartCommand(intent, flags, startId);
         return START_STICKY;
@@ -77,23 +81,51 @@ public class LocationReceiver extends Service implements LocationListener{
             lastRequest = now;
             Criteria criteria = new Criteria();
             criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-            locationManager.requestSingleUpdate(criteria, this, Looper.myLooper());
-            locationManager.requestLocationUpdates(0, 0, criteria, this, Looper.myLooper());
+            try {
+                locationManager.requestSingleUpdate(criteria, this, Looper.myLooper());
+                locationManager.requestLocationUpdates(0, 0, criteria, this, Looper.myLooper());
 
-            // Also request on each provider, if any
-            List<String> providers = SamplingLibrary.getEnabledLocationProviders(context);
-            if (providers != null) {
-                Logger.d(TAG, providers + " " + providers.size());
-                for (String provider : providers) {
-                    Logger.d(TAG, "Provider: " + provider);
-                    locationManager.requestSingleUpdate(provider, this, Looper.myLooper());
-                    locationManager.requestLocationUpdates(provider, Constants.FRESHNESS_TIMEOUT, 0, this);
+                // Also request on each provider, if any
+                List<String> providers = SamplingLibrary.getEnabledLocationProviders(context);
+                if (!Util.isNullOrEmpty(providers)) {
+                    Logger.d(TAG, providers + " " + providers.size());
+                    for (String provider : providers) {
+                        Logger.d(TAG, "Provider: " + provider);
+                        locationManager.requestSingleUpdate(provider, this, Looper.myLooper());
+                        locationManager.requestLocationUpdates(provider, Constants.FRESHNESS_TIMEOUT, 0, this);
+                    }
                 }
+            } catch(Throwable th){
+                Logger.e(TAG, "Something went wrong when requesting location updates " + th);
             }
         } else {
             Logger.d(TAG, "Requesting location updates too quickly");
         }
         scheduleSaveAndStop();
+    }
+
+    private void getLastKnownLocation(){
+        if(locationManager == null){
+            stop();
+        } else if(context != null){
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            if(prefs != null){
+                long halfHourAgo = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(30);
+                long timestamp = prefs.getLong(Keys.lastSampleTimestamp, halfHourAgo) + 60000;
+
+                List<String> providers = SamplingLibrary.getEnabledLocationProviders(context);
+                if(!Util.isNullOrEmpty(providers)){
+                    for(String provider : providers){
+                        Location location = locationManager.getLastKnownLocation(provider);
+                        if(location != null && location.getTime() > timestamp){
+                            Logger.d(TAG, "Found last known location");
+                            bestLocation = location;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void scheduleSaveAndStop(){
