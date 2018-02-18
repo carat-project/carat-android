@@ -146,19 +146,27 @@ public class Sampler {
     }
 
     private static String getBatteryStatusString(SharedPreferences prefs, Intent intent){
-        String lastState = prefs.getString(Keys.lastBatteryStatus, "Unknown");
-        int id = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
-        String status;
-        switch(id){
-            case BatteryManager.BATTERY_STATUS_CHARGING: status =  "Charging"; break;
-            case BatteryManager.BATTERY_STATUS_DISCHARGING: status = "Discharging"; break;
-            case BatteryManager.BATTERY_STATUS_FULL: status = "Full"; break;
-            case BatteryManager.BATTERY_STATUS_NOT_CHARGING: status = "Not charging"; break;
-            case BatteryManager.BATTERY_STATUS_UNKNOWN: status = "Unknown"; break;
-            default: status = lastState;
+        String lastState = "Unknown";
+        if(prefs != null){
+            lastState = prefs.getString(Keys.lastBatteryStatus, "Unknown");
         }
-        prefs.edit().putString(Keys.lastBatteryStatus, status).apply();
-        return status;
+        if(intent != null){
+            int id = intent.getIntExtra(BatteryManager.EXTRA_STATUS, 0);
+            String status;
+            switch(id){
+                case BatteryManager.BATTERY_STATUS_CHARGING: status =  "Charging"; break;
+                case BatteryManager.BATTERY_STATUS_DISCHARGING: status = "Discharging"; break;
+                case BatteryManager.BATTERY_STATUS_FULL: status = "Full"; break;
+                case BatteryManager.BATTERY_STATUS_NOT_CHARGING: status = "Not charging"; break;
+                case BatteryManager.BATTERY_STATUS_UNKNOWN: status = "Unknown"; break;
+                default: status = lastState;
+            }
+            if(prefs != null){
+                prefs.edit().putString(Keys.lastBatteryStatus, status).apply();
+            }
+            return status;
+        }
+        return lastState;
     }
 
     private static NetworkDetails constructNetworkDetails(Context context){
