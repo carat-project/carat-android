@@ -26,6 +26,7 @@ import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
 import edu.berkeley.cs.amplab.carat.android.models.SimpleProcessInfo;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
+import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
 import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 
@@ -209,15 +210,7 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
         for(ProcessInfo pi : list){
             String pName = pi.getPName();
             String localizedName = CaratApplication.labelForApp(context, pName);
-            String importance = pi.getImportance();
-            if(importance != null &&
-                    (importance.equalsIgnoreCase("uninstalled")
-                    || importance.equalsIgnoreCase("replaced")
-                    || importance.equalsIgnoreCase("disabled")
-                    || importance.equalsIgnoreCase("installed"))){
-                Logger.d(TAG, "Skipping " + pName + " since importance is " + importance);
-                continue;
-            }
+            String importance = ProcessUtil.mostRecentPriority(context, pName);
             int serviceCount = 0;
             int activityCount = 0;
             if(pi.isSetProcesses()){
@@ -246,7 +239,7 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
             SimpleProcessInfo spi = new SimpleProcessInfo()
                     .setPackageName(pName)
                     .setLocalizedName(localizedName)
-                    .setImportance(CaratApplication.translatedPriority(importance))
+                    .setImportance(importance)
                     .setVersionName(versionName)
                     .setIcon(icon)
                     .setActivityCount(activityCount)

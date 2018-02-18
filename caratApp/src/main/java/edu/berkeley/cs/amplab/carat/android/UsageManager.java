@@ -2,6 +2,7 @@ package edu.berkeley.cs.amplab.carat.android;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.AppOpsManager;
 import android.app.Dialog;
 import android.app.usage.UsageEvents;
@@ -269,6 +270,32 @@ public class UsageManager {
             }
         }
         return "Unknown";
+    }
+
+    public static int getLastImportance(Context context, String packageName, long since){
+        long lastTimestamp = -1;
+        int mostRecentImportance = -1;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Map<String, TreeMap<Long, Integer>> log = UsageManager.getEventLogs(context, since);
+            TreeMap<Long, Integer> events = log.get(packageName);
+            for(Long timestamp : events.keySet()){
+                int event = events.get(timestamp);
+                if(timestamp > lastTimestamp){ // Check just in case
+                    switch(event){
+                        case UsageEvents.Event.MOVE_TO_BACKGROUND:
+                            mostRecentImportance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND;
+                            break;
+                        case UsageEvents.Event.USER_INTERACTION:
+                        case UsageEvents.Event.SHORTCUT_INVOCATION:
+                        case UsageEvents.Event.MOVE_TO_FOREGROUND:
+                            mostRecentImportance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+                            break;
+                    }
+                }
+                lastTimestamp = timestamp;
+            }
+        }
+        return mostRecentImportance;
     }
 
     public static void disposeInMemoryEvents(){

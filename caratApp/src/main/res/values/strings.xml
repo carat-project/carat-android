@@ -345,8 +345,8 @@ delete these from your file.
     <string name="priorityforeground">Foreground application</string>
     <string name="prioritybackground">Background application</string>
     <string name="priorityservice">Background service</string>
-    <string name="priorityperceptible">Perceptible</string>
-    <string name="priorityvisible">Visible</string>
+    <string name="priorityperceptible">Perceptible task</string>
+    <string name="priorityvisible">Visible task</string>
     <string name="prioritysuggestion">Suggestion</string>
     <string name="priorityforegroundservice">Foreground service</string>
 

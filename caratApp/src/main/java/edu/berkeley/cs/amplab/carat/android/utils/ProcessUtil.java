@@ -1,16 +1,26 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
 import android.app.ActivityManager;
+import android.app.usage.UsageEvents;
 import android.content.Context;
+import android.os.Build;
+import android.util.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
+import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
+import edu.berkeley.cs.amplab.carat.thrift.PackageProcess;
 import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
 
 /**
@@ -18,6 +28,7 @@ import edu.berkeley.cs.amplab.carat.thrift.ProcessInfo;
  */
 
 public class ProcessUtil {
+    private static final String TAG = ProcessUtil.class.getSimpleName();
     private static List<ProcessInfo> inMemoryProcesses;
 
     public static void invalidateInMemoryProcesses(){
@@ -33,18 +44,10 @@ public class ProcessUtil {
 
         List<ProcessInfo> processes = getCachedOrFetchProcesses(context);
         for(ProcessInfo pi : processes){
-            Logger.d("TEMP", "Process " + pi.pName + " importance " + pi.importance);
             String processName = trimProcessName(pi.pName)[0];
             if(processName != null){
                 for(SimpleHogBug hb : visible){
                     if(processName.equals(hb.getAppName())){
-                        String piImportance = pi.getImportance();
-                        // Use the more accurate priority
-                        if(!Util.isNullOrEmpty(piImportance) && piImportance.length() > 0
-                                && !piImportance.equalsIgnoreCase("Not running")
-                                && !piImportance.equalsIgnoreCase("Unknown")){
-                            hb.setAppPriority(piImportance);
-                        }
                         running.add(hb);
                     }
                 }
@@ -127,5 +130,40 @@ public class ProcessUtil {
             }
         }
         return "Unknown";
+    }
+
+    public static String mostRecentPriority(Context context, String packageName){
+        Map<String, List<PackageProcess>> runningApps = SamplingLibrary.getRunningNow(context);
+        Map<String, List<PackageProcess>> runningServices = SamplingLibrary.getRunningServices(context);
+
+        // Find both services and applications (activities) running for this package
+        int appImportance = getLowestImportance(runningApps.get(packageName));
+        int serviceImportance = getLowestImportance(runningServices.get(packageName));
+        int importance = Math.min(appImportance, serviceImportance); // Whichever is lower
+
+        // If still at default value, fall back to event log to find the most recent importance
+        if(importance == Integer.MAX_VALUE && Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+            long freshness = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
+            importance = UsageManager.getLastImportance(context, packageName, freshness);
+        }
+
+        // Convert to string
+        String importanceString = CaratApplication.importanceString(importance);
+        return CaratApplication.translatedPriority(importanceString);
+    }
+
+    private static Integer getLowestImportance(List<PackageProcess> processes){
+        int result = Integer.MAX_VALUE;
+        if(!Util.isNullOrEmpty(processes)){
+            for(PackageProcess app : processes){
+                if(app.isSetImportance()){
+                    int importance = app.getImportance();
+                    if(importance >= 0 && importance < result ){
+                        result = importance;
+                    }
+                }
+            }
+        }
+        return result;
     }
 }
