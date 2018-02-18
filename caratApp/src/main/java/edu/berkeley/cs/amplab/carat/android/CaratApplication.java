@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
@@ -25,6 +26,7 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -175,10 +177,11 @@ public class CaratApplication extends Application {
         if(currentProcessName.equalsIgnoreCase(getPackageName())){
             Logger.d(TAG, "Listening to battery changes in " + currentProcessName);
             // Only register this in the process hosting the actual application, not services
-            this.registerReceiver(new ActionReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+            new Handler().postDelayed(() -> {
+                this.registerReceiver(new ActionReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+            }, TimeUnit.SECONDS.toMillis(3));
         }
         super.onCreate();
-        // SamplingLibrary.getRunningProcessesFromEventLog(getApplicationContext(), System.currentTimeMillis()-600000);
     }
 
     // Utility methods

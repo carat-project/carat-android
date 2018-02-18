@@ -58,6 +58,7 @@ import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragment;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
+import edu.berkeley.cs.amplab.carat.android.utils.Profiler;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.android.utils.VersionGater;
@@ -175,8 +176,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        // TODO: Add this as an accessible flag
-        staticActionsAmount = CaratApplication.getStaticActions().size();
+        new Thread(() -> {
+            // According to profiling, this takes almost 2 seconds to execute
+            staticActionsAmount = CaratApplication.getStaticActions().size();
+        }).start();
     }
 
     public void checkUsageAccess(){
