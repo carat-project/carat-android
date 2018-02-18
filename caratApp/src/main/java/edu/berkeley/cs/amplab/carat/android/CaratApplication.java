@@ -384,31 +384,42 @@ public class CaratApplication extends Application {
     }
 
     public static String translatedPriority(String importanceString) {
-        if (main != null) {
-            if (importanceString == null)
-                return main.getString(R.string.unknown);
-            if (importanceString.equals("Not running")) {
-                return main.getString(R.string.prioritynotrunning);
-            } else if (importanceString.equals("Background process")) {
-                return main.getString(R.string.prioritybackground);
-            } else if (importanceString.equals("Service")) {
-                return main.getString(R.string.priorityservice);
-            } else if (importanceString.equals("Visible task")) {
-                return main.getString(R.string.priorityvisible);
-            } else if (importanceString.equals("Foreground app")) {
-                return main.getString(R.string.priorityforeground);
-            } else if (importanceString.equals("Perceptible task")) {
-                return main.getString(R.string.priorityperceptible);
-            } else if (importanceString.equals("Suggestion")) {
-                return main.getString(R.string.prioritysuggestion);
-            } else if(importanceString.equals("Foreground service")) {
-                return main.getString(R.string.priorityforegroundservice);
-            } else {
-                return main.getString(R.string.priorityDefault);
+        Logger.d(TAG, "Translating " + importanceString);
+        Context context = main != null ? main.getApplicationContext() : mInstance;
+        if(context != null){
+            if(importanceString == null){
+                return context.getString(R.string.unknown);
             }
-        } else {
-            return main.getString(R.string.unknown);
+            switch (importanceString) {
+                // Not running is actually a result of receiving IMPORTANCE_EMPTY from ProcessInfo
+                // which means that the application is not currently running any active code but
+                // resides on the background instead. As of API level 26, IMPORTANCE_EMPTY was
+                // deprecated in favor of IMPORTANCE_CACHED which resolves to same numeric value
+                // as IMPORTANCE_BACKGROUND (also deprecated). Ultimately, "Background process"
+                // seems to best reflect this priority, since in practice the application code has
+                // been cached and its execution paused. However, this does not mean that in the
+                // eyes of a user the application would be stopped as it still likely exists in the
+                // recent apps menu.
+                case "Not running":
+                case "Background process":
+                    return context.getString(R.string.prioritybackground);
+                case "Service":
+                    return context.getString(R.string.priorityservice);
+                case "Visible task":
+                    return context.getString(R.string.priorityvisible);
+                case "Foreground app":
+                    return context.getString(R.string.priorityforeground);
+                case "Perceptible task":
+                    return context.getString(R.string.priorityperceptible);
+                case "Suggestion":
+                    return context.getString(R.string.prioritysuggestion);
+                case "Foreground service":
+                    return context.getString(R.string.priorityforegroundservice);
+                default:
+                    return context.getString(R.string.unknown);
+            }
         }
+        return "Unknown";
     }
 
     /**
