@@ -577,8 +577,6 @@ public final class SamplingLibrary {
 		}
 	}
 
-	private static WeakReference<List<RunningAppProcessInfo>> runningAppInfo = null;
-
 	/**
 	 * NOTE: This only works on older Android versions!
 	 * @param context Application context
@@ -622,7 +620,6 @@ public final class SamplingLibrary {
 		}
 		return result;
 	}
-
 
 	/**
 	 * Get running processes starting from given date. Note that this method relies on UsageStats
@@ -742,51 +739,6 @@ public final class SamplingLibrary {
 		return split[0] + "@service";
 	}
 
-	private static WeakReference<List<RunningServiceInfo>> runningServiceInfo = null;
-
-
-	/**
-	 * Populate running process info into the runningAppInfo WeakReference list, and return its value.
-	 * @param context the Context
-	 * @return the value of the runningAppInfo WeakReference list after setting it.
-	 */
-	private static List<RunningAppProcessInfo> getRunningProcessInfo(Context context) {
-		if (runningAppInfo == null || runningAppInfo.get() == null) {
-			ActivityManager pActivityManager = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
-			List<RunningAppProcessInfo> runningProcs = pActivityManager.getRunningAppProcesses();
-			/*
-			 * TODO: Is this the right thing to do? Remove part after ":" in
-			 * process names
-			 */
-			for (RunningAppProcessInfo i : runningProcs) {
-				if (i != null && i.processName != null) {
-					int idx = i.processName.lastIndexOf(':');
-					if (idx <= 0)
-						idx = i.processName.length();
-					i.processName = i.processName.substring(0, idx);
-				}
-			}
-
-			runningAppInfo = new WeakReference<List<RunningAppProcessInfo>>(runningProcs);
-			return runningProcs;
-		}else
-		    return runningAppInfo.get();
-	}
-
-	/**
-	 * Returns a list of currently running Services.
-	 * @param c the Context.
-	 * @return Returns a list of currently running Services.
-	 */
-	public static List<RunningServiceInfo> getRunningServiceInfo(Context c) {
-		if(runningServiceInfo == null || runningServiceInfo.get() == null) {
-			ActivityManager pActivityManager = (ActivityManager) c.getSystemService(Activity.ACTIVITY_SERVICE);
-			List<RunningServiceInfo> runningServices = pActivityManager.getRunningServices(255);
-			runningServiceInfo = new WeakReference<List<RunningServiceInfo>>(runningServices);
-			return runningServices;
-		} else return runningServiceInfo.get();
-	}
-
 	/**
 	 * Helper to query whether an application is currently running and its code has not been evicted from memory. 
 	 * @param context the Context
@@ -810,14 +762,6 @@ public final class SamplingLibrary {
 	public static boolean isSettingsSuggestion(Context context, String appName) {
 		// TODO: fill in (if everything is a suggestion, and no need for checking at the client side, then remove this method)
 		return true;
-	}
-	
-	/**
-	 * Used to clear the runningAppInfo WeakReference list when the process list view needs to be refreshed.
-	 */
-	public static void resetRunningProcessInfo() {
-		runningAppInfo = null;
-		runningServiceInfo = null;
 	}
 
 	/**
@@ -1933,7 +1877,6 @@ public final class SamplingLibrary {
 				am.killBackgroundProcesses(packageName);
 				/*Toast.makeText(context, context.getResources().getString(R.string.stopping) + ((label == null) ? "" : " "+label),
 						Toast.LENGTH_SHORT).show();*/
-				resetRunningProcessInfo();
 				return true;
 			} catch (Throwable th) {
 				Toast.makeText(context,  context.getResources().getString(R.string.stopping_failed),
@@ -1986,36 +1929,6 @@ public final class SamplingLibrary {
 			return false;
 		}
 		return true;
-	}
-
-	/**
-	 * Get highest priority process for the package
-	 * @param c
-	 * @param packageName
-     * @return
-     */
-	public static String getAppPriority(Context c, String packageName){
-		List<RunningAppProcessInfo> processInfos = getRunningProcessInfo(c);
-		List<RunningServiceInfo> serviceInfos = getRunningServiceInfo(c);
-		int highestPriority = Integer.MAX_VALUE;
-
-		// Check if there are running services for the package
-		for(RunningServiceInfo si : serviceInfos) {
-			if(si.service.getPackageName().equals(packageName)){
-				highestPriority = RunningAppProcessInfo.IMPORTANCE_SERVICE;
-			}
-
-		}
-		// Check if there are running processes for the package
-		for(RunningAppProcessInfo pi : processInfos){
-			if(Arrays.asList(pi.pkgList).contains(packageName)) {
-				if(pi.importance < highestPriority){
-					highestPriority = pi.importance;
-				}
-			}
-		}
-		String importance = CaratApplication.importanceString(highestPriority);
-		return CaratApplication.translatedPriority(importance);
 	}
 
 	private static String convertToHex(byte[] data) {

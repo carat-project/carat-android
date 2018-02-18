@@ -388,7 +388,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Logger.d(TAG, "Application exited to the background");
         onBackground = true;
         ProcessUtil.invalidateInMemoryProcesses();
-        SamplingLibrary.resetRunningProcessInfo();
     }
 
     public boolean isOnBackground(){
