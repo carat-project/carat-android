@@ -236,7 +236,7 @@
     <string name="about">TIETOJA</string>
 
     <!-- PROCESS LIST -->
-    <string name="version">Versio</string>
+    <string name="version">Versio:</string>
     <string name="process_list_message">Prosessilista näyttää käynnissä olevat sovellukset ja palvelut. Suurempi määrä sovelluksia johtaa yleensä huonompaan akunkestoon.</string>
     <string name="process_list_message_lp">Prosessilista näyttää äskettäin käynnissä olleet sovellukset. Suurempi määrä sovelluksia johtaa yleensä huonompaan akunkestoon.</string>
 

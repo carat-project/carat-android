@@ -33,10 +33,18 @@ public class ProcessUtil {
 
         List<ProcessInfo> processes = getCachedOrFetchProcesses(context);
         for(ProcessInfo pi : processes){
+            Logger.d("TEMP", "Process " + pi.pName + " importance " + pi.importance);
             String processName = trimProcessName(pi.pName)[0];
             if(processName != null){
                 for(SimpleHogBug hb : visible){
                     if(processName.equals(hb.getAppName())){
+                        String piImportance = pi.getImportance();
+                        // Use the more accurate priority
+                        if(!Util.isNullOrEmpty(piImportance) && piImportance.length() > 0
+                                && !piImportance.equalsIgnoreCase("Not running")
+                                && !piImportance.equalsIgnoreCase("Unknown")){
+                            hb.setAppPriority(piImportance);
+                        }
                         running.add(hb);
                     }
                 }

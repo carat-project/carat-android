@@ -254,7 +254,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         holder.samplesText.setText(R.string.samples);
         holder.samplesAmount.setText(String.valueOf(item.getSamples()));
         holder.killAppButton.setTag(item.getAppName());
-        holder.appCategory.setText(SamplingLibrary.getAppPriority(context, item.getAppName()));
+        holder.appCategory.setText(CaratApplication.translatedPriority(item.getAppPriority()));
 
         // Currently these need to be set each time, refactor?
         holder.killAppButton.setBackgroundResource(R.drawable.button_rounded_orange);

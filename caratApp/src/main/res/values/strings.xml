@@ -243,7 +243,7 @@
     <string name="about">ABOUT</string>
 
     <!-- PROCESS LIST -->
-    <string name="version">Version</string>
+    <string name="version">Version: </string>
     <string name="process_list_message">The process list shows currently running applications and services. More active applications and services usually leads to worse battery life.</string>
     <string name="process_list_message_lp">Process list shows which applications have been recently running. More active applications and services usually leads to worse battery life.</string>
 
