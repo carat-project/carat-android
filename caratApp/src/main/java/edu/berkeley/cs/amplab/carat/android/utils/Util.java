@@ -98,7 +98,7 @@ public class Util {
         return System.currentTimeMillis() + milliseconds;
     }
 
-    public static boolean isNullOrEmpty(File[] array){
+    public static <T> boolean isNullOrEmpty(T[] array){
         return array == null || array.length == 0;
     }
 
