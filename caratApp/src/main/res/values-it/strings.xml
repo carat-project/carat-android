@@ -133,9 +133,9 @@ sugli altri, sarà elencata qui.</string>
     <string name="device_usage_title">Utilizzo</string>
     <string name="what_are_jscore_numbers">Cosa é il J-Score?</string>
     <string name="process_list_title">PROCESSI</string>
-    <string name="memory_used_title">Memoria usata</string>
-    <string name="memory_active_title">Memoria attiva</string>
-    <string name="cpu_usage_title">Utilizzo della CPU</string>
+    <string name="memory_used_title">Memoria usata:</string>
+    <string name="memory_active_title">Memoria attiva:</string>
+    <string name="cpu_usage_title">Utilizzo della CPU:</string>
 
     <!-- ABOUT -->
     <string name="about_general_title">Carat</string>

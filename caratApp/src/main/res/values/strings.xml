@@ -127,9 +127,9 @@
     <string name="device_usage_title">DEVICE USAGE</string>
     <string name="what_are_jscore_numbers">What is a J-Score?</string>
     <string name="process_list_title">PROCESS LIST</string>
-    <string name="memory_used_title">Memory used</string>
-    <string name="memory_active_title">Memory active</string>
-    <string name="cpu_usage_title">CPU usage</string>
+    <string name="memory_used_title">Memory used:</string>
+    <string name="memory_active_title">Memory active:</string>
+    <string name="cpu_usage_title">CPU usage:</string>
 
     <!-- ABOUT -->
     <string name="about_general_title">Carat</string>

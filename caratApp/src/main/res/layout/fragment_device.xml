@@ -271,6 +271,15 @@
                             android:layout_alignParentTop="true"
                             android:text="@string/memory_used_title" />
 
+                        <TextView
+                            android:id="@+id/memory_used_value"
+                            style="@style/LargeBlackText"
+                            android:layout_marginLeft="6dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@id/memory_used_title"
+                            tools:text="90%"/>
+
                         <Button
                             android:id="@+id/memory_used_info_button"
                             style="@style/InfoButtonStyle"
@@ -325,6 +334,15 @@
                             android:layout_alignParentTop="true"
                             android:text="@string/memory_active_title" />
 
+                        <TextView
+                            android:id="@+id/memory_active_value"
+                            style="@style/LargeBlackText"
+                            android:layout_marginLeft="6dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@id/memory_active_title"
+                            tools:text="40%"/>
+
                         <Button
                             android:id="@+id/memory_active_button"
                             style="@style/InfoButtonStyle"
@@ -377,6 +395,15 @@
                             android:layout_alignParentLeft="true"
                             android:layout_alignParentTop="true"
                             android:text="@string/cpu_usage_title" />
+
+                        <TextView
+                            android:id="@+id/cpu_usage_value"
+                            style="@style/LargeBlackText"
+                            android:layout_marginLeft="6dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@id/cpu_usage_title"
+                            tools:text="55%"/>
 
                         <Button
                             android:id="@+id/cpu_usage_button"

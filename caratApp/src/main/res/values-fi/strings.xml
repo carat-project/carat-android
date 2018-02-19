@@ -122,9 +122,9 @@
     <string name="device_usage_title">Puhelimen käyttö</string>
     <string name="what_are_jscore_numbers">Mikä on J-Score?</string>
     <string name="process_list_title">PROSESSILISTA</string>
-    <string name="memory_used_title">Muistia käytetty</string>
-    <string name="memory_active_title">Muistia aktiivisena</string>
-    <string name="cpu_usage_title">Suorittimen käyttö</string>
+    <string name="memory_used_title">Muistia käytetty:</string>
+    <string name="memory_active_title">Muistia aktiivisena:</string>
+    <string name="cpu_usage_title">Suorittimen käyttö:</string>
 
     <!-- ABOUT -->
     <string name="about_general_title">Carat</string>

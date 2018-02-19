@@ -1,14 +1,22 @@
 package edu.berkeley.cs.amplab.carat.android.fragments;
 
+import android.animation.ArgbEvaluator;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.SweepGradient;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +24,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
@@ -29,8 +39,11 @@ import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 
 /**
  * Created by Valto on 30.9.2015.
+ * Modified by Jonatan Hamberg.
  */
 public class DeviceFragment extends Fragment implements View.OnClickListener, Runnable {
+    private static final String TAG = DeviceFragment.class.getSimpleName();
+    private static final long REFRESH_INTERVAL = TimeUnit.SECONDS.toMillis(5);
 
     private MainActivity mainActivity;
     private RelativeLayout mainFrame;
@@ -45,6 +58,10 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
     private Button cpuUsageButton;
     private Button processListButton;
 
+    private TextView memoryUsed;
+    private TextView memoryActive;
+    private TextView cpuUsage;
+
     private TextView deviceModel;
     private TextView osVersion;
     private TextView caratID;
@@ -52,11 +69,42 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
     private TextView whatIsJScore;
 
     private boolean locker;
+    private boolean schedulerRunning;
     private float memoryUsedConverted = 0;
     private float memoryActiveConverted = 0;
     private float cpuUsageConverted = 0;
     private BaseDialog dialog;
 
+    private final Handler handler = new Handler();
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if(getContext() == null){
+                schedulerRunning = false;
+            }
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            boolean allowBackground = preferences.getBoolean(getString(R.string.enable_background), false);
+            schedulerRunning = !mainActivity.isOnBackground() || allowBackground;
+            if(schedulerRunning){
+                setMemoryValues();
+                if(memoryUsedBar != null && memoryUsedBar.getWidth() > 0 && memoryUsedBar.getHeight() > 0){
+                    setPercentageBar(memoryUsedBar, 0);
+                    setPercentageBar(memoryActiveBar, 1);
+                    setPercentageBar(cpuUsageBar, 2);
+                }
+                handler.postDelayed(runnable, REFRESH_INTERVAL);
+            } else {
+                Logger.d(TAG, "Stopped refreshing device info, application on background");
+            }
+        }
+    };
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Logger.d(TAG, "Stopped refreshing device info, left view");
+        handler.removeCallbacks(runnable);
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -89,8 +137,15 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
         generateJScoreCircle();
         initListeners();
         setValues();
+        scheduleRefresh();
 
         mainFrame.post(this);
+    }
+
+    private void scheduleRefresh(){
+        if(!schedulerRunning){
+            handler.postDelayed(runnable, REFRESH_INTERVAL);
+        }
     }
 
     private void initViewRefs() {
@@ -98,6 +153,10 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
         memoryUsedBar = (ImageView) mainFrame.findViewById(R.id.memory_used_bar);
         memoryActiveBar = (ImageView) mainFrame.findViewById(R.id.memory_active_bar);
         cpuUsageBar = (ImageView) mainFrame.findViewById(R.id.cpu_usage_bar);
+
+        cpuUsage = mainFrame.findViewById(R.id.cpu_usage_value);
+        memoryActive = mainFrame.findViewById(R.id.memory_active_value);
+        memoryUsed = mainFrame.findViewById(R.id.memory_used_value);
 
         caratID = (TextView) mainFrame.findViewById(R.id.carat_id_value);
         deviceModel = (TextView) mainFrame.findViewById(R.id.device_model_value);
@@ -120,7 +179,6 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
         processListButton.setOnClickListener(this);
         whatIsJScore.setOnClickListener(this);
     }
-
 
     private void generateJScoreCircle() {
         cd.setValueWidthPercent(10f);
@@ -147,17 +205,19 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
         batteryLife.setText(CaratApplication.myDeviceData.getBatteryLife());
 
         setMemoryValues();
-
     }
 
     private void setMemoryValues() {
-        int[] totalAndUsed = SamplingLibrary.readMeminfo();
-        memoryUsedConverted = 1 - ((float) totalAndUsed[0] / totalAndUsed[1]);
-        if (totalAndUsed.length > 2) {
-            memoryActiveConverted = (float) totalAndUsed[2] / (totalAndUsed[3] + totalAndUsed[2]);
+        memoryUsedConverted = (float) SamplingLibrary.getMemoryUsage();
+        memoryActiveConverted = (float) SamplingLibrary.getActiveMemoryUsage();
+        memoryUsed.setText(String.format(Locale.getDefault(), "%d%%", (long)(memoryUsedConverted*100)));
+        memoryActive.setText(String.format(Locale.getDefault(), "%d%%", (long)(memoryActiveConverted*100)));
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            cpuUsageConverted = (float)SamplingLibrary.getCpuUsageEstimate();
+        } else {
+            cpuUsageConverted = mainActivity.getCpuValue();
         }
-
-        cpuUsageConverted = mainActivity.getCpuValue();
+        cpuUsage.setText(String.format(Locale.getDefault(), "%d%%", (long)(cpuUsageConverted*100)));
     }
 
     @Override
@@ -221,25 +281,44 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
     }
 
     private void draw(Canvas canvas, int which) {
+        int green = Color.argb(255, 75, 200, 127);
+        int orange = 0xfff7a71b;
+        int red = Color.argb(255, 243, 53, 53);
+        int[] colors = new int[]{green, orange, red};
+        float[] positions = new float[]{0, 0.8f, 1};
+        Shader shader = new LinearGradient(0, 0, canvas.getWidth(), canvas.getHeight(), colors, positions, Shader.TileMode.CLAMP);
         RectF r;
+        Paint paint;
         switch (which) {
             case 0:
                 r = new RectF(0, 0, memoryUsedConverted * canvas.getWidth(), canvas.getHeight());
+                canvas.drawColor(Color.argb(255, 180, 180, 180));
+                paint = new Paint();
+                paint.setShader(shader);
+                canvas.drawRect(r, paint);
                 break;
             case 1:
                 r = new RectF(0, 0, memoryActiveConverted * canvas.getWidth(), canvas.getHeight());
+                canvas.drawColor(Color.argb(255, 180, 180, 180));
+                paint = new Paint();
+                paint.setShader(shader);
+                canvas.drawRect(r, paint);
                 break;
             case 2:
                 r = new RectF(0, 0, cpuUsageConverted * canvas.getWidth(), canvas.getHeight());
+                canvas.drawColor(Color.argb(255, 180, 180, 180));
+                paint = new Paint();
+                paint.setShader(shader);
+                canvas.drawRect(r, paint);
                 break;
             default:
                 r = new RectF(0, 0, 0, 0);
+                canvas.drawColor(Color.argb(255, 180, 180, 180));
+                paint = new Paint();
+                paint.setARGB(255, 75, 200, 127);
+                canvas.drawRect(r, paint);
                 break;
         }
-        canvas.drawColor(Color.argb(255, 180, 180, 180));
-        Paint paint = new Paint();
-        paint.setARGB(255, 75, 200, 127);
-        canvas.drawRect(r, paint);
     }
 
     private void setPercentageBar(ImageView view, int id) {
