@@ -104,6 +104,7 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
         super.onPause();
         Logger.d(TAG, "Stopped refreshing device info, left view");
         handler.removeCallbacks(runnable);
+        schedulerRunning = false;
     }
 
     @Override
