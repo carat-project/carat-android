@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.preference.PreferenceManager;
 
 import java.util.concurrent.TimeUnit;
@@ -190,8 +191,10 @@ public class Sampler {
     private static CpuStatus constructCpuStatus(SystemLoadPoint load1, SystemLoadPoint load2){
         CpuStatus cpuStatus = new CpuStatus();
         if(load1 == null || load2 == null){
-            Logger.e(TAG, "CPU usage was null when constructing sample!");
-            cpuStatus.setCpuUsage(0);
+            Logger.d(TAG, "CPU usage was null when constructing sample!"); // Typical on O
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                cpuStatus.setCpuUsage(SamplingLibrary.getCpuUsageEstimate());
+            }
         } else {
             cpuStatus.setCpuUsage(SamplingLibrary.getCpuUsage(load1, load2));
         }
