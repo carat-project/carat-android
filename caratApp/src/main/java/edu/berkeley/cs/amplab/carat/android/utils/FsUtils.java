@@ -1,13 +1,17 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
+import android.os.Handler;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 /**
@@ -97,6 +101,101 @@ public class FsUtils {
         }
     }
 
+    public static class MEMORY {
+        private static String memInfoFile = "/proc/meminfo";
+        private static WeakReference<Map<String, Long>> cache = null;
+
+        public static long getTotalMemory(){
+            return readMemInfo("MemTotal");
+        }
+
+        public static long getAvailableMemory(){
+            return readMemInfo("MemAvailable");
+        }
+
+        public static long getFreeMemory(){
+            return readMemInfo("MemFree");
+        }
+
+        public static long getBufferMemory(){
+            return readMemInfo("Buffers");
+        }
+
+        public static long getCachedMemory(){
+            return readMemInfo("Cached");
+        }
+
+        public static long getSwapCachedMemory(){
+            return readMemInfo("SwapCached");
+        }
+
+        public static long getActiveMemory(){
+            return readMemInfo("Active");
+        }
+
+        public static long getInactiveMemory(){
+            return readMemInfo("Inactive");
+        }
+
+        public static long getLowWatermark(){
+            return readZoneInfo("low");
+        }
+
+        public static long getActiveFileMemory(){
+            return readMemInfo("Active(file)");
+        }
+
+        public static long getInactiveFileMemory(){
+            return readMemInfo("Inactive(file)");
+        }
+
+        public static long getSlabReclaimableMemory(){
+            return readMemInfo("SReclaimable");
+        }
+
+        private static long readMemInfo(String field){
+            Long result = 0L;
+            Map<String, Long> memInfo = Util.getWeakOrFallback(cache, () -> readMap(memInfoFile));
+            if(!Util.isNullOrEmpty(memInfo)){
+                cache = new WeakReference<>(memInfo);
+                result = memInfo.get(field);
+                scheduleCacheReset();
+            }
+            return result != null ? result : 0;
+        }
+
+        private static long readZoneInfo(String field){
+            long pageSum = 0;
+            try {
+                RandomAccessFile file = new RandomAccessFile("/proc/zoneinfo" , "r");
+                String line;
+                while((line = file.readLine()) != null){
+                    String[] tokens = line.split("\\s++");
+                    Logger.d(TAG, tokens[0] + " : " + tokens[1]);
+                    if(tokens[0].equalsIgnoreCase(field)){
+                        try {
+                            pageSum += Long.parseLong(tokens[1]);
+                        } catch (NumberFormatException e){
+                            Logger.e(TAG, "Malformed line when reading zoneinfo");
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                Logger.e(TAG, "Failed reading zoneinfo: " + e);
+            }
+            return pageSum * 4; // Assume 4KB page size for ARM
+        }
+
+        private static void scheduleCacheReset(){
+            new Handler().postDelayed(() -> {
+                if(cache != null){
+                    cache.clear();
+                    cache = null;
+                }
+            }, 500); // Should be enough to query all needed values
+        }
+    }
+
     @SuppressWarnings("unchecked") // The casts are actually checked
     private static <V> Map<Integer, V> readValues(File[] files, String subPath, Class<V> valueClass){
         TreeMap<Integer, V> values = new TreeMap<>();
@@ -130,6 +229,31 @@ public class FsUtils {
             return directory.listFiles(file -> Pattern.matches(pattern, file.getName()));
         }
         return null;
+    }
+
+    private static Map<String, Long> readMap(String path){
+        Map<String, Long> result = new HashMap<>();
+        try {
+            RandomAccessFile reader = new RandomAccessFile(path, "r");
+            String line;
+            while((line = reader.readLine()) != null){
+                if(!Util.isNullOrEmpty(line)){
+                    String[] tokens = line.split("\\s+");
+                    if(tokens.length > 1){
+                        try {
+                            String key = tokens[0].replace(":", "");
+                            Long value = Long.parseLong(tokens[1]);
+                            result.put(key, value);
+                        } catch (NumberFormatException e){
+                            Logger.d(TAG, "Unexpected format when reading /proc/meminfo");
+                        }
+                    }
+                }
+            }
+        } catch (IOException e)  {
+            Logger.e(TAG, "Error when reading /proc/meminfo: " + e);
+        }
+        return result;
     }
 
     private static Long readLong(String path){

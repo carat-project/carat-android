@@ -84,6 +84,7 @@ import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.UsageManager;
 import edu.berkeley.cs.amplab.carat.android.models.SystemLoadPoint;
+import edu.berkeley.cs.amplab.carat.android.utils.FsUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.PowerUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
@@ -566,6 +567,21 @@ public final class SamplingLibrary {
 		return (cpuP > 0)? cpuP : 0;
 	}
 
+	public static double getCpuUsageEstimate(){
+        long currentSum = 0;
+        long maximumSum = 0;
+        long minimumSum = 0;
+        List<Long> currentFreq = FsUtils.CPU.getCurrentFrequencies();
+        List<Long> maximumFreq = FsUtils.CPU.getMaximumFrequencies();
+        List<Long> minimumFreq = FsUtils.CPU.getMinimumFrequencies();
+        int cores = Math.min(Math.min(currentFreq.size(), maximumFreq.size()), minimumFreq.size());
+        for(int i=0; i < cores; i++){
+            currentSum += currentFreq.get(i);
+            maximumSum += maximumFreq.get(i);
+            minimumSum += minimumFreq.get(i);
+        }
+        return maximumSum <= 0 ? 0.0f : (currentSum-minimumSum)/(float)(maximumSum-minimumSum);
+    }
 
 	public static SystemLoadPoint getSystemLoad() {
 		try {
@@ -1317,6 +1333,57 @@ public final class SamplingLibrary {
         // multiple uninstall events
         e.remove(pref);
         return item;
+    }
+
+    public static double getMemoryUsage(){
+    	// Note: availMem in ActivityManager is inaccurate as it does not consider low watermark
+		double available = FsUtils.MEMORY.getAvailableMemory();
+		long total = FsUtils.MEMORY.getTotalMemory();
+		double result = 0;
+
+		// Some devices do not have MemAvailable in /proc/meminfo in which case we need to
+		// manually calculate its value as per /fs/proc/meminfo.c.
+		if(available == 0){
+			// Free memory and reclaimable slab
+			long free = FsUtils.MEMORY.getFreeMemory();
+			long sReclaimable = FsUtils.MEMORY.getSlabReclaimableMemory();
+
+			// Page cache
+			long activeFile = FsUtils.MEMORY.getActiveFileMemory();
+			long inactiveFile = FsUtils.MEMORY.getInactiveFileMemory();
+			long pageCache = activeFile + inactiveFile;
+
+			// Low threshold for swapping, this cannot be considered available
+			long lowWatermark = FsUtils.MEMORY.getLowWatermark(); // No access on O+
+			if(lowWatermark == 0){
+				lowWatermark = (long)(0.01 * total); // This should be in the right ballpark
+			}
+
+			// Subtract the low watermark
+			free -= lowWatermark;
+			pageCache -= Math.min(pageCache/2, lowWatermark);
+			sReclaimable -= Math.min(sReclaimable/2, lowWatermark);
+			available = (free + pageCache + sReclaimable);
+		}
+
+		// Make sure we don't divide by zero
+		if(total > 0){
+			result = 1-available/(double)total;
+		}
+		result = (result/1000) * 1024; // Convert KiB to KB
+
+        return result >= 0 ? result : 0;
+    }
+
+    public static double getActiveMemoryUsage(){
+        double result = 0;
+		long active = FsUtils.MEMORY.getActiveMemory();
+		long inactive = FsUtils.MEMORY.getInactiveMemory();
+		long total = active + inactive;
+		if(active + inactive > 0){
+			result = active/(double)total;
+		}
+        return result >= 0 ? result : 0;
     }
 
 	/**
