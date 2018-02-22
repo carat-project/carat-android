@@ -170,13 +170,19 @@ public class FsUtils {
                 RandomAccessFile file = new RandomAccessFile("/proc/zoneinfo" , "r");
                 String line;
                 while((line = file.readLine()) != null){
-                    String[] tokens = line.split("\\s++");
-                    Logger.d(TAG, tokens[0] + " : " + tokens[1]);
-                    if(tokens[0].equalsIgnoreCase(field)){
-                        try {
-                            pageSum += Long.parseLong(tokens[1]);
-                        } catch (NumberFormatException e){
-                            Logger.e(TAG, "Malformed line when reading zoneinfo");
+                    // Colon-separated values should be skipped
+                    if(line.contains(":")){
+                        continue;
+                    }
+                    String[] tokens = line.trim().split("\\s++");
+                    if(tokens.length > 1){
+                        if(tokens[0].equalsIgnoreCase(field)){
+                            try {
+                                pageSum += Long.parseLong(tokens[1]);
+                            } catch (NumberFormatException e){
+                                // This happens when lines aren't in proper key-value format
+                                Logger.d(TAG, "Skipping line in /proc/zoneinfo");
+                            }
                         }
                     }
                 }
