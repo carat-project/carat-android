@@ -406,6 +406,7 @@ delete these from your file.
     <string name="manage">Manage</string>
     <string name="remember_my_choice">Remember my choice</string>
     <string name="prompt_usage_stats">Change usage access</string>
+    <string name="prompt_battery_optimizations">Ignore battery optimization</string>
     <string name="monitor_apps">Open settings</string>
     <string name="enable_later">You can enable this option in the settings.</string>
     <string name="return_with_back">Enable the permission and return with the back button</string>
@@ -419,10 +420,7 @@ delete these from your file.
     <string name="disable_charging_mode">Disable charging measurements</string>
     <string name="charging_not_collected">No data will be collected</string>
     <string name="confirmDisableNotifications">Turning off notifications will also disable charging measurements as the background service requires an ongoing notification.</string>
-    <string name="allow_ignore_optimizations">
-        Carat was unable to collect samples in the background. Please disable battery optimization
-        in the settings by selecting Carat and choosing the option <i>Don\'t optimize</i>.
-    </string>
+    <string name="allow_ignore_optimizations">Allow Carat to ignore battery optimizations to collect samples in the background.</string>
     <string name="giveFeedback">Give feedback</string>
     <string name="writeFeedbackHere">Please write your feedback here</string>
     <string name="sendMail">Send mail</string>

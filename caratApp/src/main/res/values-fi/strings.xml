@@ -371,6 +371,7 @@
     <string name="manage">Hallinnoi</string>
     <string name="remember_my_choice">Muista valintani</string>
     <string name="prompt_usage_stats">Myönnä lupa käyttötietoihin</string>
+    <string name="prompt_battery_optimizations">Ohita akun optimointi</string>
     <string name="monitor_apps">Muuta asetuksia</string>
     <string name="enable_later">Voit myöntää luvan myöhemmin asetuksissa.</string>
     <string name="return_with_back">Myönnä käyttöoikeus ja palaa takaisin-painikkeella.</string>
@@ -384,10 +385,7 @@
     <string name="disable_charging_mode">Älä mittaa akun latausta</string>
     <string name="charging_not_collected">Poista ilmoitus käytöstä</string>
     <string name="confirmDisableNotifications">Ilmoitusten poistaminen käytöstä estää myös latauksen mittaamiseen käytetyn taustapalvelun toiminnan.</string>
-    <string name="allow_ignore_optimizations">
-        Carat ei onnistunut keräämään mittauksia taustalla. Poista akun optimointi käytöstä
-        valitsemalla Carat ja vaihtoehto <i>Älä optimoi</i> laitteesi asetuksissa.
-    </string>
+    <string name="allow_ignore_optimizations">Salli Caratin ohittaa akun optimointi, jotta se voi kerätä laitteesta mittauksia taustalla.</string>
     <string name="giveFeedback">Anna palautetta</string>
     <string name="writeFeedbackHere">Kirjoita palautteesi tähän</string>
     <string name="sendEmail">Lähetä sähköpostia</string>

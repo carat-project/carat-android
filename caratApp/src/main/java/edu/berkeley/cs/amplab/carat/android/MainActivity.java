@@ -194,35 +194,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void checkBatteryOptimizations(){
-        boolean allowedToCheck = p.getBoolean(Keys.promptIgnoreOptimizations, true);
-        Logger.d(TAG, "User has allowed to prompt battery optimizations: " + allowedToCheck);
-        if(allowedToCheck && !PowerUtils.isIgnoringBatteryOptimizations(this, getPackageName())) {
-            Logger.d(TAG, "Battery optimizations are not disabled for Carat, checking conditions");
-            long now = System.currentTimeMillis();
-            long then = SampleDB.getInstance(this).recentSampleTimestamp(this);
+        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            boolean allowedToCheck = p.getBoolean(Keys.promptIgnoreOptimizations, true);
+            Logger.d(TAG, "User has allowed to prompt battery optimizations: " + allowedToCheck);
+            if(allowedToCheck && !PowerUtils.isIgnoringBatteryOptimizations(this, getPackageName())) {
+                Logger.d(TAG, "Battery optimizations are not disabled for Carat, checking conditions");
+                long now = System.currentTimeMillis();
+                long then = SampleDB.getInstance(this).recentSampleTimestamp(this);
 
-            // Check if last sample was over a day ago
-            if (now - then > Constants.TOO_LONG_WITHOUT_SAMPLES || Constants.DEBUG) {
-                Logger.d(TAG, ((now-then)/1000) + " seconds passed since recent sample");
-                Logger.d(TAG, "Prompting user to ignore battery optimizations");
-                Context context = this;
-                CaratDialogs.permissionRequest(this, R.string.allow_ignore_optimizations, new CaratDialogs.Callback() {
-                    @Override
-                    protected void run(boolean success, boolean remember) {
-                        if (success) {
-                            Logger.d(TAG, "Opening optimization ignore activity");
-                            PowerUtils.requestIgnoreBatteryOptimizations(context);
-                            Toast.makeText(context, R.string.whitelist_carat, Toast.LENGTH_LONG).show();
-                        } else {
-                            Logger.d(TAG, "User did not want to disable battery optimization");
-                            Toast.makeText(context, R.string.enable_later, Toast.LENGTH_SHORT).show();
-                            if(remember){
-                                Logger.d(TAG, "Not prompting battery optimizations again");
-                                p.edit().putBoolean(Keys.promptIgnoreOptimizations, false).apply();
+                // Check if last sample was over a day ago
+                if (now - then > Constants.TOO_LONG_WITHOUT_SAMPLES || Constants.DEBUG) {
+                    Logger.d(TAG, ((now-then)/1000) + " seconds passed since recent sample");
+                    Logger.d(TAG, "Prompting user to ignore battery optimizations");
+                    Context context = this;
+                    CaratDialogs.permissionRequest(this, R.string.allow_ignore_optimizations, new CaratDialogs.Callback() {
+                        @Override
+                        protected void run(boolean success, boolean remember) {
+                            if (success) {
+                                Logger.d(TAG, "Opening optimization ignore activity");
+                                PowerUtils.requestIgnoreBatteryOptimizations(context);
+                                // Toast.makeText(context, R.string.whitelist_carat, Toast.LENGTH_LONG).show();
+                            } else {
+                                Logger.d(TAG, "User did not want to disable battery optimization");
+                                Toast.makeText(context, R.string.enable_later, Toast.LENGTH_SHORT).show();
+                                if(remember){
+                                    Logger.d(TAG, "Not prompting battery optimizations again");
+                                    p.edit().putBoolean(Keys.promptIgnoreOptimizations, false).apply();
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }

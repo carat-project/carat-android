@@ -45,6 +45,14 @@
     </android.support.v7.preference.Preference>
     <android.support.v7.preference.Preference
         android:persistent="false"
+        android:key="pref_battery_optimizations"
+        android:title="@string/prompt_battery_optimizations"
+        android:summary="@string/monitor_apps"
+        android:id="@+id/preference4">
+        <intent android:action="android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"/>
+    </android.support.v7.preference.Preference>
+    <android.support.v7.preference.Preference
+        android:persistent="false"
         android:key="pref_website"
         android:title="@string/menu_website"
         android:summary="http://carat.cs.helsinki.fi"
