@@ -283,8 +283,8 @@
                         <Button
                             android:id="@+id/memory_used_info_button"
                             style="@style/InfoButtonStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
                             android:layout_centerVertical="true"
                             android:layout_alignParentEnd="true"
                             android:layout_alignParentRight="true"
@@ -346,8 +346,8 @@
                         <Button
                             android:id="@+id/memory_active_button"
                             style="@style/InfoButtonStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
                             android:layout_centerVertical="true"
                             android:layout_alignParentEnd="true"
                             android:layout_alignParentRight="true"
@@ -408,8 +408,8 @@
                         <Button
                             android:id="@+id/cpu_usage_button"
                             style="@style/InfoButtonStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
                             android:layout_centerInParent="true"
                             android:layout_alignParentEnd="true"
                             android:layout_alignParentRight="true"

@@ -95,8 +95,8 @@
                     <Button
                         android:id="@+id/well_behaved_button"
                         style="@style/InfoButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
                         android:layout_centerVertical="true"
                         android:text="i"
                         android:layout_alignBaseline="@+id/well_behaved_imageview"
@@ -151,8 +151,8 @@
                     <Button
                         android:id="@+id/bugs_button"
                         style="@style/InfoButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
                         android:layout_centerVertical="true"
                         android:text="i"
                         android:layout_alignBaseline="@+id/bugs_imageview"
@@ -205,8 +205,8 @@
                     <Button
                         android:id="@+id/hogs_button"
                         style="@style/InfoButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
                         android:layout_centerVertical="true"
                         android:text="i"
                         android:layout_alignBaseline="@+id/hogs_imageview"
