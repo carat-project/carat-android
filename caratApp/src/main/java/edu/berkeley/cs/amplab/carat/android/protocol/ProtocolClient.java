@@ -12,6 +12,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TZlibTransport;
 
 import android.content.Context;
+import android.os.Build;
 
 import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.utils.AssetUtils;
@@ -112,7 +113,6 @@ public class ProtocolClient {
         TSSLTransportFactory.TSSLTransportParameters params = getParams(context);
         String server = PropertyLoader.getEuServer(context);
         int port = PropertyLoader.getEuPort(context);
-
         return TSSLTransportFactory.getClientSocket(server, port, timeout, params);
     }
 
@@ -123,7 +123,13 @@ public class ProtocolClient {
      */
     private static TSSLTransportFactory.TSSLTransportParameters getParams(Context c){
         TSSLTransportFactory.TSSLTransportParameters params = new TSSLTransportFactory.TSSLTransportParameters();
-        String trustStorePath = AssetUtils.getAssetPath(c, PropertyLoader.getTrustStoreName(c));
+        String trustStoreName;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            trustStoreName = PropertyLoader.getTrustStoreName(c);
+        } else {
+            trustStoreName = PropertyLoader.getTrustStoreV1Name(c); // BKS-V1 needed
+        }
+        String trustStorePath = AssetUtils.getAssetPath(c, trustStoreName);
         params.setTrustStore(trustStorePath, PropertyLoader.getTrustStorePass(c), null, "BKS");
         return params;
     }

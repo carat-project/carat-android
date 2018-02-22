@@ -28,5 +28,6 @@ public class Keys {
     public static final String serverPortEu = "PORT_EU";
 
     public static final String trustStoreName = "storeName";
+    public static final String trustStoreV1Name = "storeV1Name";
     public static final String trustStorePass = "trustStorePass";
 }

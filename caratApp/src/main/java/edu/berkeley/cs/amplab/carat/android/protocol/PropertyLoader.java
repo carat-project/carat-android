@@ -2,6 +2,7 @@ package edu.berkeley.cs.amplab.carat.android.protocol;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Build;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,7 @@ public class PropertyLoader {
     private static Integer PORT_GLOBAL = null;
     private static Integer PORT_EU = null;
     private static String TRUSTSTORE_NAME = null;
+    private static String TRUSTSTORE_V1_NAME = null;
     private static String TRUSTSTORE_PASS = null;
 
     public static class Defaults {
@@ -33,6 +35,7 @@ public class PropertyLoader {
         private final static Integer PORT_GLOBAL = 8080;
         private final static Integer PORT_EU = 8080;
         private final static String TRUSTSTORE_NAME = "truststore.bks";
+        private final static String TRUSTSTORE_V1_NAME = "truststore-v1.bks";
         private final static String TRUSTSTORE_PASS = ""; // TODO: Build flag?
     }
 
@@ -71,6 +74,13 @@ public class PropertyLoader {
         return TRUSTSTORE_NAME;
     }
 
+    public static String getTrustStoreV1Name(Context context){
+        if(TRUSTSTORE_V1_NAME == null){
+            loadTrustStoreProperties(context);
+        }
+        return TRUSTSTORE_V1_NAME;
+    }
+
     public static String getTrustStorePass(Context context){
         if(TRUSTSTORE_PASS == null){
             loadTrustStoreProperties(context);
@@ -97,9 +107,11 @@ public class PropertyLoader {
         Properties properties = loadProperties(context, TRUSTSTORE_FILE);
         if(!Util.isNullOrEmpty(properties)){
             TRUSTSTORE_NAME = properties.getProperty(Keys.trustStoreName, Defaults.TRUSTSTORE_NAME);
+            TRUSTSTORE_V1_NAME = properties.getProperty(Keys.trustStoreV1Name, Defaults.TRUSTSTORE_V1_NAME);
             TRUSTSTORE_PASS = properties.getProperty(Keys.trustStorePass, Defaults.TRUSTSTORE_PASS);
         } else {
             TRUSTSTORE_NAME = Defaults.TRUSTSTORE_NAME;
+            TRUSTSTORE_V1_NAME = Defaults.TRUSTSTORE_V1_NAME;
             TRUSTSTORE_PASS = Defaults.TRUSTSTORE_PASS;
         }
     }
