@@ -71,6 +71,16 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
+import android.telephony.CellIdentityGsm;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
+import android.telephony.CellSignalStrengthCdma;
+import android.telephony.CellSignalStrengthGsm;
+import android.telephony.CellSignalStrengthLte;
+import android.telephony.CellSignalStrengthWcdma;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
@@ -1559,6 +1569,73 @@ public final class SamplingLibrary {
 		// Log.v("WifiRssi", "Rssi:" + wifiRssi);
 		return wifiRssi;
 
+	}
+
+	private static String getMobileWirelessTechnology(Context context){
+		String defaultTechnology = "GSM";
+		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+		if(telephonyManager != null){
+			switch(telephonyManager.getNetworkType()){
+				case TelephonyManager.NETWORK_TYPE_GSM:
+				case TelephonyManager.NETWORK_TYPE_EDGE:
+				case TelephonyManager.NETWORK_TYPE_GPRS:
+					return "GSM"; // 2G
+				case TelephonyManager.NETWORK_TYPE_CDMA:
+				case TelephonyManager.NETWORK_TYPE_1xRTT:
+				case TelephonyManager.NETWORK_TYPE_EHRPD:
+				case TelephonyManager.NETWORK_TYPE_EVDO_A:
+				case TelephonyManager.NETWORK_TYPE_EVDO_B:
+				case TelephonyManager.NETWORK_TYPE_UMTS:
+				case TelephonyManager.NETWORK_TYPE_TD_SCDMA:
+					return "CDMA"; // 3G
+				case TelephonyManager.NETWORK_TYPE_HSPA:
+				case TelephonyManager.NETWORK_TYPE_HSPAP:
+				case TelephonyManager.NETWORK_TYPE_HSDPA:
+				case TelephonyManager.NETWORK_TYPE_HSUPA:
+					return "WCDMA"; // H
+				case TelephonyManager.NETWORK_TYPE_LTE:
+					return "LTE"; // 4G
+			}
+		}
+		return defaultTechnology;
+	}
+
+	public static int getMobileSignalStrength(Context context){
+		int strength = Integer.MIN_VALUE;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+			String currentNetwork = getMobileWirelessTechnology(context);
+			Logger.d(TAG, "Current network: " + currentNetwork);
+			TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+			if(telephonyManager != null){
+				List<CellInfo> cellInfoList = telephonyManager.getAllCellInfo();
+				if(!Util.isNullOrEmpty(cellInfoList)){ // Not implemented by all manufacturers
+					for(CellInfo info : cellInfoList){
+						if(info != null && info.isRegistered()){ // Only registered networks
+							if(info instanceof CellInfoGsm && currentNetwork.equals("GSM")){
+								CellSignalStrengthGsm strengthGsm = ((CellInfoGsm) info).getCellSignalStrength();
+								strength = Math.max(strength, strengthGsm.getDbm());
+
+							} else if(info instanceof CellInfoCdma && currentNetwork.equals("CDMA")){
+								CellSignalStrengthCdma strengthCdma = ((CellInfoCdma) info).getCellSignalStrength();
+								strength = Math.max(strength, strengthCdma.getDbm());
+
+							} else if(info instanceof CellInfoLte && currentNetwork.equals("LTE")){
+								CellSignalStrengthLte strengthLte = ((CellInfoLte) info).getCellSignalStrength();
+								strength = Math.max(strength, strengthLte.getDbm());
+
+							} else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+								if(info instanceof CellInfoWcdma && currentNetwork.equals("WCDMA")){
+									CellSignalStrengthWcdma strengthWcdma = ((CellInfoWcdma) info).getCellSignalStrength();
+									strength = Math.max(strength, strengthWcdma.getDbm());
+								}
+							}
+						}
+					}
+					Logger.d(TAG, currentNetwork + " strength: " + strength + " dBm");
+				}
+			}
+		}
+		return strength;
 	}
 
 	/**
