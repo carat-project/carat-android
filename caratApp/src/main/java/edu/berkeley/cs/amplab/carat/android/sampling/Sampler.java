@@ -196,7 +196,7 @@ public class Sampler {
         CpuStatus cpuStatus = new CpuStatus();
         if(load1 == null || load2 == null){
             Logger.d(TAG, "CPU usage was null when constructing sample!"); // Typical on O
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            if(Build.VERSION.SDK_INT >= 26 /* Hardcoded Android O */){
                 cpuStatus.setCpuUsage(SamplingLibrary.getCpuUsageEstimate());
             }
         } else {

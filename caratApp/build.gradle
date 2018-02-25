@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 25
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        versionCode 134
-        versionName "2.19.2"
+        versionCode 135
+        versionName "2.19.3"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 10
         //noinspection OldTargetApi

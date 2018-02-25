@@ -175,7 +175,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
     private ExpandedViewHolder getExpandedViewHolder(View v){
         ExpandedViewHolder holder = new ExpandedViewHolder();
         holder.batteryImpact = (TextView) v.findViewById(R.id.impact_text);
-        holder.lastSeen = v.findViewById(R.id.last_seen_text);
+        holder.lastSeen = (TextView) v.findViewById(R.id.last_seen_text);
         holder.samplesText = (TextView) v.findViewById(R.id.samples_title);
         holder.samplesAmount = (TextView) v.findViewById(R.id.samples_amount);
         holder.killAppButton = (Button) v.findViewById(R.id.stop_app_button);

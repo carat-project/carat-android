@@ -155,9 +155,9 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
         memoryActiveBar = (ImageView) mainFrame.findViewById(R.id.memory_active_bar);
         cpuUsageBar = (ImageView) mainFrame.findViewById(R.id.cpu_usage_bar);
 
-        cpuUsage = mainFrame.findViewById(R.id.cpu_usage_value);
-        memoryActive = mainFrame.findViewById(R.id.memory_active_value);
-        memoryUsed = mainFrame.findViewById(R.id.memory_used_value);
+        cpuUsage = (TextView) mainFrame.findViewById(R.id.cpu_usage_value);
+        memoryActive = (TextView) mainFrame.findViewById(R.id.memory_active_value);
+        memoryUsed = (TextView) mainFrame.findViewById(R.id.memory_used_value);
 
         caratID = (TextView) mainFrame.findViewById(R.id.carat_id_value);
         deviceModel = (TextView) mainFrame.findViewById(R.id.device_model_value);
@@ -213,7 +213,7 @@ public class DeviceFragment extends Fragment implements View.OnClickListener, Ru
         memoryActiveConverted = (float) SamplingLibrary.getActiveMemoryUsage();
         memoryUsed.setText(String.format(Locale.getDefault(), "%d%%", (long)(memoryUsedConverted*100)));
         memoryActive.setText(String.format(Locale.getDefault(), "%d%%", (long)(memoryActiveConverted*100)));
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        if(Build.VERSION.SDK_INT >= 26 /* Hardcoded Android O */){
             cpuUsageConverted = (float)SamplingLibrary.getCpuUsageEstimate();
         } else {
             cpuUsageConverted = mainActivity.getCpuValue();
