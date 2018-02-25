@@ -174,17 +174,21 @@ public class Sampler {
         NetworkDetails details = new NetworkDetails();
         details.setNetworkType(SamplingLibrary.getNetworkType(context));
         details.setMobileNetworkType(SamplingLibrary.getMobileNetworkType(context));
-        details.setRoamingEnabled(SamplingLibrary.getRoamingStatus(context));
+
         details.setMobileDataStatus(SamplingLibrary.getDataState(context));
         details.setMobileDataActivity(SamplingLibrary.getDataActivity(context));
-        details.setSimOperator(SamplingLibrary.getSIMOperator(context));
-        details.setNetworkOperator(SamplingLibrary.getNetworkOperator(context));
-        details.setMcc(SamplingLibrary.getMcc(context));
-        details.setMnc(SamplingLibrary.getMnc(context));
+        details.setRoamingEnabled(SamplingLibrary.getRoamingStatus(context));
+
         details.setWifiStatus(SamplingLibrary.getWifiState(context));
         details.setWifiSignalStrength(SamplingLibrary.getWifiSignalStrength(context));
         details.setWifiLinkSpeed(SamplingLibrary.getWifiLinkSpeed(context));
         details.setWifiApStatus(SamplingLibrary.getWifiHotspotState(context));
+
+        details.setNetworkOperator(SamplingLibrary.getNetworkOperator(context));
+        details.setSimOperator(SamplingLibrary.getSIMOperator(context));
+        details.setMcc(SamplingLibrary.getMcc(context));
+        details.setMnc(SamplingLibrary.getMnc(context));
+        details.setMobileSignalStrength(SamplingLibrary.getMobileSignalStrength(context));
         return details;
     }
 
