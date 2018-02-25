@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.PowerManager;
 import android.net.Uri;
@@ -20,10 +21,12 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import edu.berkeley.cs.amplab.carat.android.R;
@@ -206,8 +209,42 @@ public class Util {
         return builder.toString();
     }
 
+    public static String getTimeString(Context context, long elapsed, String defaultValue){
+        if(context != null){
+            Resources resources = context.getResources();
+            if(resources != null){
+                Locale locale = Locale.getDefault();
+                String format = "%s %s";
+                String ago = context.getString(R.string.ago);
+                if(elapsed < TimeUnit.MINUTES.toMillis(1)){
+                    // Less than a minute ago
+                    String lessThanMinute = context.getString(R.string.less_than_minute);
+                    return String.format(locale, format, lessThanMinute, ago);
+                } else if(elapsed < TimeUnit.MINUTES.toMillis(2)){
+                    // One minute ago
+                    return context.getString(R.string.oneMinute) + " " + ago;
+                } else if(elapsed < TimeUnit.HOURS.toMillis(1)){
+                    // Minutes ago
+                    int minutes = (int) TimeUnit.MILLISECONDS.toMinutes(elapsed);
+                    String unit = resources.getQuantityString(R.plurals.minutes, minutes, minutes);
+                    return String.format(locale, format, unit, ago);
+                } else if(elapsed < TimeUnit.HOURS.toMillis(2)){
+                    // One hour ago
+                    return context.getString(R.string.oneHour) + " " + ago;
+                } else if(elapsed < TimeUnit.DAYS.toMillis(1)){
+                    // Hours ago
+                    int hours = (int) TimeUnit.MILLISECONDS.toHours(elapsed);
+                    String unit = resources.getQuantityString(R.plurals.hours, hours, hours);
+                    return String.format(locale, format, unit, ago);
+                }
+            }
+        }
+        return defaultValue;
+    }
+
     public static void printStackTrace(String tag, Throwable th){
-        Logger.d(tag, getStackTrace(th));
+        Logger.e(tag, th.getCause()+"");
+        Logger.e(tag, getStackTrace(th));
     }
 
     public static String getStackTrace(Throwable th){

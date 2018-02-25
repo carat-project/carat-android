@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -18,9 +19,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
@@ -35,6 +39,7 @@ import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
+import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Questionnaire;
 import edu.berkeley.cs.amplab.carat.thrift.Reports;
 
@@ -54,6 +59,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
 
     private static class ExpandedViewHolder extends ActionViewHolder {
         private TextView batteryImpact;
+        private TextView lastSeen;
         private TextView samplesText;
         private TextView samplesAmount;
         private Button killAppButton;
@@ -167,6 +173,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
     private ExpandedViewHolder getExpandedViewHolder(View v){
         ExpandedViewHolder holder = new ExpandedViewHolder();
         holder.batteryImpact = (TextView) v.findViewById(R.id.impact_text);
+        holder.lastSeen = v.findViewById(R.id.last_seen_text);
         holder.samplesText = (TextView) v.findViewById(R.id.samples_title);
         holder.samplesAmount = (TextView) v.findViewById(R.id.samples_amount);
         holder.killAppButton = (Button) v.findViewById(R.id.stop_app_button);
@@ -248,9 +255,20 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         return true;
     }
 
+    private String updateLastSeen(SimpleHogBug item){
+        Long lastSeen = item.getLastSeen();
+        String defaultValue = context.getString(R.string.recently);
+        if(lastSeen == null || lastSeen == Long.MAX_VALUE) {
+            return defaultValue;
+        }
+        long elapsed = System.currentTimeMillis() - lastSeen;
+        return Util.getTimeString(context, elapsed, defaultValue);
+    }
+
     private void setViewsInChild(View v, final SimpleHogBug item) {
         final ExpandedViewHolder holder = (ExpandedViewHolder)v.getTag();
         holder.batteryImpact.setText(item.getBenefitText());
+        holder.lastSeen.setText(updateLastSeen(item));
         holder.samplesText.setText(R.string.samples);
         holder.samplesAmount.setText(String.valueOf(item.getSamples()));
         holder.killAppButton.setTag(item.getAppName());

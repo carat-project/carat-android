@@ -1,19 +1,13 @@
 package edu.berkeley.cs.amplab.carat.android.utils;
 
 import android.app.ActivityManager;
-import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.os.Build;
-import android.util.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Constants;
@@ -48,6 +42,8 @@ public class ProcessUtil {
             if(processName != null){
                 for(SimpleHogBug hb : visible){
                     if(processName.equals(hb.getAppName())){
+                        Long lastSeen = getLastSeenTimestamp(pi);
+                        hb.setLastSeen(lastSeen);
                         running.add(hb);
                     }
                 }
@@ -55,6 +51,30 @@ public class ProcessUtil {
         }
 
         return running;
+    }
+
+    private static Long getLastSeenTimestamp(ProcessInfo info){
+        Long lastSeen = -1L;
+        List<PackageProcess> processes = info.getProcesses();
+        if(!Util.isNullOrEmpty(processes)){
+            for(PackageProcess process : processes){
+                Logger.d(TAG, process.processName);
+                if(process.isSetProcessName()){
+                    String processName = process.getProcessName();
+                    if(processName.contains("@service")){
+                        return Long.MAX_VALUE; // Now
+                    }
+                }
+                Logger.d(TAG, process.getLastStartTimestamp()+"");
+                if(process.isSetLastStartTimestamp()){
+                    long lastStartTimestamp = (long) process.lastStartTimestamp;
+                    lastSeen = Math.max(lastSeen, lastStartTimestamp);
+                }
+            }
+        } else {
+            Logger.d(TAG, "Processes empty for " + info.getApplicationLabel());
+        }
+        return lastSeen;
     }
 
     public static ArrayList<SimpleHogBug> filterByVisibility(SimpleHogBug[] reports){

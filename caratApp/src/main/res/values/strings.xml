@@ -319,6 +319,8 @@ delete these from your file.
     <string name="finishing">Finishing up</string>
 
     <!--- Time quantity strings -->
+    <string name="recently">Recently</string>
+    <string name="less_than_minute">Less than a minute</string>
     <string name="ago">ago</string>
     <plurals name="weeks">
         <item quantity="one">a week</item>
@@ -336,6 +338,8 @@ delete these from your file.
         <item quantity="one">a minute</item>
         <item quantity="other">%d minutes</item>
     </plurals>
+    <string name="oneMinute">1 minute</string>
+    <string name="oneHour">1 hour</string>
 
     <string name="impact">Impact:</string>
     <string name="expected">Battery life impact:</string>
@@ -431,4 +435,5 @@ delete these from your file.
         <item>Other, please specify</item>
     </string-array>
     <string name="unknown">Unknown</string>
+    <string name="last_seen">Last seen:</string>
 </resources>

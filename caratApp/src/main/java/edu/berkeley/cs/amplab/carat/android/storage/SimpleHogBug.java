@@ -19,6 +19,8 @@ public class SimpleHogBug implements Serializable, Comparable<SimpleHogBug> {
 
 	private Constants.Type type = null;
 
+	private Long lastSeen = null;
+
 	public Constants.Type getType() {
 		return type;
 	}
@@ -67,6 +69,14 @@ public class SimpleHogBug implements Serializable, Comparable<SimpleHogBug> {
 	 */
 	public double getwDistance() {
 		return wDistance;
+	}
+
+	public Long getLastSeen() {
+		return lastSeen;
+	}
+
+	public void setLastSeen(Long lastSeen) {
+		this.lastSeen = lastSeen;
 	}
 
 	/**

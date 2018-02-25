@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="#FAFAFA"
     android:orientation="vertical"
     android:clickable="false"
@@ -127,9 +128,41 @@
             android:background="@color/lightgray" />
 
         <TextView
-            android:id="@+id/hogbug_title"
+            android:id="@+id/last_seen_title"
             style="@style/MediumBlackText"
             android:layout_below="@+id/separator1"
+            android:layout_marginTop="5dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="@string/last_seen" />
+
+        <TextView
+            android:id="@+id/last_seen_text"
+            style="@style/MediumBlackText"
+            android:layout_below="@+id/separator1"
+            android:layout_marginTop="5dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            tools:text="2 minutes ago"/>
+
+        <View
+            android:layout_marginTop="5dp"
+            android:id="@+id/separator5"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/last_seen_text"
+            android:background="@color/lightgray" />
+
+        <TextView
+            android:id="@+id/hogbug_title"
+            style="@style/MediumBlackText"
+            android:layout_below="@+id/separator5"
             android:layout_marginTop="5dp"
             android:clickable="false"
             android:focusable="false"
@@ -141,7 +174,7 @@
         <TextView
             android:id="@+id/hogbug_text"
             style="@style/MediumOrangeText"
-            android:layout_below="@+id/separator1"
+            android:layout_below="@+id/separator5"
             android:layout_marginTop="5dp"
             android:clickable="false"
             android:focusable="false"
