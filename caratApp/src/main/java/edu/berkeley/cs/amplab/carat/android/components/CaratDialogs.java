@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.CheckBox;
 
 import edu.berkeley.cs.amplab.carat.android.R;
@@ -45,6 +46,47 @@ public class CaratDialogs {
                 View parent = (View)custom.getParent();
                 parent.setMinimumHeight(0);
             }
+        }
+    }
+
+    public static void choiceDialog(Context context, String title, String message, String secondaryOption, Runnable onSecondaryOption){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton(R.string.dialog_ok, (dialog, which) -> {
+            dialog.dismiss();
+        });
+        builder.setNegativeButton(secondaryOption, (dialog, which) -> {
+            onSecondaryOption.run();
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(248, 176, 58));
+        dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(Color.rgb(248, 176, 58));
+        Window window = dialog.getWindow();
+        if(window != null){
+            View custom = window.findViewById(R.id.custom);
+            if(custom != null){
+                View parent = (View)custom.getParent();
+                parent.setMinimumHeight(0);
+            }
+        }
+    }
+
+    public static void informationDialog(Context context, String title, String message){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton(android.R.string.yes, (dialog, which) -> dialog.dismiss());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+        if(button != null){
+            button.setTextColor(context.getResources().getColor(R.color.orange));
         }
     }
 

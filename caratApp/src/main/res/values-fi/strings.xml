@@ -401,6 +401,12 @@
     </string-array>
     <string name="unknown">Tuntematon</string>
     <string name="last_seen">Nähty viimeksi:</string>
+    <string name="stop_app_info">
+        Pysäytä sovellus pyyhkäisemällä se puhelimesi viimeisimmät sovellukset valikosta. Jos
+        sovellus ei katoa tästä listasta %d minuutin kuluessa, pakota sen lopetus.
+    </string>
+    <string name="stopping_application">Sovelluksen pysäyttäminen</string>
+    <string name="force_stop">Pakota lopetus</string>
 </resources>
 
 

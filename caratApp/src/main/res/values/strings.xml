@@ -436,4 +436,10 @@ delete these from your file.
     </string-array>
     <string name="unknown">Unknown</string>
     <string name="last_seen">Last seen:</string>
+    <string name="stop_app_info">
+        You can stop an application by swiping it off from the recent apps menu of your phone. If
+        the app does not disappear from this list within %d minutes, force stop it.
+    </string>
+    <string name="stopping_application">Stopping an application</string>
+    <string name="force_stop">Force stop</string>
 </resources>

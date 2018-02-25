@@ -1,5 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.adapters;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,6 +32,7 @@ import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.components.BaseDialog;
+import edu.berkeley.cs.amplab.carat.android.components.CaratDialogs;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.CallbackWebViewFragment;
 import edu.berkeley.cs.amplab.carat.android.models.CustomAction;
@@ -277,14 +279,18 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         // Currently these need to be set each time, refactor?
         holder.killAppButton.setBackgroundResource(R.drawable.button_rounded_orange);
         holder.killAppButton.setText(context.getString(R.string.stop_app_title));
-
         holder.killAppButton.setEnabled(true);
-        holder.killAppButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                killApp(item, v, holder);
-                ProcessUtil.invalidateInMemoryProcesses();
+        holder.killAppButton.setOnClickListener(view -> {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(Constants.FRESHNESS_RUNNING_PROCESS);
+                String info = context.getString(R.string.stop_app_info, minutes);
+                String title = context.getString(R.string.stopping_application);
+                String forceStop = context.getString(R.string.force_stop);
+
+                CaratDialogs.choiceDialog(context, title, info, forceStop, () -> openAppDetails(item));
             }
+            killApp(item, holder);
+            ProcessUtil.invalidateInMemoryProcesses();
         });
 
         holder.uninstallAppButton.setOnClickListener(v1 -> {
@@ -361,7 +367,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
         holder.expandedText.setText(text);
     }
 
-    public void killApp(SimpleHogBug fullObject, View v, ExpandedViewHolder holder) {
+    public void killApp(SimpleHogBug fullObject, ExpandedViewHolder holder) {
         final String raw = fullObject.getAppName();
         final PackageInfo pak = SamplingLibrary.getPackageInfo(mainActivity, raw);
         final String label = CaratApplication.labelForApp(mainActivity, raw);
@@ -380,14 +386,7 @@ public class ActionsExpandListAdapter extends BaseExpandableListAdapter implemen
             ClickTracking.track(uuId, "killbutton", options, caratApplication);
         }
 
-        if (SamplingLibrary.killApp(mainActivity, raw, label)) {
-            Logger.d("debug", "disabling "+((label != null) ? label : "null"));
-            holder.killAppButton.setEnabled(false);
-            holder.killAppButton.setBackgroundResource(R.drawable.button_rounded_gray);
-            holder.killAppButton.setText(caratApplication.getString(R.string.stopped));
-        }
-
-        CaratApplication.refreshStaticActionCount();
+        SamplingLibrary.killApp(mainActivity, raw, label);
     }
 
     public void uninstallApp(SimpleHogBug fullObject, View v, ExpandedViewHolder holder){
