@@ -54,6 +54,7 @@ public class BaseDialog extends Dialog {
             d.show();
             Button okBtn = d.getButton(DialogInterface.BUTTON_POSITIVE);
             okBtn.setTextColor(context.getResources().getColor(R.color.orange));
+            okBtn.setShadowLayer(0,0,0,0);
 
         } else {
             AlertDialog.Builder b = new android.app.AlertDialog.Builder(context)

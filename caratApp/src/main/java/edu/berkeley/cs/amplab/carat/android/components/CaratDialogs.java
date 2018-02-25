@@ -39,6 +39,8 @@ public class CaratDialogs {
 
         dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(248, 176, 58));
         dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(Color.rgb(248, 176, 58));
+        dialog.getButton(Dialog.BUTTON_POSITIVE).setShadowLayer(0,0,0,0);
+        dialog.getButton(Dialog.BUTTON_NEGATIVE).setShadowLayer(0,0,0,0);
         Window window = dialog.getWindow();
         if(window != null){
             View custom = window.findViewById(R.id.custom);
@@ -65,6 +67,8 @@ public class CaratDialogs {
 
         dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(248, 176, 58));
         dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(Color.rgb(248, 176, 58));
+        dialog.getButton(Dialog.BUTTON_POSITIVE).setShadowLayer(0,0,0,0);
+        dialog.getButton(Dialog.BUTTON_NEGATIVE).setShadowLayer(0,0,0,0);
         Window window = dialog.getWindow();
         if(window != null){
             View custom = window.findViewById(R.id.custom);

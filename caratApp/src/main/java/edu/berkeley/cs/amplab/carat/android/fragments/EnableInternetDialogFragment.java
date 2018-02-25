@@ -28,6 +28,8 @@ public class EnableInternetDialogFragment extends DialogFragment {
         dialog.setOnShowListener(dialogInterface -> {
             dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(248, 176, 58));
             dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(Color.rgb(248, 176, 58));
+            dialog.getButton(Dialog.BUTTON_POSITIVE).setShadowLayer(0,0,0,0);
+            dialog.getButton(Dialog.BUTTON_NEGATIVE).setShadowLayer(0,0,0,0);
         });
         return dialog;
     }
