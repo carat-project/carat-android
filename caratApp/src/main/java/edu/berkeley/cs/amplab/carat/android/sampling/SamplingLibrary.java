@@ -678,6 +678,7 @@ public final class SamplingLibrary {
 								if(session >= Constants.MIN_FOREGROUND_SESSION){
 									launchCount++;
 								}
+								lastForeground = timestamp;
 							}
 							break;
 						case UsageEvents.Event.MOVE_TO_FOREGROUND:
