@@ -56,7 +56,7 @@ public class Sampler {
             return false;
         }
 
-        Sample sample = constructSample(context, batteryIntent, trigger, lastSampleTime);
+        Sample sample = constructSample(context, batteryIntent, trigger, lastSampleTime*1000);
         if(sample != null){
             long id = db.putSample(sample);
             Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
