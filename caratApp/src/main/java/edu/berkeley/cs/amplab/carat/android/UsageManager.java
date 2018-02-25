@@ -278,21 +278,23 @@ public class UsageManager {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Map<String, TreeMap<Long, Integer>> log = UsageManager.getEventLogs(context, since);
             TreeMap<Long, Integer> events = log.get(packageName);
-            for(Long timestamp : events.keySet()){
-                int event = events.get(timestamp);
-                if(timestamp > lastTimestamp){ // Check just in case
-                    switch(event){
-                        case UsageEvents.Event.MOVE_TO_BACKGROUND:
-                            mostRecentImportance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND;
-                            break;
-                        case UsageEvents.Event.USER_INTERACTION:
-                        case UsageEvents.Event.SHORTCUT_INVOCATION:
-                        case UsageEvents.Event.MOVE_TO_FOREGROUND:
-                            mostRecentImportance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
-                            break;
+            if(!Util.isNullOrEmpty(events)){
+                for(Long timestamp : events.keySet()){
+                    int event = events.get(timestamp);
+                    if(timestamp > lastTimestamp){ // Check just in case
+                        switch(event){
+                            case UsageEvents.Event.MOVE_TO_BACKGROUND:
+                                mostRecentImportance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND;
+                                break;
+                            case UsageEvents.Event.USER_INTERACTION:
+                            case UsageEvents.Event.SHORTCUT_INVOCATION:
+                            case UsageEvents.Event.MOVE_TO_FOREGROUND:
+                                mostRecentImportance = ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+                                break;
+                        }
                     }
+                    lastTimestamp = timestamp;
                 }
-                lastTimestamp = timestamp;
             }
         }
         return mostRecentImportance;
