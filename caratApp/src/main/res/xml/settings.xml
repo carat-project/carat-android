@@ -53,6 +53,13 @@
     </android.support.v7.preference.Preference>
     <android.support.v7.preference.Preference
         android:persistent="false"
+        android:key="pref_sample_preview"
+        android:title="Show sample contents"
+        android:summary="Nothing yet"
+        android:id="@+id/pref_sample_preview">
+    </android.support.v7.preference.Preference>
+    <android.support.v7.preference.Preference
+        android:persistent="false"
         android:key="pref_website"
         android:title="@string/menu_website"
         android:summary="http://carat.cs.helsinki.fi"
