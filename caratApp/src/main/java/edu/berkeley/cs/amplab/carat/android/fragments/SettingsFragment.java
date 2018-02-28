@@ -72,6 +72,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             ListPreference impact = (ListPreference) findPreference(impactKey);
             impact.setValue(impactValue);
         }
+
+        Preference preview = findPreference(Keys.prefSamplePreview);
+        preview.setOnPreferenceClickListener(preference -> {
+            SamplePreviewFragment samplePreviewFragment = new SamplePreviewFragment();
+            mainActivity.replaceFragment(samplePreviewFragment, Constants.FRAGMENT_HOGS_TAG);
+            return true;
+        });
     }
 
     @Override

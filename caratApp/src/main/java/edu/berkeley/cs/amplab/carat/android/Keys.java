@@ -21,6 +21,7 @@ public class Keys {
     public static final String promptIgnoreOptimizations = "promptIgnoreOptimizations";
     public static final String lastLocationRequest = "lastLocationRequest";
     public static final String installationChanges = "sampleHasInstallChanges";
+    public static final String prefSamplePreview = "pref_sample_preview";
 
     public static final String serverAddressGlobal = "ADDRESS_GLOBAL";
     public static final String serverPortGlobal = "PORT_GLOBAL";
