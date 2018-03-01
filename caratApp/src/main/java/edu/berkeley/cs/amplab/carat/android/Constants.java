@@ -115,6 +115,7 @@ public class Constants {
     public static final String FRAGMENT_CB_WEBVIEW_TAG = "fragment_callback_webview";
     public static final String FRAGMENG_HOG_STATS_TAG = "fragment_hog_stats";
     public static final String FRAGMENT_PROCESS_LIST = "fragment_process_list";
+    public static final String FRAGMENT_SAMPLE_PREVIEW = "fragment_sample_preview";
 
     public static final String FRAGMENT_QUESTIONNAIRE_CHOICE = "questionnaire_choice";
     public static final String FRAGMENT_QUESTIONNAIRE_MULTICHOICE = "questionnaire_multichoice";

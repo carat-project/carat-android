@@ -1,7 +1,10 @@
 package edu.berkeley.cs.amplab.carat.android.fragments;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -10,23 +13,20 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TSimpleJSONProtocol;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import edu.berkeley.cs.amplab.carat.android.MainActivity;
+import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
+import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
-import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.thrift.Sample;
 
 /**
@@ -34,16 +34,14 @@ import edu.berkeley.cs.amplab.carat.thrift.Sample;
  */
 public class SamplePreviewFragment extends Fragment {
     private final String TAG = SamplePreviewFragment.class.getSimpleName();
-    private ScrollView mainView;
-    private TextView sampleJson;
-    private StringBuilder builder;
+    private TextView jsonTextView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mainView = (ScrollView) inflater.inflate(R.layout.fragment_sample_preview, container, false);
-        sampleJson = (TextView) mainView.findViewById(R.id.sample_json);
-        return mainView;
+        ScrollView view = (ScrollView) inflater.inflate(R.layout.fragment_sample_preview, container, false);
+        jsonTextView = (TextView) view.findViewById(R.id.sample_json);
+        return view;
     }
 
     @Override
@@ -54,76 +52,40 @@ public class SamplePreviewFragment extends Fragment {
                 Context context = getContext();
                 SampleDB db = SampleDB.getInstance(context);
                 Sample sample = db.getLastSample(context);
+                if(sample == null){
+                    // Generate a dummy sample and show it
+                    sample = constructTempSample(context);
+                }
                 TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
-                String json = serializer.toString(sample);
-                processSampleJSON(json);
-                getActivity().runOnUiThread(() -> {
-                    //sampleJson.setText(json);
-                });
+                JSONObject json = new JSONObject(serializer.toString(sample));
+                getActivity().runOnUiThread(setJsonText(json));
             } catch (TException e) {
-                e.printStackTrace();
+                Logger.d(TAG, "Error when deserializing sample " + e);
+            } catch(JSONException e){
+                printJSONException(e);
             }
         }).start();
-
     }
 
-    @SuppressWarnings("unchecked")
-    private void printJSONObject(JSONObject jsonObject, int indentation){
-        try {
-            for (Iterator<String> it = jsonObject.keys(); it.hasNext(); ) {
-                String key = it.next();
-                Object object = jsonObject.get(key);
-                if(object instanceof JSONObject){
-                    addLine(key + ": ", indentation);
-                    printJSONObject((JSONObject) object, indentation+1);
-                } else if(isPrintable(object)){
-                    addLine(key + ": " + String.valueOf(object), indentation);
-                } else if(object instanceof JSONArray){
-                    JSONArray array = (JSONArray) object;
-                    Logger.d(TAG, Util.repeat("\t", indentation)+ key + ": ");
-                    for(int i=0; i<array.length(); i++){
-                      Object item = array.get(i);
-                      if(item instanceof JSONObject){
-                          printJSONObject((JSONObject)item, indentation+1);
-                      } else if(isPrintable(item)){
-                          addLine(String.valueOf(item), indentation);
-                      } else {
-                          Logger.d(TAG, "Unknown object " + object);
-                      }
-                    }
-                } else {
-                    Logger.d(TAG, "Unknown object " + object);
-                }
+    private Runnable setJsonText(JSONObject json){
+        return () -> {
+            try {
+                jsonTextView.setText(json.toString(2));
+            } catch (JSONException e) {
+                printJSONException(e);
             }
-        } catch (Exception e){
-            Logger.e(TAG, "Error while reading JSON " + e);
-        }
+        };
     }
 
-    private boolean isPrintable(Object object){
-        return object instanceof String
-                || object instanceof Integer
-                || object instanceof Long
-                || object instanceof Float
-                || object instanceof Double
-                || object instanceof Boolean;
+    private void printJSONException(JSONException e){
+        Logger.d(TAG, "Error when parsing sample JSON: " + e);
     }
 
-    private void addLine(String line, int indentation){
-        String padding = Util.repeat("\t", indentation);
-        builder.append(padding).append(line).append("\n");
-    }
-
-    private void processSampleJSON(String json){
-        try {
-            builder = new StringBuilder();
-            JSONObject root = new JSONObject(json);
-            printJSONObject(root, 0);
-            getActivity().runOnUiThread(() -> {
-                sampleJson.setText(builder.toString());
-            });
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    private Sample constructTempSample(Context context){
+        long monthAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        long lastSampleTime =  preferences.getLong(Keys.lastSampleTimestamp, monthAgo);
+        Intent batteryIntent = SamplingLibrary.getLastBatteryIntent(context);
+        return Sampler.constructSample(context, batteryIntent, "PREVIEW_SAMPLE", lastSampleTime, false);
     }
 }

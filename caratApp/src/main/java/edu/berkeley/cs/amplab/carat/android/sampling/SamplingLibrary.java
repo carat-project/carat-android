@@ -1759,10 +1759,12 @@ public final class SamplingLibrary {
 	}
 
 	// This value gets updated in IntentRouter, look there for implementation
-	public static long getDistanceTraveled(Context context){
+	public static long getDistanceTraveled(Context context, boolean resetDistance){
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
 		long distanceTraveled = p.getLong("distanceTraveled", 0);
-		p.edit().putLong("distanceTraveled", 0).apply(); // Reset the counter
+		if(resetDistance){
+			p.edit().putLong("distanceTraveled", 0).apply(); // Reset the counter
+		}
 		return distanceTraveled;
 	}
 

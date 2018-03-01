@@ -46,17 +46,17 @@ public class Sampler {
 
         boolean success = false;
         SampleDB db = SampleDB.getInstance(context);
-        Sample lastSample = db.getLastSample(context);
         long monthAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
-        long lastSampleTime = lastSample == null ? monthAgo : (long)lastSample.getTimestamp();
+        long lastSampleTime =  preferences.getLong(Keys.lastSampleTimestamp, monthAgo);
 
         Intent batteryIntent = SamplingLibrary.getLastBatteryIntent(context);
+        Sample lastSample = db.getLastSample(context);
         if(checkIdentical(context, batteryIntent, lastSample)){
             Logger.d(TAG, "Pre-check failed, sample would be essentially identical");
             return false;
         }
 
-        Sample sample = constructSample(context, batteryIntent, trigger, lastSampleTime*1000);
+        Sample sample = constructSample(context, batteryIntent, trigger, lastSampleTime*1000, true);
         if(sample != null){
             long id = db.putSample(sample);
             Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
@@ -84,7 +84,7 @@ public class Sampler {
         return isEssentiallyIdentical(dummy, last);
     }
 
-    private static Sample constructSample(Context context, Intent batteryIntent, String trigger, long lastSampleTime){
+    public static Sample constructSample(Context context, Intent batteryIntent, String trigger, long lastSampleTime, boolean resetDistance){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SystemLoadPoint load1 = SamplingLibrary.getSystemLoad();
 
@@ -100,7 +100,7 @@ public class Sampler {
         sample.setPiList(SamplingLibrary.getRunningProcesses(context, lastSampleTime, true));
         sample.setScreenBrightness(SamplingLibrary.getScreenBrightness(context));
         sample.setLocationProviders(SamplingLibrary.getEnabledLocationProviders(context));
-        sample.setDistanceTraveled(SamplingLibrary.getDistanceTraveled(context));
+        sample.setDistanceTraveled(SamplingLibrary.getDistanceTraveled(context, resetDistance));
         sample.setNetworkStatus(SamplingLibrary.getNetworkStatusForSample(context));
         sample.setNetworkDetails(constructNetworkDetails(context));
 
