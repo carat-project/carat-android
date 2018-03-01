@@ -407,6 +407,12 @@
     </string>
     <string name="stopping_application">Sovelluksen pysäyttäminen</string>
     <string name="force_stop">Pakota lopetus</string>
+    <string name="sample_preview_message">
+        Tämä on esimerkki mittauksesta, joita Carat kerää laitteeltasi. Lukuunottamatta
+        rekisteröintiä ja kyselyiden vastauksia, kaikki laitteeltasi kerättävä data näkyy tässä.
+    </string>
+    <string name="show_sample_contents">Näytä mittausten sisältö</string>
+    <string name="preview_data">Esikatsele kerättyä dataa</string>
 </resources>
 
 

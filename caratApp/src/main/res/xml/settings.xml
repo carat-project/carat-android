@@ -54,8 +54,8 @@
     <android.support.v7.preference.Preference
         android:persistent="false"
         android:key="pref_sample_preview"
-        android:title="Show sample contents"
-        android:summary="Nothing yet"
+        android:title="@string/show_sample_contents"
+        android:summary="@string/preview_data"
         android:id="@+id/pref_sample_preview">
     </android.support.v7.preference.Preference>
     <android.support.v7.preference.Preference

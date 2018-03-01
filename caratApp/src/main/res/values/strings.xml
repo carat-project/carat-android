@@ -442,4 +442,10 @@ delete these from your file.
     </string>
     <string name="stopping_application">Stopping an application</string>
     <string name="force_stop">Force stop</string>
+    <string name="sample_preview_message">
+        This is an example of a sample collected from your device. Here you can see all data that
+        Carat collects apart from the initial registration and survey answers.
+    </string>
+    <string name="show_sample_contents">Show sample contents</string>
+    <string name="preview_data">Preview the data collected</string>
 </resources>
