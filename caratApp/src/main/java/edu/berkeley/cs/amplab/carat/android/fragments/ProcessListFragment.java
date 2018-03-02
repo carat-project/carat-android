@@ -84,11 +84,8 @@ public class ProcessListFragment extends Fragment {
 
     private void refresh() {
         CaratApplication app = (CaratApplication) getActivity().getApplication();
-        Context context = getContext();
-        long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
-        List<ProcessInfo> searchResults = SamplingLibrary.getRunningProcesses(context, recent, false);
         expandableListView.setAdapter(new ProcessExpandListAdapter((MainActivity) getActivity(),
-                expandableListView, app, searchResults));
+                expandableListView, app));
     }
 
 }

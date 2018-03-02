@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import edu.berkeley.cs.amplab.carat.android.CaratApplication;
+import edu.berkeley.cs.amplab.carat.android.Constants;
 import edu.berkeley.cs.amplab.carat.android.MainActivity;
 import edu.berkeley.cs.amplab.carat.android.R;
 import edu.berkeley.cs.amplab.carat.android.UsageManager;
@@ -38,23 +39,28 @@ public class ProcessExpandListAdapter extends BaseExpandableListAdapter implemen
     private MainActivity mainActivity;
     private CaratApplication caratApplication;
     private SimpleProcessInfo[] processInfoList;
-    private ExpandableListView lv;
     private LayoutInflater mInflater;
 
-    public ProcessExpandListAdapter(MainActivity mainActivity, ExpandableListView lv,
-                                    final CaratApplication caratApplication, List<ProcessInfo> processInfoList) {
+    public ProcessExpandListAdapter(MainActivity mainActivity, ExpandableListView listView,
+                                    final CaratApplication caratApplication) {
 
         this.caratApplication = caratApplication;
         this.mainActivity = mainActivity;
 
-        SimpleProcessInfo[] convertedResults = convertProcessInfo(processInfoList);
-        Arrays.sort(convertedResults);
-        this.processInfoList = convertedResults;
-        this.lv = lv;
-        this.lv.setOnGroupClickListener(this);
-
+        processInfoList = new SimpleProcessInfo[]{};
+        Context context = mainActivity.getApplicationContext();
+        long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
+        ProcessExpandListAdapter adapter = this;
+        new Thread(() -> {
+            List<ProcessInfo> processes = SamplingLibrary.getRunningProcesses(context, recent, false);
+            SimpleProcessInfo[] convertedResults = convertProcessInfo(processes);
+            Arrays.sort(convertedResults);
+            processInfoList = convertedResults;
+            mainActivity.runOnUiThread(listView::invalidateViews);
+            mainActivity.runOnUiThread(adapter::notifyDataSetChanged);
+        }).start();
         mInflater = LayoutInflater.from(caratApplication);
-
+        listView.setOnGroupClickListener(this);
     }
 
     @Override

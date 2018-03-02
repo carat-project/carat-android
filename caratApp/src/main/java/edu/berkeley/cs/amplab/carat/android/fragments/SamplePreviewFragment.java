@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -39,7 +40,7 @@ public class SamplePreviewFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        ScrollView view = (ScrollView) inflater.inflate(R.layout.fragment_sample_preview, container, false);
+        LinearLayout view = (LinearLayout) inflater.inflate(R.layout.fragment_sample_preview, container, false);
         jsonTextView = (TextView) view.findViewById(R.id.sample_json);
         return view;
     }
