@@ -6,8 +6,8 @@ android {
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        versionCode 135
-        versionName "2.19.3"
+        versionCode 136
+        versionName "2.2"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 10
         //noinspection OldTargetApi
