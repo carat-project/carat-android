@@ -56,11 +56,11 @@ public class Sampler {
             return false;
         }
 
-        Sample sample = constructSample(context, batteryIntent, trigger, lastSampleTime*1000, true);
+        Sample sample = constructSample(context, batteryIntent, trigger, lastSampleTime, true);
         if(sample != null){
             long id = db.putSample(sample);
             Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
-            preferences.edit().putLong(Keys.lastSampleTimestamp, System.currentTimeMillis()).apply();
+            preferences.edit().putLong(Keys.lastSampleTimestamp, System.currentTimeMillis()).commit();
             success = true;
         }
         int sampleCount = SampleDB.getInstance(context).countSamples();
