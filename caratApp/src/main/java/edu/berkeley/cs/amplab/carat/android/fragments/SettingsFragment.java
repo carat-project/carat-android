@@ -76,7 +76,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         Preference preview = findPreference(Keys.prefSamplePreview);
         preview.setOnPreferenceClickListener(preference -> {
             SamplePreviewFragment samplePreviewFragment = new SamplePreviewFragment();
-            mainActivity.replaceFragment(samplePreviewFragment, Constants.FRAGMENT_HOGS_TAG);
+            mainActivity.replaceFragment(samplePreviewFragment, Constants.FRAGMENT_SAMPLE_PREVIEW);
             return true;
         });
     }
