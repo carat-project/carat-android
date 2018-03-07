@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
@@ -84,8 +85,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         PreferenceScreen screen = getPreferenceScreen();
         Preference batteryOptimizations = findPreference(Keys.prefBatteryOptimizations);
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M && batteryOptimizations != null && screen != null){
-            screen.removePreference(batteryOptimizations);
+        if(batteryOptimizations != null && screen != null){
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
+                screen.removePreference(batteryOptimizations);
+            } else {
+                Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                if(intent.resolveActivityInfo(mainActivity.getPackageManager(), 0) == null){
+                    screen.removePreference(batteryOptimizations);
+                }
+            }
         }
     }
 
