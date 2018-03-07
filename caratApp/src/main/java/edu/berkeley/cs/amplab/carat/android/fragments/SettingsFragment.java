@@ -5,12 +5,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -79,6 +81,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             mainActivity.replaceFragment(samplePreviewFragment, Constants.FRAGMENT_SAMPLE_PREVIEW);
             return true;
         });
+
+        PreferenceScreen screen = getPreferenceScreen();
+        Preference batteryOptimizations = findPreference(Keys.prefBatteryOptimizations);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M && batteryOptimizations != null && screen != null){
+            screen.removePreference(batteryOptimizations);
+        }
     }
 
     @Override
