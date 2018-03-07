@@ -6,7 +6,7 @@ android {
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        versionCode 136
+        versionCode 137
         versionName "2.2"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 10
