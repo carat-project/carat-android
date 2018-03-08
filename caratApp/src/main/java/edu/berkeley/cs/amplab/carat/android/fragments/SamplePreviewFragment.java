@@ -67,12 +67,14 @@ public class SamplePreviewFragment extends Fragment {
                 // Generate a dummy sample and show it
                 sample = constructTempSample(context);
             }
-            TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
-            JSONObject json = new JSONObject(serializer.toString(sample));
-            if(parentActivity != null){
-                parentActivity.runOnUiThread(setJsonText(json));
+            if(sample != null){
+                TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
+                JSONObject json = new JSONObject(serializer.toString(sample));
+                if(parentActivity != null){
+                    parentActivity.runOnUiThread(setJsonText(json));
+                }
             }
-        } catch (TException e) {
+        } catch (TException | NullPointerException e) {
             Logger.d(TAG, "Error when deserializing sample " + e);
         } catch(JSONException e){
             printJSONException(e);
