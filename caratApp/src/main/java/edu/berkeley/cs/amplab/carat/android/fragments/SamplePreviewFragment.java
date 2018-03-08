@@ -1,5 +1,6 @@
 package edu.berkeley.cs.amplab.carat.android.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,8 +23,10 @@ import org.json.JSONObject;
 
 import java.util.concurrent.TimeUnit;
 
+import edu.berkeley.cs.amplab.carat.android.CaratApplication;
 import edu.berkeley.cs.amplab.carat.android.Keys;
 import edu.berkeley.cs.amplab.carat.android.R;
+import edu.berkeley.cs.amplab.carat.android.components.CaratDialogs;
 import edu.berkeley.cs.amplab.carat.android.sampling.Sampler;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
@@ -36,6 +39,7 @@ import edu.berkeley.cs.amplab.carat.thrift.Sample;
 public class SamplePreviewFragment extends Fragment {
     private final String TAG = SamplePreviewFragment.class.getSimpleName();
     private TextView jsonTextView;
+    private Activity parentActivity;
 
     @Nullable
     @Override
@@ -46,27 +50,34 @@ public class SamplePreviewFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        new Thread(() -> {
-            try {
-                Context context = getContext();
-                SampleDB db = SampleDB.getInstance(context);
-                Sample sample = db.getLastSample(context);
-                if(sample == null){
-                    // Generate a dummy sample and show it
-                    sample = constructTempSample(context);
-                }
-                TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
-                JSONObject json = new JSONObject(serializer.toString(sample));
-                getActivity().runOnUiThread(setJsonText(json));
-            } catch (TException e) {
-                Logger.d(TAG, "Error when deserializing sample " + e);
-            } catch(JSONException e){
-                printJSONException(e);
-            }
-        }).start();
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof Activity){{
+            parentActivity = (Activity) context;
+            showSampleThread.start();
+        }}
     }
+
+    private Thread showSampleThread = new Thread(() -> {
+        try {
+            Context context = getContext();
+            SampleDB db = SampleDB.getInstance(context);
+            Sample sample = db.getLastSample(context);
+            if(sample == null){
+                // Generate a dummy sample and show it
+                sample = constructTempSample(context);
+            }
+            TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
+            JSONObject json = new JSONObject(serializer.toString(sample));
+            if(parentActivity != null){
+                parentActivity.runOnUiThread(setJsonText(json));
+            }
+        } catch (TException e) {
+            Logger.d(TAG, "Error when deserializing sample " + e);
+        } catch(JSONException e){
+            printJSONException(e);
+        }
+    });
 
     private Runnable setJsonText(JSONObject json){
         return () -> {
