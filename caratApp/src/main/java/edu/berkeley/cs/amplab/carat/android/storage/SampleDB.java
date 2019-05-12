@@ -435,6 +435,7 @@ public class SampleDB {
         // Write the sample hashmap as a blob
         try {
             TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
+            s.setThermalZoneNames(null);
             byte[] sampleData = serializer.serialize(s);
             initialValues.put(COLUMN_SAMPLE, sampleData);
             return db.insert(SAMPLES_VIRTUAL_TABLE, null, initialValues);
