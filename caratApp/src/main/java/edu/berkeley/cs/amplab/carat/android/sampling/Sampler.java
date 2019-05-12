@@ -64,7 +64,15 @@ public class Sampler {
                 preferences.edit().putLong(Keys.lastSampleTimestamp, System.currentTimeMillis()).commit();
                 success = true;
             }else{
-                Logger.e(TAG, "Failed to store sample for " + trigger + ":\n" + sample.toString());
+                String sstr = sample.toString();
+                if (sstr.length() > 3000) {
+                    int i = 0;
+                    for (i = 0; i < sstr.length()/3000; i++) {
+                        Logger.e(TAG, "Failed to store sample for " + trigger + ":\n" + sstr.substring(i*3000, (i+1)*3000) + " ... ");
+                    }
+                    Logger.e(TAG, "Failed to store sample for " + trigger + ":\n ... " +sstr.substring(i*3000));
+                }else
+                    Logger.e(TAG, "Failed to store sample for " + trigger + ":\n" + sstr);
                 success = false;
             }
         }
