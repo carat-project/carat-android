@@ -243,7 +243,11 @@ public class Util {
     }
 
     public static void printStackTrace(String tag, Throwable th){
-        Logger.e(tag, th.getCause()+"");
+        printStackTrace(tag, th, null);
+    }
+
+    public static void printStackTrace(String tag, Throwable th, String message){
+        Logger.e(tag, (message != null? message + ": ": "") + th.getCause()+"");
         Logger.e(tag, getStackTrace(th));
     }
 

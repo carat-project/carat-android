@@ -435,12 +435,13 @@ public class SampleDB {
         // Write the sample hashmap as a blob
         try {
             TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
-            initialValues.put(COLUMN_SAMPLE, serializer.serialize(s));
+            byte[] sampleData = serializer.serialize(s);
+            initialValues.put(COLUMN_SAMPLE, sampleData);
+            return db.insert(SAMPLES_VIRTUAL_TABLE, null, initialValues);
         } catch (Exception e) {
-            Util.printStackTrace(TAG, e);
+            Util.printStackTrace(TAG, e, "Unable to serialize or put serialized sample to DB!");
+            return -1;
         }
-
-        return db.insert(SAMPLES_VIRTUAL_TABLE, null, initialValues);
     }
 
     /**
