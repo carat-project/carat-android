@@ -59,9 +59,14 @@ public class Sampler {
         Sample sample = constructSample(context, batteryIntent, trigger, lastSampleTime, true);
         if(sample != null){
             long id = db.putSample(sample);
-            Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
-            preferences.edit().putLong(Keys.lastSampleTimestamp, System.currentTimeMillis()).commit();
-            success = true;
+            if (id >= 0) {
+                Logger.i(TAG, "Stored sample " + id + " for " + trigger + ":\n" + sample.toString());
+                preferences.edit().putLong(Keys.lastSampleTimestamp, System.currentTimeMillis()).commit();
+                success = true;
+            }else{
+                Logger.e(TAG, "Failed to store sample for " + trigger + ":\n" + sample.toString());
+                success = false;
+            }
         }
         int sampleCount = SampleDB.getInstance(context).countSamples();
         if(sampleCount >= Constants.SAMPLES_MAX_BACKLOG /* 250 */) {
