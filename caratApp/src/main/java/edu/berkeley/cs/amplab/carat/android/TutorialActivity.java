@@ -7,8 +7,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebView;
@@ -20,15 +20,14 @@ import android.widget.TextView;
 import java.util.List;
 import java.util.Vector;
 
-import edu.berkeley.cs.amplab.carat.android.CaratApplication;
-import edu.berkeley.cs.amplab.carat.android.R;
+
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.BugsTutorialFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.EulaTutorialFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.HogsTutorialFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.tutorial.MainTutorialFragment;
 import edu.berkeley.cs.amplab.carat.android.adapters.TutorialPagerAdapter;
 
-public class TutorialActivity extends ActionBarActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
+public class TutorialActivity extends AppCompatActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
 
     private PagerAdapter adapterViewPager;
     private ViewPager vPager;
