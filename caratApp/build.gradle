@@ -76,7 +76,9 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     // Thrift 0.11.0
     implementation 'org.apache.thrift:libthrift:0.11.0' exclude group: 'org.slf4j'
-    implementation 'fi.helsinki.cs.nodes.carat:carat-protocol:1.9.3' exclude group: 'org.slf4j'
+    // Changed because published on Jitpack
+    // implementation 'fi.helsinki.cs.nodes.carat:carat-protocol:1.9.3' exclude group: 'org.slf4j'
+    implementation 'com.github.carat-project:carat-protocol:1.9.3' exclude group: 'org.slf4j'
     implementation 'org.apache.commons:commons-math3:3.0'
     implementation 'org.bouncycastle:bcprov-jdk16:1.45'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.1'
