@@ -5,8 +5,8 @@ android {
     compileSdkVersion 26
 
     defaultConfig {
-        versionCode 140
-        versionName "2.2.1"
+        versionCode 141
+        versionName "2.21.1-alpha"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 14
         //noinspection OldTargetApi
