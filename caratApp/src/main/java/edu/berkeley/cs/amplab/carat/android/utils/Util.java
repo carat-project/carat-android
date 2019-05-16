@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -264,5 +265,35 @@ public class Util {
              buf.append("in " + elem.getMethodName() + " in " + elem.getClassName() + "("+elem.getLineNumber()+")\n");
         }
         return buf.toString();
+    }
+
+    /**
+     * If the given array has nulls, replace them with the text "null"
+     * @return
+     */
+    public static ArrayList<String> sanitizeList(ArrayList<String> input){
+        ArrayList<String> output = new ArrayList<String>();
+        for (String item: input){
+            if (item != null)
+                output.add(item);
+            else
+                output.add("null");
+        }
+        return output;
+    }
+
+    /**
+     * If the given array has nulls, replace them with the text "null"
+     * @return
+     */
+    public static ArrayList<Long> sanitizeLongList(ArrayList<Long> input){
+        ArrayList<Long> output = new ArrayList<Long>();
+        for (Long item: input){
+            if (item != null)
+                output.add(item);
+            else
+                output.add(-1L);
+        }
+        return output;
     }
 }

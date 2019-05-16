@@ -27,13 +27,13 @@ public class FsUtils {
         public static ArrayList<Long> getThermalZones(){
             File[] files = getFiles();
             Map<Integer, Long> result = readValues(files, "/temp", Long.class);
-            return new ArrayList<>(result.values());
+            return Util.sanitizeLongList(new ArrayList<>(result.values()));
         }
 
         public static ArrayList<String> getThermalZoneNames(){
             File[] files = getFiles();
             Map<Integer, String> result = readValues(files, "/type", String.class);
-            return new ArrayList<>(result.values());
+            return Util.sanitizeList(new ArrayList<>(result.values()));
         }
 
         public static long getCount() {
@@ -69,25 +69,25 @@ public class FsUtils {
         public static ArrayList<Long> getCurrentFrequencies(){
             String subPath = "/cpufreq/scaling_cur_freq";
             Map<Integer, Long> frequencies = readValues(getFiles(), subPath, Long.class);
-            return new ArrayList<>(frequencies.values());
+            return Util.sanitizeLongList(new ArrayList<>(frequencies.values()));
         }
 
         public static ArrayList<Long> getMinimumFrequencies(){
             String subPath = "/cpufreq/cpuinfo_min_freq";
             Map<Integer, Long> frequencies = readValues(getFiles(), subPath, Long.class);
-            return new ArrayList<>(frequencies.values());
+            return Util.sanitizeLongList(new ArrayList<>(frequencies.values()));
         }
 
         public static ArrayList<Long> getMaximumFrequencies(){
             String subPath = "/cpufreq/cpuinfo_max_freq";
             Map<Integer, Long> frequencies = readValues(getFiles(), subPath, Long.class);
-            return new ArrayList<>(frequencies.values());
+            return Util.sanitizeLongList(new ArrayList<>(frequencies.values()));
         }
 
         public static ArrayList<Long> getUtilization(){
             String subPath = "/cpufreq/cpu_utilization";
             Map<Integer, Long> utilization = readValues(getFiles(), subPath, Long.class);
-            return new ArrayList<>(utilization.values());
+            return Util.sanitizeLongList(new ArrayList<>(utilization.values()));
         }
 
         private static File[] getFiles(){
