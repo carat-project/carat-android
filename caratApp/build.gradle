@@ -5,8 +5,8 @@ android {
     compileSdkVersion 26
 
     defaultConfig {
-        versionCode 141
-        versionName "2.21.1-alpha"
+        versionCode 142
+        versionName "2.21.2-alpha"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 14
         //noinspection OldTargetApi
@@ -76,7 +76,7 @@ dependencies {
     // Thrift 0.11.0
     implementation 'org.apache.thrift:libthrift:0.11.0' exclude group: 'org.slf4j'
     // Changed because published on Jitpack
-    implementation 'fi.helsinki.cs.nodes.carat:carat-protocol:1.9.3' exclude group: 'org.slf4j'
+    implementation 'fi.helsinki.cs.nodes.carat:carat-protocol:1.9.3' exclude group: 'org.slf4j' exclude group: 'javax.annotation'
     //implementation 'com.github.carat-project:carat-protocol:1.9.3' exclude group: 'org.slf4j'
     implementation 'org.apache.commons:commons-math3:3.0'
     implementation 'org.bouncycastle:bcprov-jdk16:1.45'
