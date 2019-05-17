@@ -3,7 +3,6 @@ package edu.berkeley.cs.amplab.carat.android;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -34,8 +34,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.apache.commons.codec.binary.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,7 +60,6 @@ import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragment;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
-import edu.berkeley.cs.amplab.carat.android.utils.Profiler;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.android.utils.VersionGater;
@@ -84,16 +81,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean onBackground = false;
     private boolean schedulerRunning = false;
 
-    private boolean shouldAddTabs = true;
-
-    private TextView actionBarTitle;
     private RelativeLayout backArrow;
-    private ProgressBar progressCircle;
     private DashboardFragment dashboardFragment;
 
-    private HashMap<String, Integer> androidDevices, iosDevices;
+    private HashMap<String, Integer> androidDevices;
 
-    private Tracker tracker;
     private String statusText;
 
     public int appWellbehaved = Constants.VALUE_NOT_AVAILABLE,
@@ -119,11 +111,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NetworkChangeListener networkChangeReceiver = new NetworkChangeListener() {
         @Override
         public void onNetworkChange(NetworkState state) {
-            switch(state){
-                case RESUME: {
-                    Logger.d(TAG, "Network resumed, refreshing tasks and views");
-                    resumeTasksAndUpdate();
-                }
+            if (state == NetworkState.RESUME) {
+                Logger.d(TAG, "Network resumed, refreshing tasks and views");
+                resumeTasksAndUpdate();
             }
         }
     };
@@ -136,10 +126,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getWindow().requestFeature(Window.FEATURE_PROGRESS);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            // TODO: What about devices < HONEYCOMB?
-            VersionGater.checkVersion(this);
-        }
+        // version always > 14 now
+        VersionGater.checkVersion(this);
 
         p = PreferenceManager.getDefaultSharedPreferences(this);
         checkUsageAccess();
@@ -155,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
 
         CaratApplication.setMain(this);
-        tracker = Tracker.getInstance(this);
+        Tracker tracker = Tracker.getInstance(this);
         tracker.trackUser("caratstarted", getTitle());
 
         // TODO SHOW DIALOG, NOT FRAGMENT
@@ -280,23 +268,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         // Apparently required
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case MULTIPLE_PERMISSIONS: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    synchronized (this) {
-                        Logger.d(Constants.SF, "In scheduleRefresh block");
-                        scheduleRefresh(Constants.FRESHNESS_TIMEOUT);
-                    }
-                    // all permissions are granted.
-                } else {
-                    //permissions missing, do nothing.
-
+        if (requestCode == MULTIPLE_PERMISSIONS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                synchronized (this) {
+                    Logger.d(Constants.SF, "In scheduleRefresh block");
+                    scheduleRefresh(Constants.FRESHNESS_TIMEOUT);
                 }
-                return;
-            }
+                // all permissions are granted.
+            }  //permissions missing, do nothing.
+
         }
     }
 
@@ -310,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         if (!listPermissionsNeeded.isEmpty()) {
-            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), MULTIPLE_PERMISSIONS);
+            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[0]), MULTIPLE_PERMISSIONS);
             return false;
         }
         return true;
@@ -427,7 +410,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                     getSupportFragmentManager().popBackStack();
                 } else {
-                    getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                    if (getSupportActionBar() != null)
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 }
                 return true;
             default:
@@ -491,16 +475,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void setUpActionBar(String title, boolean canGoBack){
-        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-        getSupportActionBar().setCustomView(R.layout.actionbar);
-        actionBarTitle = (TextView) getSupportActionBar().getCustomView().findViewById(R.id.action_bar_title);
-        backArrow = (RelativeLayout) getSupportActionBar().getCustomView().findViewById(R.id.back_arrow);
-        backArrow.setOnClickListener(this);
-        actionBarTitle.setText(title);
-        if (canGoBack) {
-            backArrow.setVisibility(View.VISIBLE);
-        } else {
-            backArrow.setVisibility(View.GONE);
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+            ab.setCustomView(R.layout.actionbar);
+            TextView actionBarTitle = ab.getCustomView().findViewById(R.id.action_bar_title);
+            backArrow = ab.getCustomView().findViewById(R.id.back_arrow);
+            backArrow.setOnClickListener(this);
+            actionBarTitle.setText(title);
+            if (canGoBack) {
+                backArrow.setVisibility(View.VISIBLE);
+            } else {
+                backArrow.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -508,8 +495,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(getSupportActionBar() == null || getSupportActionBar().getCustomView() == null){
             return;
         }
-        backArrow = (RelativeLayout) getSupportActionBar().getCustomView().findViewById(R.id.back_arrow);
-        progressCircle = (ProgressBar) getSupportActionBar().getCustomView().findViewById(R.id.action_bar_progress_circle);
+        backArrow = getSupportActionBar().getCustomView().findViewById(R.id.back_arrow);
+        ProgressBar progressCircle = getSupportActionBar().getCustomView().findViewById(R.id.action_bar_progress_circle);
         progressCircle.getIndeterminateDrawable().setColorFilter(0xF2FFFFFF,
                 android.graphics.PorterDuff.Mode.SRC_ATOP);
         if((backArrow.getVisibility() != View.VISIBLE) && visibility){
@@ -620,17 +607,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void replaceFragment(Fragment fragment, String tag){
-        final String FRAGMENT_TAG = tag;
         setProgressCircle(false);
-        boolean fragmentPopped = getSupportFragmentManager().popBackStackImmediate(FRAGMENT_TAG, 0);
+        boolean fragmentPopped = getSupportFragmentManager().popBackStackImmediate(tag, 0);
 
         if (!fragmentPopped) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right);
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2 || !isDestroyed()) {
-                transaction.replace(R.id.fragment_holder, fragment, FRAGMENT_TAG)
-                        .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+                transaction.replace(R.id.fragment_holder, fragment, tag)
+                        .addToBackStack(tag).commitAllowingStateLoss();
             }
         }
     }
@@ -657,13 +643,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             AsyncStats hogStats = new AsyncStats(this);
             // run this asyncTask in a new thread [from the thread pool] (run in parallel to other asyncTasks)
             // (do not wait for them to finish, it takes a long time)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-                prefetchData.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                hogStats.executeOnExecutor(AsyncStats.THREAD_POOL_EXECUTOR);
-            } else {
-                hogStats.execute();
-                prefetchData.execute();
-            }
+            prefetchData.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            hogStats.executeOnExecutor(AsyncStats.THREAD_POOL_EXECUTOR);
         }
     }
 
@@ -720,12 +701,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if(callback != null){
-                    callback.run(which);
-                }
+        builder.setItems(options, (dialog, which) -> {
+            if(callback != null){
+                callback.run(which);
             }
         });
         builder.show();
