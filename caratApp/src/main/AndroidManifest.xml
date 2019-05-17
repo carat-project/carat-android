@@ -4,7 +4,7 @@
     package="edu.berkeley.cs.amplab.carat.android" >
 
     <!-- Hack to enable v14 preferences -->
-    <uses-sdk xmlns:tools="http://schemas.android.com/tools"
+    <uses-sdk
         tools:overrideLibrary="android.support.v14.preference" />
 
     <!--
@@ -14,10 +14,10 @@
         CHANGE_WIFI_STATE: Needed on some phones to sample wifi signal strength.
         WAKE_LOCK: Required to keep device awake while collecting sample.
         ACCESS_NETWORK_STATE: Needed to sample network state.
-        READ_PHONE_STATE: TODO: What is this needed for?
+        READ_PHONE_STATE: Needed to get IMEI as part of our unique ID generation process. More state for Carat ID generator -> less chance of collisions.
         BLUETOOTH: Needed to sample bluetooth state..
         ACCESS_COARSE_LOCATION: Needed to sample distance travelled.
-        READ_SYNC_SETTINGS: TODO: What is this needed for?
+        READ_SYNC_SETTINGS: This is required for system settings analysis. The sync setting (used to) determine whether emails and other data are synced, significantly increasing energy consumption.
         BROADCAST_STICKY: Needed to retrieve data without waiting for broadcasts.
         KILL_BACKGROUND_PROCESSES: Needed to kill applications in actions.
         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS: Needed for partial wakelocks in doze
@@ -47,6 +47,7 @@
     <application
         android:name=".CaratApplication"
         android:allowBackup="true"
+        android:fullBackupContent="@xml/my_backup_rules"
         android:icon="@drawable/carat_material_icon"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
@@ -113,7 +114,8 @@
 
                 <!-- Throwaway intents to keep sampling scheduled -->
                 <action android:name="android.intent.action.HEADSET_PLUG"/>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <!-- Deprecated -->
+                <!--<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />-->
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
                 <action android:name="android.net.wifi.STATE_CHANGE" />
                 <action android:name="android.intent.action.INPUT_METHOD_CHANGED"/>
