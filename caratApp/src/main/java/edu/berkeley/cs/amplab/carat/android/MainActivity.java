@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -31,8 +32,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.apache.commons.codec.binary.StringUtils;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +50,7 @@ import edu.berkeley.cs.amplab.carat.android.storage.SampleDB;
 import edu.berkeley.cs.amplab.carat.android.storage.SimpleHogBug;
 import edu.berkeley.cs.amplab.carat.android.utils.Logger;
 import edu.berkeley.cs.amplab.carat.android.utils.NetworkingUtil;
+import edu.berkeley.cs.amplab.carat.android.utils.PermissionHelper;
 import edu.berkeley.cs.amplab.carat.android.utils.PowerUtils;
 import edu.berkeley.cs.amplab.carat.android.utils.PrefetchData;
 import edu.berkeley.cs.amplab.carat.android.fragments.AboutFragment;
@@ -58,7 +58,6 @@ import edu.berkeley.cs.amplab.carat.android.fragments.DashboardFragment;
 import edu.berkeley.cs.amplab.carat.android.fragments.EnableInternetDialogFragment;
 import edu.berkeley.cs.amplab.carat.android.sampling.SamplingLibrary;
 import edu.berkeley.cs.amplab.carat.android.utils.ProcessUtil;
-import edu.berkeley.cs.amplab.carat.android.utils.Profiler;
 import edu.berkeley.cs.amplab.carat.android.utils.Tracker;
 import edu.berkeley.cs.amplab.carat.android.utils.Util;
 import edu.berkeley.cs.amplab.carat.android.utils.VersionGater;
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "CaratMainActivity";
 
-    private SharedPreferences p;
+    private SharedPreferences preferences;
 
     private boolean acceptedEula = false;
     private String batteryLife;
@@ -125,51 +124,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            // This happens multiple times, reject subsequent calls
-            Logger.d(TAG, "MainActivity already spawned once, rejecting onCreate");
-            return;
-        }
-
-        networkChangeReceiver.register(this);
-        onBackground = false;
-        schedulerRunning = false;
         getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getWindow().requestFeature(Window.FEATURE_PROGRESS);
 
-        // Always require 14
-        VersionGater.checkVersion(this);
+        // This is some legacy thing, better do it as early as possible
+        CaratApplication.setMain(this);
 
-        p = PreferenceManager.getDefaultSharedPreferences(this);
-        checkUsageAccess();
-        checkBatteryOptimizations();
-
-        //PreferenceManager.setDefaultValues(this, R.xml.settings, false);
-        acceptedEula = p.getBoolean(getResources().getString(R.string.save_accept_eula), false);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        acceptedEula = preferences.getBoolean(getResources().getString(R.string.save_accept_eula), false);
         if (!acceptedEula) {
+            Logger.i(TAG, "User has not accepted EULA, showing TutorialActivity");
             Intent i = new Intent(this, TutorialActivity.class);
             this.startActivityForResult(i, Constants.REQUESTCODE_ACCEPT_EULA);
+        } else {
+            startMainApp();
         }
-        getStatsFromServer();
+    }
 
-        CaratApplication.setMain(this);
-        tracker = Tracker.getInstance(this);
-        tracker.trackUser("caratstarted", getTitle());
-
-        // TODO SHOW DIALOG, NOT FRAGMENT
-        boolean online = NetworkingUtil.canConnect(getApplicationContext());
-        if (!online) {
-            EnableInternetDialogFragment dialog = new EnableInternetDialogFragment();
-            dialog.show(getSupportFragmentManager(), "dialog");
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.REQUESTCODE_ACCEPT_EULA && resultCode == RESULT_OK) {
+            startMainApp();
+            resumeTasksAndUpdate();
         }
+    }
 
+    protected void startMainApp() {
+        networkChangeReceiver.register(this);
+        onBackground = false;
+        schedulerRunning = false;
+
+        // Always require API level 14 or above
+        VersionGater.checkVersion(this);
+
+        // Load the layout
         setContentView(R.layout.activity_dashboard);
         dashboardFragment = new DashboardFragment();
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_holder, dashboardFragment).commit();
         getSupportFragmentManager().addOnBackStackChangedListener(this::onFragmentPop);
 
-        // Load fragment when coming from notification intent
+        // Load a specific fragment if specified in the intent
         int fragment = getIntent().getIntExtra("fragment", -1);
         if(fragment != -1){
             if(fragment == R.id.actions_layout){
@@ -178,6 +174,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
+        // Show dialog if not connected to Internet
+        boolean online = NetworkingUtil.canConnect(getApplicationContext());
+        if (!online) {
+            EnableInternetDialogFragment dialog = new EnableInternetDialogFragment();
+            dialog.show(getSupportFragmentManager(), "dialog");
+        }
+
+        // Preload global statistics
+        getStatsFromServer();
+
+        // Prompt permissions
+        PermissionHelper.promptMissingPermissions(this);
+        checkBatteryOptimizations();
+        checkUsageAccess();
+
+        // Begin tracking. TODO: Not used?
+        tracker = Tracker.getInstance(this);
+        tracker.trackUser("caratstarted", getTitle());
+
+        // Preload static actions, such as questionnaires
         new Thread(() -> {
             // According to profiling, this takes almost 2 seconds to execute
             staticActionsAmount = CaratApplication.getStaticActions().size();
@@ -197,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void checkBatteryOptimizations(){
         if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            boolean allowedToCheck = p.getBoolean(Keys.promptIgnoreOptimizations, true);
+            boolean allowedToCheck = preferences.getBoolean(Keys.promptIgnoreOptimizations, true);
             Logger.d(TAG, "User has allowed to prompt battery optimizations: " + allowedToCheck);
             if(allowedToCheck && !PowerUtils.isIgnoringBatteryOptimizations(this, getPackageName())) {
                 Logger.d(TAG, "Battery optimizations are not disabled for Carat, checking conditions");
@@ -221,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 Toast.makeText(context, R.string.enable_later, Toast.LENGTH_SHORT).show();
                                 if(remember){
                                     Logger.d(TAG, "Not prompting battery optimizations again");
-                                    p.edit().putBoolean(Keys.promptIgnoreOptimizations, false).apply();
+                                    preferences.edit().putBoolean(Keys.promptIgnoreOptimizations, false).apply();
                                 }
                             }
                         }
@@ -233,7 +249,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        networkChangeReceiver.unregister();
+        if (networkChangeReceiver != null) {
+            networkChangeReceiver.unregister();
+        }
         super.onDestroy();
     }
 
@@ -251,21 +269,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // from Eula Activity without invoking super.onResume()
     public void resumeTasksAndUpdate(){
         this.onBackground = false;
-        boolean online = NetworkingUtil.canConnect(getApplicationContext());
-        if ((!isStatsDataAvailable()) && online) {
-            getStatsFromServer();
-        }
         // Refresh reports and upload samples every 15 minutes, but only
         // if user has accepted EULA.
-        acceptedEula = p.getBoolean(getResources().getString(R.string.save_accept_eula), false);
-        if(acceptedEula){
+        acceptedEula = preferences.getBoolean(getResources().getString(R.string.save_accept_eula), false);
+        if (acceptedEula) {
+            boolean online = NetworkingUtil.canConnect(getApplicationContext());
+            if ((!isStatsDataAvailable()) && online) {
+                getStatsFromServer();
+            }
+
             Logger.d(Constants.SF, "EULA is accepted, waiting to access scheduleRefresh block");
             synchronized (this){
                 Logger.d(Constants.SF, "In scheduleRefresh block");
                 scheduleRefresh(Constants.FRESHNESS_TIMEOUT);
             }
+            setValues();
         }
-        setValues();
     }
 
     @Override
@@ -299,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Stop the scheduler when application is no longer in the
                 // foreground unless user has enabled sending samples and
                 // downloading reports while in the background.
-                boolean allowBackground = p.getBoolean(getString(R.string.enable_background), false);
+                boolean allowBackground = preferences.getBoolean(getString(R.string.enable_background), false);
                 schedulerRunning = !isOnBackground() || allowBackground;
                 if(schedulerRunning){
                     Logger.d(Constants.SF, "Scheduled refresh()");
