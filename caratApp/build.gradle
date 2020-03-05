@@ -5,8 +5,8 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        versionCode 143
-        versionName "2.21.3-alpha"
+        versionCode 144
+        versionName "2.22.0-alpha"
         applicationId "edu.berkeley.cs.amplab.carat.android"
         minSdkVersion 14
         targetSdkVersion 28
