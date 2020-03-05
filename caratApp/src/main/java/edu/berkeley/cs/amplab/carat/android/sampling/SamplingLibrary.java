@@ -75,6 +75,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
+import android.support.v4.app.ActivityCompat;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoCdma;
@@ -111,9 +112,9 @@ import edu.berkeley.cs.amplab.carat.thrift.StorageDetails;
 /**
  * Library class for methods that obtain information about the phone that is
  * running Carat.
- * 
+ *
  * @author Eemil Lagerspetz
- * 
+ *
  */
 public final class SamplingLibrary {
 	private static final String TAG = SamplingLibrary.class.getSimpleName();
@@ -221,7 +222,7 @@ public final class SamplingLibrary {
 	 * the lifetime of the device. (May change if wiped). This is probably our
 	 * best choice for a UUID across the Android landscape, since it is present
 	 * on both phones and non-phones.
-	 * 
+	 *
 	 * @return a String that uniquely identifies this device.
 	 */
 	public static String getAndroidId(Context c) {
@@ -255,17 +256,17 @@ public final class SamplingLibrary {
 	public static void setCurrentBatteryLevel(double level) {
 		SamplingLibrary.currentBatteryLevel = level;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * Take in currentLevel and scale as doubles to avoid loss of precision issues.
 	 * Note that Carat stores battery level as a value between 0 and 1, e.g. 0.45 for 45%.
 	 * @param currentLevel Current battery level, usually in percent.
 	 * @param scale Battery scale, usually 100.0.
 	 */
 	public static void setCurrentBatteryLevel(double currentLevel, double scale) {
-		/* we should multiply the result of the division below by 100.0 to get the battery level 
-		 * in the scale of 0-100, but since the previous samples in our server's dataset are in the scale of 0.00-1.00, 
+		/* we should multiply the result of the division below by 100.0 to get the battery level
+		 * in the scale of 0-100, but since the previous samples in our server's dataset are in the scale of 0.00-1.00,
 		 * we omit the multiplication. */
 		double level = currentLevel / scale;
 		/*
@@ -283,7 +284,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * Generate a time-based, random identifier.
-	 * 
+	 *
 	 * @param c
 	 *            the app's Context
 	 * @return a time-based, random identifier.
@@ -353,7 +354,7 @@ public final class SamplingLibrary {
 	/**
 	 * Returns the model of the device running Carat, for example "sdk" for the
 	 * emulator, Galaxy Nexus for Samsung Galaxy Nexus.
-	 * 
+	 *
 	 * @return the model of the device running Carat, for example "sdk" for the
 	 *         emulator, Galaxy Nexus for Samsung Galaxy Nexus.
 	 */
@@ -364,7 +365,7 @@ public final class SamplingLibrary {
 	/**
 	 * Returns the manufacturer of the device running Carat, for example
 	 * "google" or "samsung".
-	 * 
+	 *
 	 * @return the manufacturer of the device running Carat, for example
 	 *         "google" or "samsung".
 	 */
@@ -375,7 +376,7 @@ public final class SamplingLibrary {
 	/**
 	 * Returns the OS version of the device running Carat, for example 2.3.3 or
 	 * 4.0.2.
-	 * 
+	 *
 	 * @return the OS version of the device running Carat, for example 2.3.3 or
 	 *         4.0.2.
 	 */
@@ -385,7 +386,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * Returns the product name.
-	 * 
+	 *
 	 * @return the product name.
 	 */
 	public static String getProductName() {
@@ -394,7 +395,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * Returns the kernel version, e.g. 3.4-1101.
-	 * 
+	 *
 	 * @return the kernel version, e.g. 3.4-1101.
 	 */
 	public static String getKernelVersion() {
@@ -403,7 +404,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * Returns the build serial number. May only work for 2.3 and up.
-	 * 
+	 *
 	 * @return the build serial number.
 	 */
 	public static String getBuildSerial() {
@@ -413,7 +414,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * Print all system properties for debugging.
-	 * 
+	 *
 	 */
 	public static void printAllProperties() {
 		Properties list = System.getProperties();
@@ -422,13 +423,13 @@ public final class SamplingLibrary {
 			String k = (String) keys.nextElement();
 			String v = list.getProperty(k);
 			if (Constants.DEBUG)
-			    Logger.d("PROPS", k + "=" + v);
+				Logger.d("PROPS", k + "=" + v);
 		}
 	}
 
 	/**
 	 * Returns the brand for which the device is customized, e.g. Verizon.
-	 * 
+	 *
 	 * @return the brand for which the device is customized, e.g. Verizon.
 	 */
 	public static String getBrand() {
@@ -438,7 +439,7 @@ public final class SamplingLibrary {
 	/**
 	 * Read memory information from /proc/meminfo. Return used, free, inactive,
 	 * and active memory.
-	 * 
+	 *
 	 * @return an int[] with used, free, inactive, and active memory, in kB, in
 	 *         that order.
 	 */
@@ -466,18 +467,18 @@ public final class SamplingLibrary {
 			// Log.v("meminfo", "Load: " + load + " 1:" + toks[1]);
 			int inact = Integer.parseInt(toks[1]);
 			reader.close();
-			return new int[] { free, total, act, inact };
+			return new int[]{free, total, act, inact};
 		} catch (IOException ex) {
 			Util.printStackTrace(TAG, ex);
 		}
 
-		return new int[] { 0, 0, 0, 0 };
+		return new int[]{0, 0, 0, 0};
 	}
 
 	/**
 	 * Read memory usage using the public Android API methods in
 	 * ActivityManager, such as MemoryInfo and getProcessMemoryInfo.
-	 * 
+	 *
 	 * @param c
 	 *            the Context from the running Activity.
 	 * @return int[] with total and used memory, in kB, in that order.
@@ -516,7 +517,7 @@ public final class SamplingLibrary {
 		}
 		Log.v("Mem", "Total mem:" + totalMem);
 		Log.v("Mem", "Mem Used:" + memUsed);
-		return new int[] { totalMem, memUsed };
+		return new int[]{totalMem, memUsed};
 	}
 
 	// FIXME: Describe this. Why are there so many fields? Why is it divided by
@@ -531,13 +532,13 @@ public final class SamplingLibrary {
 	 * or 0.001 seconds. Since kernel 2.6.20, a further frequency is available:
 	 * 300, a number that divides evenly for the common video frame rates (PAL,
 	 * 25 HZ; NTSC, 30 HZ).
-	 * 
+	 *
 	 * I will leave the unit of cpu time as the jiffy and we can discuss later.
-	 * 
+	 *
 	 * 0 name of cpu 1 space 2 user time 3 nice time 4 sys time 5 idle time(it
 	 * is not include in the cpu total time) 6 iowait time 7 irg time 8 softirg
 	 * time
-	 * 
+	 *
 	 * the idleTotal[5] is the idle time which always changes. There are two
 	 * spaces between cpu and user time.That is a tricky thing and messed up
 	 * splitting.:)
@@ -546,7 +547,7 @@ public final class SamplingLibrary {
 	/**
 	 * Read CPU usage from /proc/stat, return a fraction of
 	 * usage/(usage+idletime)
-	 * 
+	 *
 	 * @return a fraction of usage/(usage+idletime)
 	 */
 	public static long[] readUsagePoint() {
@@ -561,7 +562,7 @@ public final class SamplingLibrary {
 					+ Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
 
 			reader.close();
-			return new long[] { idle1, cpu1 };
+			return new long[]{idle1, cpu1};
 		} catch (IOException ex) {
 			// This bloats the log
 			// Util.printStackTrace(TAG, ex);
@@ -572,7 +573,7 @@ public final class SamplingLibrary {
 	/**
 	 * Calculate CPU usage between the cpu and idle time given at two time
 	 * points.
-	 * 
+	 *
 	 * @param then
 	 * @param now
 	 * @return
@@ -584,31 +585,31 @@ public final class SamplingLibrary {
 		return (now[1] - then[1]) / idleAndCpuDiff;
 	}
 
-	public static double getCpuUsage(SystemLoadPoint cpu1, SystemLoadPoint cpu2){
+	public static double getCpuUsage(SystemLoadPoint cpu1, SystemLoadPoint cpu2) {
 		float totalDiff = cpu2.total - cpu1.total;
-		if(totalDiff == 0) return 100; // Avoid diving by zero
+		if (totalDiff == 0) return 100; // Avoid diving by zero
 		float idleDiff = cpu2.idleAll - cpu1.idleAll;
-		float cpuP = 100*(totalDiff - idleDiff)/totalDiff;
+		float cpuP = 100 * (totalDiff - idleDiff) / totalDiff;
 
 		// Disregard negative values caused by a bug in linux kernel
-		return (cpuP > 0)? cpuP : 0;
+		return (cpuP > 0) ? cpuP : 0;
 	}
 
-	public static double getCpuUsageEstimate(){
-        long currentSum = 0;
-        long maximumSum = 0;
-        long minimumSum = 0;
-        List<Long> currentFreq = FsUtils.CPU.getCurrentFrequencies();
-        List<Long> maximumFreq = FsUtils.CPU.getMaximumFrequencies();
-        List<Long> minimumFreq = FsUtils.CPU.getMinimumFrequencies();
-        int cores = Math.min(Math.min(currentFreq.size(), maximumFreq.size()), minimumFreq.size());
-        for(int i=0; i < cores; i++){
-            currentSum += currentFreq.get(i);
-            maximumSum += maximumFreq.get(i);
-            minimumSum += minimumFreq.get(i);
-        }
-        return maximumSum <= 0 ? 0.0f : (currentSum-minimumSum)/(float)(maximumSum-minimumSum);
-    }
+	public static double getCpuUsageEstimate() {
+		long currentSum = 0;
+		long maximumSum = 0;
+		long minimumSum = 0;
+		List<Long> currentFreq = FsUtils.CPU.getCurrentFrequencies();
+		List<Long> maximumFreq = FsUtils.CPU.getMaximumFrequencies();
+		List<Long> minimumFreq = FsUtils.CPU.getMinimumFrequencies();
+		int cores = Math.min(Math.min(currentFreq.size(), maximumFreq.size()), minimumFreq.size());
+		for (int i = 0; i < cores; i++) {
+			currentSum += currentFreq.get(i);
+			maximumSum += maximumFreq.get(i);
+			minimumSum += minimumFreq.get(i);
+		}
+		return maximumSum <= 0 ? 0.0f : (currentSum - minimumSum) / (float) (maximumSum - minimumSum);
+	}
 
 	public static SystemLoadPoint getSystemLoad() {
 		try {
@@ -625,26 +626,26 @@ public final class SamplingLibrary {
 	 * @param context Application context
 	 * @return List of running processes
 	 */
-	public static Map<String, List<PackageProcess>> getRunningNow(Context context){
+	public static Map<String, List<PackageProcess>> getRunningNow(Context context) {
 		Map<String, List<PackageProcess>> result = new HashMap<>();
 		Map<String, HashMap<String, PackageProcess>> processes = new HashMap<>();
 		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
 		List<RunningAppProcessInfo> runningAppProcesses = am.getRunningAppProcesses();
-		if(runningAppProcesses != null){
+		if (runningAppProcesses != null) {
 			for (RunningAppProcessInfo pi : runningAppProcesses) {
-				if(pi != null){
+				if (pi != null) {
 					String processName = pi.processName;
 					String packageName = ProcessUtil.trimProcessName(processName)[0];
 					HashMap<String, PackageProcess> p = processes.containsKey(packageName) ?
 							processes.get(packageName) : new HashMap<>();
 					PackageProcess process;
-					if(p.containsKey(processName)){
+					if (p.containsKey(processName)) {
 						process = p.get(processName);
-						process.setProcessCount(process.getProcessCount()+1);
+						process.setProcessCount(process.getProcessCount() + 1);
 					} else {
-						if(pi.importance == RunningAppProcessInfo.IMPORTANCE_SERVICE){
+						if (pi.importance == RunningAppProcessInfo.IMPORTANCE_SERVICE) {
 							processName = serviceToProcessName(processName);
-						} else if(pi.importance == Constants.IMPORTANCE_FOREGROUND_SERVICE){
+						} else if (pi.importance == Constants.IMPORTANCE_FOREGROUND_SERVICE) {
 							processName = serviceToProcessName(processName);
 						}
 						process = Util.getDefaultPackageProcess()
@@ -656,7 +657,7 @@ public final class SamplingLibrary {
 					processes.put(packageName, p);
 				}
 			}
-			for(String packageName : processes.keySet()){
+			for (String packageName : processes.keySet()) {
 				List<PackageProcess> list = new ArrayList<>(processes.get(packageName).values());
 				result.put(packageName, list);
 			}
@@ -667,32 +668,32 @@ public final class SamplingLibrary {
 	/**
 	 * Get running processes starting from given date. Note that this method relies on UsageStats
 	 * and therefore requires a special permission as well as Android version LOLLIPOP or newer.
-     * On older versions an empty map will be returned instead.
+	 * On older versions an empty map will be returned instead.
 	 * @param context context needed to obtain UsageStats system service
 	 * @param begin starting point in milliseconds since epoch
 	 * @return map with package names as keys and process descriptions as values
 	 */
-	public static Map<String, PackageProcess> getRunningProcessesFromEventLog(Context context, long begin){
+	public static Map<String, PackageProcess> getRunningProcessesFromEventLog(Context context, long begin) {
 		Map<String, PackageProcess> result = new HashMap<>();
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			Map<String, TreeMap<Long, Integer>> log = UsageManager.getEventLogs(context, begin);
 
 			// Loop through every package and its events
-			for(String packageName : log.keySet()){
+			for (String packageName : log.keySet()) {
 				PackageProcess process = Util.getDefaultPackageProcess();
 				TreeMap<Long, Integer> events = log.get(packageName);
 				long lastForeground = -1, foreground = 0, launchCount = 0;
 
 				// Track time between going foreground and moving to background.
-				for(long timestamp : events.keySet()){
-					switch(events.get(timestamp)){
+				for (long timestamp : events.keySet()) {
+					switch (events.get(timestamp)) {
 						case UsageEvents.Event.MOVE_TO_BACKGROUND:
-							if(lastForeground != -1){
+							if (lastForeground != -1) {
 								long session = timestamp - lastForeground;
 								foreground += session;
 
 								// Switches shorter than 1 seconds are most likely not human.
-								if(session >= Constants.MIN_FOREGROUND_SESSION){
+								if (session >= Constants.MIN_FOREGROUND_SESSION) {
 									launchCount++;
 								}
 								lastForeground = timestamp;
@@ -703,10 +704,10 @@ public final class SamplingLibrary {
 							break;
 					}
 				}
-				if(launchCount == 0){
-				    launchCount = 1;
-                }
-                process.setProcessName(packageName);
+				if (launchCount == 0) {
+					launchCount = 1;
+				}
+				process.setProcessName(packageName);
 				process.setForegroundTime(foreground);
 				process.setLaunchCount(launchCount);
 				process.setImportance(RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
@@ -717,13 +718,13 @@ public final class SamplingLibrary {
 		return result;
 	}
 
-	public static Map<String, List<PackageProcess>> getRunningServices(Context context){
+	public static Map<String, List<PackageProcess>> getRunningServices(Context context) {
 		Map<String, List<PackageProcess>> result = new HashMap<>();
 		Map<String, HashMap<String, PackageProcess>> services = new HashMap<>();
 		ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
 		List<RunningServiceInfo> runningServices = am.getRunningServices(255);
-		for(RunningServiceInfo serviceInfo : runningServices){
-			if(serviceInfo != null) {
+		for (RunningServiceInfo serviceInfo : runningServices) {
+			if (serviceInfo != null) {
 				ComponentName component = serviceInfo.service;
 				String packageName;
 				if (component != null && !Util.isNullOrEmpty(component.getPackageName())) {
@@ -758,8 +759,8 @@ public final class SamplingLibrary {
 					process.setSleeping(serviceInfo.restarting != 0);
 					process.setForeground(serviceInfo.foreground);
 					process.setImportance(serviceInfo.foreground ?
-                            Constants.IMPORTANCE_FOREGROUND_SERVICE :
-                            RunningAppProcessInfo.IMPORTANCE_SERVICE);
+							Constants.IMPORTANCE_FOREGROUND_SERVICE :
+							RunningAppProcessInfo.IMPORTANCE_SERVICE);
 					process.setCrashCount(serviceInfo.crashCount);
 					process.setLastStartSinceBoot(serviceInfo.activeSince);
 				}
@@ -768,16 +769,16 @@ public final class SamplingLibrary {
 			}
 		}
 
-		for(String packageName : services.keySet()){
+		for (String packageName : services.keySet()) {
 			List<PackageProcess> list = new ArrayList<>(services.get(packageName).values());
 			result.put(packageName, list);
 		}
 		return result;
 	}
 
-	private static String serviceToProcessName(String serviceName){
+	private static String serviceToProcessName(String serviceName) {
 		String[] split = ProcessUtil.trimProcessName(serviceName);
-		if(split.length >= 2){
+		if (split.length >= 2) {
 			return split[0] + "@" + split[1];
 		}
 		return split[0] + "@service";
@@ -792,12 +793,12 @@ public final class SamplingLibrary {
 	public static boolean isRunning(Context context, String appName) {
 		long recent = System.currentTimeMillis() - Constants.FRESHNESS_RUNNING_PROCESS;
 		List<ProcessInfo> runningProcesses = getRunningProcesses(context, recent, false);
-		for(ProcessInfo p : runningProcesses){
+		for (ProcessInfo p : runningProcesses) {
 			String importance = p.getImportance();
 			String packageName = ProcessUtil.trimProcessName(p.pName)[0];
-			if(packageName != null && appName.equals(packageName)
-					&& !importance.equals("Not running")){
-					return true;
+			if (packageName != null && appName.equals(packageName)
+					&& !importance.equals("Not running")) {
+				return true;
 			}
 		}
 		return false;
@@ -827,7 +828,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * We currently do not employ a whitelist, so this returns true iff isBlacklisted(c, processName) returns false and vice versa.
-	 * 
+	 *
 	 * @param c the Context.
 	 * @param processName the process name.
 	 * @return true iff isBlacklisted(c, processName) returns false and vice versa.
@@ -838,7 +839,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * Returns true if the processName matches an intem on the blacklist downloaded from Carat servers. 
-	 * 
+	 *
 	 * @param c the Context.
 	 * @param processName the process name.
 	 * @return true if the processName matches an intem on the blacklist downloaded from Carat servers.
@@ -846,7 +847,7 @@ public final class SamplingLibrary {
 	private static boolean isBlacklisted(Context c, String processName) {
 		/*
 		 * Whitelist: Messaging, Voice Search, Bluetooth Share
-		 * 
+		 *
 		 * Blacklist: Key chain, google partner set up, package installer,
 		 * package access helper
 		 */
@@ -900,39 +901,39 @@ public final class SamplingLibrary {
 		}
 		return false;
 	}
-	
+
 	public static boolean isDisabled(Context c, String processName) {
-	    PackageManager pm = c.getPackageManager();
-        if (pm == null)
-            return false;
-        try {
-            ApplicationInfo info = pm.getApplicationInfo(processName, 0);
-            boolean disabled = !info.enabled;
-            /* If an app is disabled, schedule it for sending with the next sample.
-             * This is triggered in the UI, so the amount of times that an app being
-             * disabled is sent is limited to the number of times the user refreshes Carat
-             * between two analysis runs. Disabled applications will then be recorded by
-             * the analysis, and not sent to the client when they ask for hogs/bugs after that.
-             * Over time, Carat then follows users' Hogs and Bugs better, knowing which apps are
-             * disabled.
-             */
-            if (disabled) {
-                if (Constants.DEBUG)
-                    Logger.i(STAG, "DISABLED: " + processName);
-                Editor e = PreferenceManager.getDefaultSharedPreferences(c.getApplicationContext()).edit();
-                e.putBoolean(SamplingLibrary.DISABLED + processName, true).commit();
-            }
-            return disabled;
-        } catch (NameNotFoundException e) {
-            if (Constants.DEBUG)
-                Logger.d(STAG, "Could not find app info for: "+processName);
-        }
-	    return false;
+		PackageManager pm = c.getPackageManager();
+		if (pm == null)
+			return false;
+		try {
+			ApplicationInfo info = pm.getApplicationInfo(processName, 0);
+			boolean disabled = !info.enabled;
+			/* If an app is disabled, schedule it for sending with the next sample.
+			 * This is triggered in the UI, so the amount of times that an app being
+			 * disabled is sent is limited to the number of times the user refreshes Carat
+			 * between two analysis runs. Disabled applications will then be recorded by
+			 * the analysis, and not sent to the client when they ask for hogs/bugs after that.
+			 * Over time, Carat then follows users' Hogs and Bugs better, knowing which apps are
+			 * disabled.
+			 */
+			if (disabled) {
+				if (Constants.DEBUG)
+					Logger.i(STAG, "DISABLED: " + processName);
+				Editor e = PreferenceManager.getDefaultSharedPreferences(c.getApplicationContext()).edit();
+				e.putBoolean(SamplingLibrary.DISABLED + processName, true).commit();
+			}
+			return disabled;
+		} catch (NameNotFoundException e) {
+			if (Constants.DEBUG)
+				Logger.d(STAG, "Could not find app info for: " + processName);
+		}
+		return false;
 	}
 
 	/**
 	 * Helper to ensure the WeakReferenced `packages` is populated.
-	 * 
+	 *
 	 * @param context
 	 * @return The content of `packages` or null in case of failure.
 	 */
@@ -940,9 +941,9 @@ public final class SamplingLibrary {
 		List<android.content.pm.PackageInfo> packagelist = null;
 		boolean cached = packages != null;
 
-		if(cached){
+		if (cached) {
 			Map<String, PackageInfo> mp = packages.get();
-			if(mp == null || mp.size() == 0){
+			if (mp == null || mp.size() == 0) {
 				cached = false;
 			}
 		}
@@ -987,7 +988,7 @@ public final class SamplingLibrary {
 
 	/**
 	 * Get info for a single package from the WeakReferenced packagelist.
-	 * 
+	 *
 	 * @param context
 	 * @param processName
 	 *            The package to get info for.
@@ -1006,7 +1007,7 @@ public final class SamplingLibrary {
 	 * the first Carat sample on a phone, to get signatures for the malware
 	 * detection project. Later on, single package information is got by
 	 * receiving the package installed intent.
-	 * 
+	 *
 	 * @param context
 	 * @param filterSystem
 	 *            if true, exclude system packages.
@@ -1060,7 +1061,7 @@ public final class SamplingLibrary {
 	/**
 	 * Returns info about an installed package. Will be called when receiving
 	 * the PACKAGE_ADDED or PACKAGE_REPLACED intent.
-	 * 
+	 *
 	 * @param context
 	 *            if true, exclude system packages.
 	 * @return a list of installed packages on the device.
@@ -1133,12 +1134,12 @@ public final class SamplingLibrary {
 		packageNames.addAll(runningApps.keySet());
 		packageNames.addAll(runningServices.keySet());
 		packageNames.addAll(runningAppsSince.keySet());
-		if(sendInstalled && installedPackages != null){
+		if (sendInstalled && installedPackages != null) {
 			// This should only happen once
 			packageNames.addAll(installedPackages.keySet());
 		}
 
-		for(String pkgName : packageNames){
+		for (String pkgName : packageNames) {
 			String packageName = ProcessUtil.trimProcessName(pkgName)[0]; // Just in case
 			ProcessInfo processInfo = new ProcessInfo();
 			processInfo.setPName(packageName);
@@ -1151,7 +1152,7 @@ public final class SamplingLibrary {
 			// Add installed package information first since we want running processes and/or
 			// services to override some of these fields later on. However, not other source
 			// provides application signatures.
-			if(sendInstalled && installedPackages != null && installedPackages.containsKey(packageName)){
+			if (sendInstalled && installedPackages != null && installedPackages.containsKey(packageName)) {
 				ProcessInfo info = installedPackages.get(packageName);
 				processInfo.setAppSignatures(info.getAppSignatures());
 				processInfo.setApplicationLabel(info.getApplicationLabel());
@@ -1160,17 +1161,17 @@ public final class SamplingLibrary {
 
 			// Add services belonging to this package. Also set the pid which might get replaced
 			// on older devices, where foreground process PIDs are available.
-			if(runningServices.containsKey(packageName)){
+			if (runningServices.containsKey(packageName)) {
 				List<PackageProcess> services = runningServices.get(packageName);
 				List<PackageProcess> renamed = new ArrayList<>();
-				for(PackageProcess process : services){
-				    String processName = serviceToProcessName(process.processName);
+				for (PackageProcess process : services) {
+					String processName = serviceToProcessName(process.processName);
 					process.setProcessName(processName);
 					addedServices.add(processName);
-                    int importance = process.isForeground() ?
-                            Constants.IMPORTANCE_FOREGROUND_SERVICE :
-                            RunningAppProcessInfo.IMPORTANCE_SERVICE;
-                    processInfo.setImportance(CaratApplication.importanceString(importance));
+					int importance = process.isForeground() ?
+							Constants.IMPORTANCE_FOREGROUND_SERVICE :
+							RunningAppProcessInfo.IMPORTANCE_SERVICE;
+					processInfo.setImportance(CaratApplication.importanceString(importance));
 					renamed.add(process);
 				}
 				applications.addAll(renamed);
@@ -1182,24 +1183,24 @@ public final class SamplingLibrary {
 			// whole package, whereas you can find a RunningAppProcessInfo for each specifically
 			// named process. This to my knowledge requires the field android:process to be set
 			// so most of the time we will not catch anything. Worth trying anyways.
-			if(runningApps.containsKey(packageName)){
+			if (runningApps.containsKey(packageName)) {
 				List<PackageProcess> processes = runningApps.get(packageName);
 
 				int lowestImportance = Integer.MAX_VALUE;
-				for(PackageProcess application : processes){
+				for (PackageProcess application : processes) {
 					String processName = application.getProcessName();
-					if(addedServices.contains(processName)){
-					    continue;
-                    }
+					if (addedServices.contains(processName)) {
+						continue;
+					}
 
 					// Keep track of the lowest importance which is the most important one.
-					if(lowestImportance != -1) {
+					if (lowestImportance != -1) {
 						lowestImportance = Math.min(lowestImportance, application.getImportance());
 					}
 
 					// If we find a running process which also has the more accurate UsageStats
 					// variant available, we combine these entries. This should happen rarely.
-					if(runningAppsSince.containsKey(processName)){
+					if (runningAppsSince.containsKey(processName)) {
 						PackageProcess accurate = runningAppsSince.get(processName);
 						application.setForegroundTime(accurate.getForegroundTime());
 						application.setLaunchCount(accurate.getLaunchCount());
@@ -1216,8 +1217,8 @@ public final class SamplingLibrary {
 			// Android 5.0+. When that happens, accurateCurrentlyRunning will remain false
 			// as the process will not be found from the (empty) currently running processes
 			// list. Naturally we want to include this valuable information regardless.
-			if(!accurateCurrentlyRunning && runningAppsSince.containsKey(packageName)){
-                PackageProcess accurate = runningAppsSince.get(packageName);
+			if (!accurateCurrentlyRunning && runningAppsSince.containsKey(packageName)) {
+				PackageProcess accurate = runningAppsSince.get(packageName);
 				applications.add(accurate);
 				processInfo.setImportance(CaratApplication.importanceString(accurate.getImportance()));
 			}
@@ -1225,14 +1226,14 @@ public final class SamplingLibrary {
 
 			// Add package properties.
 			PackageInfo packageInfo = getPackageInfo(context, packageName);
-			if(packageInfo != null){
+			if (packageInfo != null) {
 				processInfo.setVersionName(packageInfo.versionName);
 				processInfo.setVersionCode(packageInfo.versionCode);
 
 				ApplicationInfo appInfo = packageInfo.applicationInfo;
-				if(appInfo != null){
+				if (appInfo != null) {
 					String label = pm.getApplicationLabel(appInfo).toString();
-					if(label.length() > 0){
+					if (label.length() > 0) {
 						processInfo.setApplicationLabel(label);
 					}
 					processInfo.setIsSystemApp(Util.isSystemApp(appInfo.flags));
@@ -1242,7 +1243,7 @@ public final class SamplingLibrary {
 			// Add installation source which can apparently fail if the package name is not
 			// recognized by the package manager.
 			String installationSource = null;
-			if(!processInfo.isSystemApp) {
+			if (!processInfo.isSystemApp) {
 				try {
 					installationSource = pm.getInstallerPackageName(packageName);
 				} catch (IllegalArgumentException iae) {
@@ -1264,7 +1265,7 @@ public final class SamplingLibrary {
 		// Go through the preferences and look for UNINSTALL, INSTALL and REPLACE keys set by
 		// InstallReceiver. Only do this if fetching running processes for a sample! Otherwise we
 		// disregards installs..
-		if(forSample && preferences.getBoolean(Keys.installationChanges, false)){
+		if (forSample && preferences.getBoolean(Keys.installationChanges, false)) {
 			Set<String> ap = preferences.getAll().keySet();
 			SharedPreferences.Editor e = preferences.edit();
 			boolean edited = false;
@@ -1315,7 +1316,7 @@ public final class SamplingLibrary {
 			}
 			// If there were any installation changes, they are now covered
 			e.putBoolean(Keys.installationChanges, false);
-			if (edited){
+			if (edited) {
 				e.apply();
 			}
 		}
@@ -1344,34 +1345,34 @@ public final class SamplingLibrary {
 		e.remove(pref);
 		return item;
 	}
-	
-	/**
-     * Helper to set application to the disabled state in the Carat sample.
-     * @param pname the package that was disabled.
-     * @param pref The preference that stored the disabled directive. This preference will be deleted to ensure disabled apps are not sent multiple times.
-     * @param e the Editor (passed and not created here for efficiency)
-     * @return a new ProcessInfo entry describing the uninstalled item.
-     */
-    private static ProcessInfo disabledItem(String pname, String pref, SharedPreferences.Editor e) {
-        ProcessInfo item = new ProcessInfo();
-        item.setPName(pname);
-        item.setPId(-1);
-        item.setImportance(Constants.IMPORTANCE_DISABLED);
-        // Remember to remove it so we do not send
-        // multiple uninstall events
-        e.remove(pref);
-        return item;
-    }
 
-    public static double getMemoryUsage(){
-    	// Note: availMem in ActivityManager is inaccurate as it does not consider low watermark
+	/**
+	 * Helper to set application to the disabled state in the Carat sample.
+	 * @param pname the package that was disabled.
+	 * @param pref The preference that stored the disabled directive. This preference will be deleted to ensure disabled apps are not sent multiple times.
+	 * @param e the Editor (passed and not created here for efficiency)
+	 * @return a new ProcessInfo entry describing the uninstalled item.
+	 */
+	private static ProcessInfo disabledItem(String pname, String pref, SharedPreferences.Editor e) {
+		ProcessInfo item = new ProcessInfo();
+		item.setPName(pname);
+		item.setPId(-1);
+		item.setImportance(Constants.IMPORTANCE_DISABLED);
+		// Remember to remove it so we do not send
+		// multiple uninstall events
+		e.remove(pref);
+		return item;
+	}
+
+	public static double getMemoryUsage() {
+		// Note: availMem in ActivityManager is inaccurate as it does not consider low watermark
 		double available = FsUtils.MEMORY.getAvailableMemory();
 		long total = FsUtils.MEMORY.getTotalMemory();
 		double result = 0;
 
 		// Some devices do not have MemAvailable in /proc/meminfo in which case we need to
 		// manually calculate its value as per /fs/proc/meminfo.c.
-		if(available == 0){
+		if (available == 0) {
 			// Free memory and reclaimable slab
 			long free = FsUtils.MEMORY.getFreeMemory();
 			long sReclaimable = FsUtils.MEMORY.getSlabReclaimableMemory();
@@ -1383,36 +1384,36 @@ public final class SamplingLibrary {
 
 			// Low threshold for swapping, this cannot be considered available
 			long lowWatermark = FsUtils.MEMORY.getLowWatermark(); // No access on O+
-			if(lowWatermark == 0){
-				lowWatermark = (long)(0.01 * total); // This should be in the right ballpark
+			if (lowWatermark == 0) {
+				lowWatermark = (long) (0.01 * total); // This should be in the right ballpark
 			}
 
 			// Subtract the low watermark
 			free -= lowWatermark;
-			pageCache -= Math.min(pageCache/2, lowWatermark);
-			sReclaimable -= Math.min(sReclaimable/2, lowWatermark);
+			pageCache -= Math.min(pageCache / 2, lowWatermark);
+			sReclaimable -= Math.min(sReclaimable / 2, lowWatermark);
 			available = (free + pageCache + sReclaimable);
 		}
 
 		// Make sure we don't divide by zero
-		if(total > 0){
-			result = 1-available/(double)total;
+		if (total > 0) {
+			result = 1 - available / (double) total;
 		}
-		result = (result/1000) * 1024; // Convert KiB to KB
+		result = (result / 1000) * 1024; // Convert KiB to KB
 
-        return result >= 0 ? result : 0;
-    }
+		return result >= 0 ? result : 0;
+	}
 
-    public static double getActiveMemoryUsage(){
-        double result = 0;
+	public static double getActiveMemoryUsage() {
+		double result = 0;
 		long active = FsUtils.MEMORY.getActiveMemory();
 		long inactive = FsUtils.MEMORY.getInactiveMemory();
 		long total = active + inactive;
-		if(active + inactive > 0){
-			result = active/(double)total;
+		if (active + inactive > 0) {
+			result = active / (double) total;
 		}
-        return result >= 0 ? result : 0;
-    }
+		return result >= 0 ? result : 0;
+	}
 
 	/**
 	 * Depratecated, use int[] meminfo = readMemInfo(); int totalMemory =
@@ -1504,16 +1505,16 @@ public final class SamplingLibrary {
 
 	/**
 	 * @return CPU sleep time in seconds
-     */
-	public static double getSleepTime(){
+	 */
+	public static double getSleepTime() {
 		long active = SystemClock.uptimeMillis();
 		long real = SystemClock.elapsedRealtime();
-		long sleep = real-active;
-		if(sleep < 0) return 0; // Just in case
+		long sleep = real - active;
+		if (sleep < 0) return 0; // Just in case
 		return TimeUnit.MILLISECONDS.toSeconds(sleep);
 	}
 
-	public static String getNetworkStatusForSample(Context context){
+	public static String getNetworkStatusForSample(Context context) {
 		String network = getNetworkStatus(context);
 		String networkType = getNetworkType(context);
 		String mobileNetworkType = getMobileNetworkType(context);
@@ -1553,10 +1554,10 @@ public final class SamplingLibrary {
 			return NETWORKSTATUS_DISCONNECTED;
 	}
 
-	
+
 	/**
 	 * Get the network type, for example Wifi, mobile, wimax, or none.
-	 * 
+	 *
 	 * @param context
 	 * @return
 	 */
@@ -1589,11 +1590,11 @@ public final class SamplingLibrary {
 
 	}
 
-	private static String getMobileWirelessTechnology(Context context){
+	private static String getMobileWirelessTechnology(Context context) {
 		String defaultTechnology = "GSM";
 		TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-		if(telephonyManager != null){
-			switch(telephonyManager.getNetworkType()){
+		if (telephonyManager != null) {
+			switch (telephonyManager.getNetworkType()) {
 				case TelephonyManager.NETWORK_TYPE_GSM:
 				case TelephonyManager.NETWORK_TYPE_EDGE:
 				case TelephonyManager.NETWORK_TYPE_GPRS:
@@ -1618,14 +1619,18 @@ public final class SamplingLibrary {
 		return defaultTechnology;
 	}
 
-	public static int getMobileSignalStrength(Context context){
+	public static int getMobileSignalStrength(Context context) {
 		int strength = Integer.MIN_VALUE;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && Build.VERSION.SDK_INT <
-		Build.VERSION_CODES.P) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
 			String currentNetwork = getMobileWirelessTechnology(context);
 			Logger.d(TAG, "Current network: " + currentNetwork);
 			TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-			if(telephonyManager != null){
+
+			// Starting from API level 28, getAllCellInfo() requires the ACCESS_COARSE_LOCATION
+			// permission. When targeting level 29, this needs to be changed to ACCESS_FINE_LOCATION
+			// instead, at which point it might be more feasible to remove the method altogether.
+			boolean allowed = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+			if (telephonyManager != null && allowed) {
 				List<CellInfo> cellInfoList = telephonyManager.getAllCellInfo();
 				if(!Util.isNullOrEmpty(cellInfoList)){ // Not implemented by all manufacturers
 					for(CellInfo info : cellInfoList){
