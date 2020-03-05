@@ -32,8 +32,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -56,6 +58,7 @@ import android.content.pm.Signature;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaDrm;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -64,6 +67,7 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Message;
 import android.os.PowerManager;
 import android.os.StatFs;
 import android.os.SystemClock;
@@ -289,44 +293,57 @@ public final class SamplingLibrary {
 		String wifiMac = getWifiMacAddress(c);
 		String devid = getDeviceId(c);
 		String concat = "";
-		if (aID != null)
+
+		// Add Android ID
+		if (aID != null) {
 			concat = aID;
-		else
+		} else {
 			concat = "0000000000000000";
-		if (wifiMac != null)
+		}
+
+		// Add WiFi MAC
+		if (wifiMac != null) {
 			concat += wifiMac;
-		else
+		} else {
 			concat += "00:00:00:00:00:00";
+		}
 
 		// IMEI is 15 characters, decimal, while MEID is 14 characters, hex. Add
 		// a space if length is less than 15:
 		if (devid != null) {
 			concat += devid;
-			if (devid.length() < 15)
+			if (devid.length() < 15) {
 				concat += " ";
-		} else
+			}
+		} else {
 			concat += "000000000000000";
+		}
+
 		if (includeTimestamp) {
 			long timestamp = System.currentTimeMillis();
 			concat += timestamp;
+
+			// Since timestamp should be completely random, does not hurt adding another random
+			// UUID to the mix just in case all identifiers other than timestamp (Android ID,
+			// WiFi MAC address, and IMEI/DRM) fell back to their default value and two people
+			// happened to register at the same time.
+			String randomUUID = UUID.randomUUID().toString();
+			concat += randomUUID;
 		}
 
-		// Logger.d(STAG,
-		// "AID="+aID+" wifiMac="+wifiMac+" devid="+devid+" rawUUID=" +concat );
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
 			md.update(concat.getBytes());
 			byte[] mdbytes = md.digest();
 			StringBuilder hexString = new StringBuilder();
-			for (int i = 0; i < mdbytes.length; i++) {
-				String hx = Integer.toHexString(0xFF & mdbytes[i]);
+			for (byte mdbyte : mdbytes) {
+				String hx = Integer.toHexString(0xFF & mdbyte);
 				if (hx.equals("0"))
 					hexString.append("00");
 				else
 					hexString.append(hx);
 			}
-			String uuid = hexString.toString().substring(0, UUID_LENGTH);
-			return uuid;
+			return hexString.toString().substring(0, UUID_LENGTH);
 		} catch (NoSuchAlgorithmException e) {
 			Util.printStackTrace(TAG, e);
 			return aID;
@@ -1603,7 +1620,8 @@ public final class SamplingLibrary {
 
 	public static int getMobileSignalStrength(Context context){
 		int strength = Integer.MIN_VALUE;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && Build.VERSION.SDK_INT <
+		Build.VERSION_CODES.P) {
 			String currentNetwork = getMobileWirelessTechnology(context);
 			Logger.d(TAG, "Current network: " + currentNetwork);
 			TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -1839,10 +1857,39 @@ public final class SamplingLibrary {
 	}
 
 	private static String getDeviceId(Context context) {
-		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-		if (telManager == null)
-			return null;
-		return telManager.getDeviceId();
+		// Use IMEI if running on an older Android or granted the READ_PHONE_STATE permission
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+			try {
+				TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+				if (telManager != null)  {
+					@SuppressLint("HardwareIds")
+					String id = telManager.getDeviceId();
+					if (id != null && id.length() >= 14) {
+						return id;
+					}
+				}
+			} catch (SecurityException e) {
+				// Targeting Android 10 or otherwise denied
+			}
+		}
+
+		// No solution for old devices without IMEI
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+			// Newer devices instead use the unique Widevine Device ID
+			UUID wideVineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
+			try {
+				MediaDrm drm = new MediaDrm(wideVineUuid);
+				byte[] idBytes = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
+				String id = Arrays.toString(idBytes);
+				if (id != null && id.length() >= 14) {
+					return id;
+				}
+			} catch (Exception e) {
+				Logger.e(TAG, "Failed getting id from WideWine DRM", e);
+			}
+		}
+
+		return null;
 	}
 
 	/* Get network type */
