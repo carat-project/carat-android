@@ -137,10 +137,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         getWindow().requestFeature(Window.FEATURE_PROGRESS);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            // TODO: What about devices < HONEYCOMB?
-            VersionGater.checkVersion(this);
-        }
+        // Always require 14
+        VersionGater.checkVersion(this);
 
         p = PreferenceManager.getDefaultSharedPreferences(this);
         checkUsageAccess();
@@ -610,13 +608,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             AsyncStats hogStats = new AsyncStats(this);
             // run this asyncTask in a new thread [from the thread pool] (run in parallel to other asyncTasks)
             // (do not wait for them to finish, it takes a long time)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-                prefetchData.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                hogStats.executeOnExecutor(AsyncStats.THREAD_POOL_EXECUTOR);
-            } else {
-                hogStats.execute();
-                prefetchData.execute();
-            }
+            prefetchData.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            hogStats.executeOnExecutor(AsyncStats.THREAD_POOL_EXECUTOR);
         }
     }
 
