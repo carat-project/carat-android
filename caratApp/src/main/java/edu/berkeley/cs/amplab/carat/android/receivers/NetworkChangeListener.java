@@ -81,8 +81,10 @@ public abstract class NetworkChangeListener{
     }
 
     public void unregister(){
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        preferences.unregisterOnSharedPreferenceChangeListener(preferenceListener);
+        if (context != null && preferenceListener != null)  {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            preferences.unregisterOnSharedPreferenceChangeListener(preferenceListener);
+        }
     }
 
     public abstract void onNetworkChange(NetworkState state);
