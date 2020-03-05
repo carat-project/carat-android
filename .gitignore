@@ -5,5 +5,5 @@ build
 local.properties
 gradle.properties
 protocol/gen*
-truststore.*
+truststore*
 release/
