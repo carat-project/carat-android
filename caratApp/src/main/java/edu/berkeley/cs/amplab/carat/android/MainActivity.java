@@ -115,11 +115,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NetworkChangeListener networkChangeReceiver = new NetworkChangeListener() {
         @Override
         public void onNetworkChange(NetworkState state) {
-            switch(state){
-                case RESUME: {
-                    Logger.d(TAG, "Network resumed, refreshing tasks and views");
-                    resumeTasksAndUpdate();
-                }
+            if (state == NetworkState.RESUME) {
+                Logger.d(TAG, "Network resumed, refreshing tasks and views");
+                resumeTasksAndUpdate();
             }
         }
     };
@@ -155,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             this.startActivityForResult(i, Constants.REQUESTCODE_ACCEPT_EULA);
         }
         getStatsFromServer();
-        super.onCreate(savedInstanceState);
 
         CaratApplication.setMain(this);
         tracker = Tracker.getInstance(this);
@@ -352,6 +349,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -576,17 +574,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void replaceFragment(Fragment fragment, String tag){
-        final String FRAGMENT_TAG = tag;
         setProgressCircle(false);
-        boolean fragmentPopped = getSupportFragmentManager().popBackStackImmediate(FRAGMENT_TAG, 0);
+        boolean fragmentPopped = getSupportFragmentManager().popBackStackImmediate(tag, 0);
 
         if (!fragmentPopped) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right);
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2 || !isDestroyed()) {
-                transaction.replace(R.id.fragment_holder, fragment, FRAGMENT_TAG)
-                        .addToBackStack(FRAGMENT_TAG).commitAllowingStateLoss();
+                transaction.replace(R.id.fragment_holder, fragment, tag)
+                        .addToBackStack(tag).commitAllowingStateLoss();
             }
         }
     }
