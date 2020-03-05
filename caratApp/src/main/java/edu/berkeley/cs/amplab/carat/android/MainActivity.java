@@ -126,6 +126,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            // This happens multiple times, reject subsequent calls
+            Logger.d(TAG, "MainActivity already spawned once, rejecting onCreate");
+            return;
+        }
+
         networkChangeReceiver.register(this);
         onBackground = false;
         schedulerRunning = false;
