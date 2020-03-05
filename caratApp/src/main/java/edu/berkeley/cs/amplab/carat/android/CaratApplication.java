@@ -301,13 +301,6 @@ public class CaratApplication extends Application {
         mNotificationManager.cancelAll();
     }
 
-    public void acceptEula(){
-        if(Constants.DEBUG){
-            Logger.d(TAG, "** Accepted EULA **");
-        }
-        main.resumeTasksAndUpdate();
-    }
-
     public boolean isOnBackground(){
         return main.isOnBackground();
     }

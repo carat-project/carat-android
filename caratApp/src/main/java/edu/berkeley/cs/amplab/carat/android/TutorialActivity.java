@@ -113,7 +113,8 @@ public class TutorialActivity extends AppCompatActivity implements View.OnClickL
                 setResult(RESULT_OK, returnIntent);
                 SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
                 p.edit().putBoolean(getString(R.string.save_accept_eula), true).commit();
-                ((CaratApplication)getApplication()).acceptEula();
+                // This is complicated, use onActivityResult instead
+                // ((CaratApplication)getApplication()).acceptEula();
                 finish();
             }
         }
