@@ -51,7 +51,7 @@ public class Util {
         return result;
     }
 
-    public static <K,V> Map<K, V> firstEntries(long limit, Map<K,V> source){
+    public static <K extends Comparable,V extends Comparable> Map<K, V> firstEntries(long limit, Map<K,V> source){
         TreeMap<K, V> result = new TreeMap<>();
         for(Map.Entry<K,V> entry : source.entrySet()){
             if(result.size() >= limit){
