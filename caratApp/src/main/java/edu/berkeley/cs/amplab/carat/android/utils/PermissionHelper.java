@@ -11,6 +11,7 @@ import java.util.List;
 
 public class PermissionHelper {
     private static final String TAG = PermissionHelper.class.getSimpleName();
+    private static final int REQUEST_CODE = 8762;
 
     public static void promptMissingPermissions(Activity activity) {
         Context context = activity.getApplicationContext();
@@ -20,7 +21,9 @@ public class PermissionHelper {
             return;
         }
         String[] missing = filterMissingPermissions(activity, permissions);
-        ActivityCompat.requestPermissions(activity, missing, 123);
+        if (missing != null && missing.length > 0) {
+            ActivityCompat.requestPermissions(activity, missing, REQUEST_CODE);
+        }
     }
 
     private static String[] filterMissingPermissions(Context context, String[] permissions) {
